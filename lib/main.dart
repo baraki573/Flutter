@@ -28,20 +28,133 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _LogInState createState() => _LogInState();
+
+
 }
+
+enum FormType {
+  login,
+  register
+}
+
+class _LogInState extends State<MyHomePage> {
+
+  FormType _form = FormType.login;
+  String _us, _pw;
+  final usCtrl = TextEditingController();
+  final pwCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    usCtrl.dispose();
+    pwCtrl.dispose();
+    super.dispose();
+  }
+
+  void _getUS(){
+    setState(() {
+      _us = usCtrl.text;
+      _pw = pwCtrl.text;
+    });
+  }
+
+
+  void _formChange () async {
+    setState(() {
+      if (_form == FormType.register) {
+        _form = FormType.login;
+      } else {
+        _form = FormType.register;
+      }
+    });
+  }
+
+  Widget _buildButtons() {
+    if (_form == FormType.login) {
+      return new Container(
+        child: new Column(
+          children: <Widget>[
+            new RaisedButton(
+              child: new Text('Login'),
+              onPressed: _getUS,
+            ),
+            new FlatButton(
+              child: new Text('Kein Account? Registriere dich hier.'),
+              onPressed: _formChange,
+            ),
+            new FlatButton(
+              child: new Text('Passwort vergessen?'),
+              onPressed: _getUS,
+            )
+          ],
+        ),
+      );
+    } else {
+      return new Container(
+        child: new Column(
+          children: <Widget>[
+            new RaisedButton(
+              child: new Text('Accounterstellung'),
+              onPressed: _getUS,
+            ),
+            new FlatButton(
+              child: new Text('Account vorhanden? Wechsle zum Login.'),
+              onPressed: _formChange,
+            )
+          ],
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context){
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Wilkommen, bitte einloggen:',
+            ),
+            Text(
+              'Username: $_us; Password: $_pw',
+            ),
+            Container(
+              margin: const EdgeInsets.only(right: 10, left: 10),
+              child: TextFormField(
+                controller: usCtrl,
+                decoration: InputDecoration(
+                    labelText: 'Enter your username'
+                ),
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.only(right: 10, left: 10),
+              child: TextFormField(
+                controller: pwCtrl,
+                decoration: InputDecoration(
+                    labelText: 'Enter your password'
+                ),
+                obscureText: true,
+              ),
+            ),
+            _buildButtons(),
+        ],
+        ),
+      ),
+    );
+  }
+}
+
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
