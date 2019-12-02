@@ -9,12 +9,12 @@ var pageList = [
   PageModel(
       imageUrl: "assets/images/new_ideas.png",
       title: "New Way",
-      body: "FEEL THE MAGIC OF WELLNESS",
+      body: "FEEL THE MAGIC OF NEW APP",
       titleGradient: gradients[1]),
   PageModel(
       imageUrl: "assets/images/authentication.png",
       title: "Login",
-      body: "LET'S HIKE UP",
+      body: "Let's create Account",
       titleGradient: gradients[2]),
 ];
 
