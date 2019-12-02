@@ -1,3 +1,4 @@
+
 os: linux
 
 # The Ubuntu Trusty release on Travis is known to
@@ -27,11 +28,6 @@ addons:
       - lib32stdc++6 # https://github.com/flutter/flutter/issues/6207
       - libstdc++6
       - curl
-
-cache:
-  directories:
-    - $HOME/.pub-cache
-    - node_modules
 
 before_script:
   # Setup gradle.
@@ -71,12 +67,38 @@ before_script:
   
   # Add Flutter to the PATH environment variable.
   - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
-
-
-  script:
+  cache:
+    directories:
+      - $HOME/.pub-cache
+      - node_modules
+# cache:
+#   directories:
+#     - $HOME/.pub-cache
+script:
   # Prints the flutter version
   # (allows you to ensure, for each build, that Flutter is set up correctly.)
   - flutter doctor -v
 
   # Run Flutter build
   - ./flutter/bin/flutter build apk
+# script:
+#   - ./ci-script.sh
+#   # Prints the flutter version
+#   # (allows you to ensure, for each build, that Flutter is set up correctly.)
+#   - flutter doctor -v
+
+#   # Run Flutter build
+#   - flutter build apk
+# jobs:
+# include:
+#   - script: echo "Running unit tests (1)"
+#   - script: echo "Running unit tests (2)"
+#   - stage: GitHub Release
+#     script: echo "Deploying to GitHub releases ..."
+#     deploy:
+#       provider: releases
+#       api_key: $GITHUB_OAUTH_TOKEN
+#       skip_cleanup: true
+#       on:
+#         tags: true
+
