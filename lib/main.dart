@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:museum_app/bottom_navigationbar/navigationbar_pattern.dart';
+import 'package:museum_app/onboarding/onboarding.dart';
 
-void main() => runApp(MyApp());
+//void main() => runApp(MyApp());
+void main() => runApp(MaterialApp(
+      home: Onboarding(),
+      debugShowCheckedModeBanner: false,
+    ));
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -21,7 +26,9 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: BottomBarNavigationPatternExample(),
+      //debugShowCheckedModeBanner: false,
+      //home: BottomBarNavigationPatternExample(),
+      home: Onboarding(),
       //home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
