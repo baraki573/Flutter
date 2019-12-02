@@ -1,5 +1,6 @@
 os: osx 
 language: generic 
+osx_image: xcode11.2
 before_script: 
  - brew update 
  - brew install --HEAD usbmuxd 
