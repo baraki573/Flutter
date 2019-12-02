@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:museum_app/login_page/login_page.dart';
 import 'onboarding_data.dart';
 import 'Page_indicator.dart';
 import 'package:gradient_text/gradient_text.dart';
@@ -163,7 +164,10 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                           Icons.arrow_forward,
                           color: Colors.white,
                         ),
-                        onPressed: () {},
+                        onPressed: () {Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => LogIn()),
+                        );},
                       )
                     : Container(),
               ),

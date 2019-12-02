@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:museum_app/bottom_navigationbar/navigationbar_pattern.dart';
 import 'package:museum_app/onboarding/onboarding.dart';
 
 //void main() => runApp(MyApp());
 void main() => runApp(MaterialApp(
       home: Onboarding(),
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: true,
     ));
 
+/*
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
@@ -28,142 +28,22 @@ class MyApp extends StatelessWidget {
       ),
       //debugShowCheckedModeBanner: false,
       //home: BottomBarNavigationPatternExample(),
+      //home: Onboarding(),
       home: Onboarding(),
       //home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
-}
+}*/
 
+/*
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
 
   final String title;
 
   @override
-  _LogInState createState() => _LogInState();
-
-
+  _MyHomePageState createState() => _MyHomePageState();
 }
-
-enum FormType {
-  login,
-  register
-}
-
-class _LogInState extends State<MyHomePage> {
-
-  FormType _form = FormType.login;
-  String _us, _pw;
-  final usCtrl = TextEditingController();
-  final pwCtrl = TextEditingController();
-
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is disposed.
-    usCtrl.dispose();
-    pwCtrl.dispose();
-    super.dispose();
-  }
-
-  void _getUS(){
-    setState(() {
-      _us = usCtrl.text;
-      _pw = pwCtrl.text;
-    });
-  }
-
-
-  void _formChange () async {
-    setState(() {
-      if (_form == FormType.register) {
-        _form = FormType.login;
-      } else {
-        _form = FormType.register;
-      }
-    });
-  }
-
-  Widget _buildButtons() {
-    if (_form == FormType.login) {
-      return new Container(
-        child: new Column(
-          children: <Widget>[
-            new RaisedButton(
-              child: new Text('Login'),
-              onPressed: _getUS,
-            ),
-            new FlatButton(
-              child: new Text('Kein Account? Registriere dich hier.'),
-              onPressed: _formChange,
-            ),
-            new FlatButton(
-              child: new Text('Passwort vergessen?'),
-              onPressed: _getUS,
-            )
-          ],
-        ),
-      );
-    } else {
-      return new Container(
-        child: new Column(
-          children: <Widget>[
-            new RaisedButton(
-              child: new Text('Accounterstellung'),
-              onPressed: _getUS,
-            ),
-            new FlatButton(
-              child: new Text('Account vorhanden? Wechsle zum Login.'),
-              onPressed: _formChange,
-            )
-          ],
-        ),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context){
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Wilkommen, bitte einloggen:',
-            ),
-            Text(
-              'Username: $_us; Password: $_pw',
-            ),
-            Container(
-              margin: const EdgeInsets.only(right: 10, left: 10),
-              child: TextFormField(
-                controller: usCtrl,
-                decoration: InputDecoration(
-                    labelText: 'Enter your username'
-                ),
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.only(right: 10, left: 10),
-              child: TextFormField(
-                controller: pwCtrl,
-                decoration: InputDecoration(
-                    labelText: 'Enter your password'
-                ),
-                obscureText: true,
-              ),
-            ),
-            _buildButtons(),
-        ],
-        ),
-      ),
-    );
-  }
-}
-
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
@@ -231,3 +111,4 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+*/
