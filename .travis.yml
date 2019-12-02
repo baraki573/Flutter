@@ -36,8 +36,9 @@ before_script:
   - echo " path:"
   - echo "$PATH"
 
-   # This will install the Android SDK 28 using the previously installed SDK tools.
-  - yes | sdkmanager --licenses
+  # This will install the Android SDK 28 using the previously installed SDK tools.
+  #- yes | sdkmanager --licenses
+  - yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT "tools" "build-tools" "extras;android;m2repository" > /dev/null
   - export PATH=${ANDROID_SDK_ROOT}/tools/bin:$PATH
 
   - gem install fastlane
