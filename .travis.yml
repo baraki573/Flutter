@@ -23,6 +23,8 @@ before_script:
   - export PATH="$PATH:`pwd`/flutter/bin"
   - flutter doctor
 
+  - gem install fastlane
+
 script:
   - ./ci-script.sh
 
