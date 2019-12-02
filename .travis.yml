@@ -32,7 +32,7 @@ script:
   - flutter doctor -v
 
   # Run Flutter build
-  - ./flutter/bin/flutter build apk
+  - flutter build apk
 
 cache:
   directories:
