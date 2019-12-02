@@ -4,7 +4,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-(cd mobile && flutter build apk && flutter build ios)
+(flutter build apk && flutter build ios)
 
-(cd mobile/android && fastlane internal)
-(cd mobile/ios && fastlane beta)
+(cd android && fastlane internal)
+(cd ios && fastlane beta)
