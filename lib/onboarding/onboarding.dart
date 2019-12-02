@@ -3,6 +3,7 @@ import 'package:museum_app/login_page/login_page.dart';
 import 'onboarding_data.dart';
 import 'Page_indicator.dart';
 import 'package:gradient_text/gradient_text.dart';
+import 'package:museum_app/SizeConfig.dart';
 
 
 class Onboarding extends StatefulWidget {
@@ -38,6 +39,7 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -87,13 +89,16 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                           alignment: Alignment.center,
                           child: SafeArea(
                             bottom: false,
-                            child: Image.asset(page.imageUrl, width: 300, height:300,)
+                            child: Image.asset(page.imageUrl, 
+                            width: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 80 : SizeConfig.safeBlockHorizontal * 80, 
+                            height: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockVertical * 45 : SizeConfig.safeBlockVertical * 40,)
                           )
                         ),
                         Container(
-                          margin: EdgeInsets.only(left: 16.0),
+                          margin: EdgeInsets.only(left: 16.0, right:16.0),
                           alignment: Alignment.center,
-                          height: 170.0,
+                          height: SizeConfig.safeBlockVertical * 30,
+                          width: SizeConfig.safeBlockHorizontal * 100,
                           child: Stack(
                             children: <Widget>[
                               // Opacity(
@@ -108,16 +113,20 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                               //         letterSpacing: 1.0),
                               //   ),
                               // ),
-                              Padding(
-                                padding: EdgeInsets.all(16.0),
+                              Container(
+                                padding: EdgeInsets.all(1.0),
+                                margin: EdgeInsets.only(left:16.0, right:16.0, top:10.0, bottom:6.0),
+                                alignment: Alignment.center,
                                 child: GradientText(
                                   page.title,
                                   gradient: LinearGradient(
-                                      colors: pageList[index].titleGradient),
+                                    colors: pageList[index].titleGradient),
                                   style: TextStyle(
-                                    fontSize: 45.0,
-                                    fontFamily: "Nunito-Black",
+                                    fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 12 : SizeConfig.safeBlockHorizontal * 7,
+                                    fontFamily: "Nunito",
+                                    fontWeight: FontWeight.w700,
                                   ),
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
                             ],
@@ -133,10 +142,12 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                               page.body,
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontSize: 30.0,
-                                fontFamily: "Nunito-Regular",
-                                color: Color(0xFF1A1A1A)),
-                                )                                                     
+                              fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 8 : SizeConfig.safeBlockHorizontal * 5,
+                              fontFamily: "Nunito",
+                              fontWeight: FontWeight.w300,
+                              fontStyle: FontStyle.italic,
+                              color: Color(0xFF1A1A1A)),
+                              )                                                     
                           ),
                         )
                       ],
@@ -146,8 +157,8 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
               },
             ),
             Positioned(
-              left: 30.0,
-              bottom: 55.0,
+              left: 20.0,
+              bottom: 25.0,
               child: Container(
                   width: 160.0,
                   child: PageIndicator(currentPage, pageList.length)),
