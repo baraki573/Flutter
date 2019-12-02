@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:museum_app/login_page/login_page.dart';
 import 'onboarding_data.dart';
-import 'Page_indicator.dart';
+import 'page_indicator.dart';
 import 'package:gradient_text/gradient_text.dart';
 import 'package:museum_app/SizeConfig.dart';
 
