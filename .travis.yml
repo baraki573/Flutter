@@ -1,5 +1,5 @@
 os:
-  - linux
+  - osx
 sudo: true
 addons:
   apt:
@@ -27,6 +27,7 @@ before_script:
 
 script:
   - ./ci-script.sh
+  - ./release-all.sh
 
 cache:
   directories:
