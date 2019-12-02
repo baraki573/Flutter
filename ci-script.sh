@@ -11,7 +11,7 @@ set -o nounset
 (flutter packages get)
 
 # Analyze core, mobile and web
-(dartanalyzer ./ --fatal-infos --fatal-warnings)
+# (dartanalyzer ./ --fatal-infos --fatal-warnings)
 
 
 echo "--- Running tests in mobile... ---"
