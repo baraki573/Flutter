@@ -23,6 +23,13 @@ before_script:
   - export PATH="$PATH:`pwd`/flutter/bin"
   - flutter doctor
 
+  # Download and setup Android SDK tools.
+  - wget https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
+  - mkdir android-sdk-tools
+  - unzip -qq sdk-tools-linux-4333796.zip -d android-sdk-tools
+  - export PATH=`pwd`/android-sdk-tools/tools/bin:$PATH
+  - mkdir -p $ANDROID_SDK_ROOT
+
   - gem install fastlane
 
 cache:
