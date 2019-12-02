@@ -1,38 +1,39 @@
-os: osx 
-language: generic 
-osx_image: xcode11.2
-before_script: 
- - brew update 
- - brew install --HEAD usbmuxd 
- - brew unlink usbmuxd 
- - brew link usbmuxd 
- - brew install --HEAD libimobiledevice 
- - brew install ideviceinstaller 
- - brew install ios-deploy 
- - git clone https://github.com/flutter/flutter.git -b beta --depth 1 
-script: 
- - flutter/bin/flutter build ios --debug --no-codesign
- - flutter/bin/flutter build apk --debug --no-codesign
-cache: 
-  directories: 
-  - $HOME/.pub-cache
-before_deploy: 
-  - pushd build/ios/iphoneos 
-  - mkdir Payload 
-  - cd Payload 
-  - ln -s ../Runner.app 
-  - cd .. 
-  - zip -r app.ipa Payload 
-  - popd
-jobs:
-include:
-  - script: echo "Running unit tests (1)"
-  - script: echo "Running unit tests (2)"
-  - stage: GitHub Release
-    script: echo "Deploying to GitHub releases ..."
-    deploy:
-      provider: releases
-      api_key: $GITHUB_OAUTH_TOKEN
-      skip_cleanup: true
-      on:
-        tags: true
+os:
+  - linux
+sudo: true
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - libstdc++6
+
+before_script:
+  # Install the standalone Dart SDK
+  - sudo apt-get update
+  - sudo apt-get install apt-transport-https
+  - sudo sh -c 'curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
+  - sudo sh -c 'curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list'
+  - sudo apt-get update
+  - sudo apt-get install dart
+  - export PATH="$PATH:/usr/lib/dart/bin"
+
+  # Install Flutter
+  - git clone https://github.com/flutter/flutter.git -b stable --depth 1
+  - export PATH="$PATH:`pwd`/flutter/bin"
+  - flutter doctor
+
+  - gem install fastlane
+
+script:
+  - ./ci-script.sh
+  # Prints the flutter version
+  # (allows you to ensure, for each build, that Flutter is set up correctly.)
+  - flutter doctor -v
+
+  # Run Flutter build
+  - ./flutter/bin/flutter build apk
+
+cache:
+  directories:
+    - $HOME/.pub-cache
