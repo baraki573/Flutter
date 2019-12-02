@@ -33,6 +33,8 @@ before_script:
   - unzip -qq sdk-tools-linux-4333796.zip -d android-sdk-tools
   - export PATH=`pwd`/android-sdk-tools/tools/bin:$PATH
   - mkdir -p $ANDROID_SDK_ROOT
+  - echo " path:"
+  - echo "$PATH"
 
   - gem install fastlane
 
