@@ -8,9 +8,9 @@ addons:
     packages:
       - libstdc++6
 
-# env:
-#   global:
-#     - ANDROID_SDK_ROOT=/opt/android
+env:
+  global:
+    - ANDROID_SDK_ROOT=/opt/android
 
 before_script:
   # Install the standalone Dart SDK
