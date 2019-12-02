@@ -88,7 +88,9 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                           alignment: Alignment.center,
                           child: SafeArea(
                             bottom: false,
-                            child: Image.asset(page.imageUrl, width: SizeConfig.safeBlockHorizontal * 80, height:SizeConfig.safeBlockVertical * 35,)
+                            child: Image.asset(page.imageUrl, 
+                            width: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 80 : SizeConfig.safeBlockHorizontal * 80, 
+                            height: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockVertical * 45 : SizeConfig.safeBlockVertical * 40,)
                           )
                         ),
                         Container(
@@ -119,7 +121,7 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                                   gradient: LinearGradient(
                                     colors: pageList[index].titleGradient),
                                   style: TextStyle(
-                                    fontSize: SizeConfig.safeBlockHorizontal * 8,
+                                    fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 12 : SizeConfig.safeBlockHorizontal * 7,
                                     fontFamily: "Nunito",
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -139,11 +141,12 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                               page.body,
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontSize: SizeConfig.safeBlockHorizontal * 6,
-                                fontFamily: "Nunito",
-                                fontWeight: FontWeight.w300,
-                                color: Color(0xFF1A1A1A)),
-                                )                                                     
+                              fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 8 : SizeConfig.safeBlockHorizontal * 5,
+                              fontFamily: "Nunito",
+                              fontWeight: FontWeight.w300,
+                              fontStyle: FontStyle.italic,
+                              color: Color(0xFF1A1A1A)),
+                              )                                                     
                           ),
                         )
                       ],
