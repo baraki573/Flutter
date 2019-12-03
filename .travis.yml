@@ -11,8 +11,8 @@ android:
   components:
   - tools
   - platform-tools
-  - build-tools-28.0.3
-  - android-28 # match your targetVersion android-29
+  - build-tools-27.0.2 #old 28.0.3
+  - android-27 # match your targetVersion android-29 old 28
   licenses:
   - 'android-sdk-preview-license-52d11cd2'
   - 'android-sdk-license-.+'
@@ -31,8 +31,9 @@ before_script:
   - mkdir -p /home/travis/.android
   - echo 'count=0' > /home/travis/.android/repositories.cfg
   #- export SDKMANAGER_OPTS="--add-modules java.se.ee"
-  - yes | sudo sdkmanager --licenses
-  - yes | flutter doctor --android-licenses
+  #- yes | sudo sdkmanager --licenses
+  #- yes | flutter doctor --android-licenses
+  - $ANDROID_HOME/tools/bin/sdkmanager --list
 
 addons:
   apt:
