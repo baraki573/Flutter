@@ -12,11 +12,22 @@ android:
   - tools
   - platform-tools
   - build-tools-28.0.3
-  - android-28 # match your targetVersion
+  - android-28 # match your targetVersion android-29
+  licenses:
+  - 'android-sdk-preview-license-52d11cd2'
+  - 'android-sdk-license-.+'
+  - 'google-gdk-license-.+'
 
 jdk: oraclejdk8
 
 sudo: false
+
+before_script:
+  # Setup gradle.
+  - wget https://services.gradle.org/distributions/gradle-4.10.3-bin.zip
+  - unzip -qq gradle-4.10.3-bin.zip
+  - export GRADLE_HOME=`pwd`/gradle-4.10.3
+  - export PATH=$GRADLE_HOME/bin:$PATH
 
 addons:
   apt:
