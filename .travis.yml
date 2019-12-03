@@ -31,7 +31,7 @@ before_script:
   - mkdir -p /home/travis/.android
   - echo 'count=0' > /home/travis/.android/repositories.cfg
   #- export SDKMANAGER_OPTS="--add-modules java.se.ee"
-  - yes | sdkmanager --licenses
+  - yes | sudo sdkmanager --licenses
   - yes | flutter doctor --android-licenses
 
 addons:
