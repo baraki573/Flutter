@@ -18,8 +18,8 @@ matrix:
         - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
         - flutter doctor
         - pub global activate flutter_plugin_tools
-      script:
-        - ./script/incremental_build.sh analyze
+      # script:
+      #   - ./script/incremental_build.sh analyze
     # Job 2) Check format and run tests
     - os: linux
       env:
@@ -41,9 +41,9 @@ matrix:
         - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
         - flutter doctor
         - pub global activate flutter_plugin_tools
-      script:
-        - ./script/incremental_build.sh format --travis --clang-format=clang-format-5.0
-        - ./script/incremental_build.sh test
+      # script:
+      #   - ./script/incremental_build.sh format --travis --clang-format=clang-format-5.0
+      #   - ./script/incremental_build.sh test
     # Job 3.1) Build example APKs and run Java tests, shard 1/2
     - os: linux
       env:
@@ -64,9 +64,9 @@ matrix:
         - ./script/before_build_apks.sh
         - export ANDROID_HOME=`pwd`/android-sdk
         - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
-      script:
-        - ./script/incremental_build.sh build-examples --apk
-        - ./script/incremental_build.sh java-test  # must come after apk build
+      # script:
+      #   - ./script/incremental_build.sh build-examples --apk
+      #   - ./script/incremental_build.sh java-test  # must come after apk build
     # Job 3.2) Build example APKs and run Java tests, shard 2/2
     - os: linux
       env:
@@ -87,9 +87,9 @@ matrix:
         - ./script/before_build_apks.sh
         - export ANDROID_HOME=`pwd`/android-sdk
         - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
-      script:
-        - ./script/incremental_build.sh build-examples --apk
-        - ./script/incremental_build.sh java-test  # must come after apk build
+      # script:
+      #   - ./script/incremental_build.sh build-examples --apk
+      #   - ./script/incremental_build.sh java-test  # must come after apk build
     # # Job 4.1) Build example IPAs, shard 1/2
     # - os: osx
     #   env:
