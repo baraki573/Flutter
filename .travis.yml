@@ -28,6 +28,9 @@ before_script:
   - unzip -qq gradle-4.10.3-bin.zip
   - export GRADLE_HOME=`pwd`/gradle-4.10.3
   - export PATH=$GRADLE_HOME/bin:$PATH
+  - mkdir -p /home/travis/.android
+  - echo 'count=0' > /home/travis/.android/repositories.cfg
+  - sdkmanager --list
 
 addons:
   apt:
@@ -46,4 +49,4 @@ cache:
 install:
 - git clone https://github.com/flutter/flutter.git -b stable --depth 1
 - export PATH=./flutter/bin:$PATH
-- flutter doctor
+- flutter doctor -v
