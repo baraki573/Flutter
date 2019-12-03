@@ -30,9 +30,9 @@ before_script:
   - export PATH=$GRADLE_HOME/bin:$PATH
   - mkdir -p /home/travis/.android
   - echo 'count=0' > /home/travis/.android/repositories.cfg
-  - export SDKMANAGER_OPTS="--add-modules java.se.ee"
-  - sdkmanager --list
-  #- flutter doctor --android-licenses
+  #- export SDKMANAGER_OPTS="--add-modules java.se.ee"
+  - yes | sdkmanager --licenses
+  - yes | flutter doctor --android-licenses
 
 addons:
   apt:
