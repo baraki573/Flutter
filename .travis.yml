@@ -51,6 +51,7 @@ install:
 - export PATH=./flutter/bin:$PATH
 - pwd
 - ls -alh
+- echo $PATH
 - cd android
 #- gradle build connectedCheck
 - flutter doctor -v
