@@ -31,6 +31,7 @@ before_script:
   - mkdir -p /home/travis/.android
   - echo 'count=0' > /home/travis/.android/repositories.cfg
   - sdkmanager --list
+  - flutter doctor --android-licenses
 
 addons:
   apt:
