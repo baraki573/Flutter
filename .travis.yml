@@ -118,3 +118,5 @@ matrix:
 cache:
   directories:
     - $HOME/.pub-cache
+
+language: android
