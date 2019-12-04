@@ -69,8 +69,8 @@ script: #install:
  deploy:
      provider: releases
      api_key:
-         secure: <your key>
+         secure: $GITHUB_OAUTH_TOKEN
      skip_cleanup: true
      on:
-         repo: <your repository path>
+         repo: https://github.com/BPG9/Flutter.git
          tags: true
