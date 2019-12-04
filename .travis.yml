@@ -72,5 +72,3 @@ deploy:
     api_key:
         secure: $GITHUB_OAUTH_TOKEN
     skip_cleanup: true
-    on:
-        tags: true
