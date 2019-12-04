@@ -63,11 +63,12 @@ script: #install:
 - cd ..
 - flutter build apk
 - ls
-
+- zip -r data.zip android/
 
 
 deploy:
     provider: releases
+    file: data.zip
     api_key:
         secure: $GITHUB_OAUTH_TOKEN
     skip_cleanup: true
