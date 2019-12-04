@@ -20,9 +20,10 @@ class SizeConfig {
 				blockSizeHorizontal = screenWidth / 100;
 				blockSizeVertical = screenHeight / 100;
         orientationDevice = _mediaQueryData.orientation;
-				
+
+        // TODO find ideal offset (first test: +42)
 				_safeAreaHorizontal = _mediaQueryData.padding.left + 
-					_mediaQueryData.padding.right;
+					_mediaQueryData.padding.right+42;
 				_safeAreaVertical = _mediaQueryData.padding.top +
 					_mediaQueryData.padding.bottom;
 				safeBlockHorizontal = (screenWidth -
