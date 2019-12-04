@@ -66,11 +66,11 @@ script: #install:
 
 
 
- deploy:
-     provider: releases
-     api_key:
-         secure: $GITHUB_OAUTH_TOKEN
-     skip_cleanup: true
-     on:
-         repo: https://github.com/BPG9/Flutter.git
-         tags: true
+deploy:
+    provider: releases
+    api_key:
+        secure: $GITHUB_OAUTH_TOKEN
+    skip_cleanup: true
+    on:
+        repo: https://github.com/BPG9/Flutter.git
+        tags: true
