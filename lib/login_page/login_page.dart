@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:museum_app/bottom_navigationbar/navigationbar_pattern.dart';
 
@@ -54,6 +55,22 @@ class _LogInState extends State<LogIn> {
     );
   }
 
+  Widget _getMyButton(text, funct){
+    return FlatButton(
+      //color: Colors.grey[300],
+      textColor: Colors.black54,
+      disabledColor: Colors.blue,
+      disabledTextColor: Colors.white,
+      splashColor: Colors.blueAccent,
+      child: Text(text),
+      onPressed: funct,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18.0),
+        //side: BorderSide(color: Colors.red)
+      ),
+    );
+  }
+
   Widget _topButtons(bool portrait) {
     String s1 = _form == FormType.login ? 'LOGIN' : 'LogIn';
     var funct1 = _form == FormType.login
@@ -79,37 +96,42 @@ class _LogInState extends State<LogIn> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           // LogIn-Button
-          FlatButton(
-            //color: Colors.grey[300],
-            textColor: Colors.black54,
-            disabledColor: Colors.blue,
-            disabledTextColor: Colors.white,
-            splashColor: Colors.blueAccent,
-            child: new Text(s1),
-            onPressed: funct1,
-            shape: RoundedRectangleBorder(
-              borderRadius: new BorderRadius.circular(18.0),
-              //side: BorderSide(color: Colors.red)
-            ),
-          ),
+          _getMyButton(s1, funct1),
           // SignUp-Button
-          FlatButton(
-            //color: Colors.grey[300],
-            textColor: Colors.black54,
-            disabledColor: Colors.blue,
-            disabledTextColor: Colors.white,
-            splashColor: Colors.blueAccent,
-            child: new Text(s2),
-            onPressed: funct2,
-            shape: RoundedRectangleBorder(
-              borderRadius: new BorderRadius.circular(18.0),
-              //side: BorderSide(color: Colors.red)
-            ),
-          ),
+          _getMyButton(s2, funct2),
         ],
       ),
     );
   }
+
+
+  Widget _getMyTextField(ctrl, icon, text, obscure){
+    return Container(
+      margin: EdgeInsets.only(top: 15),
+      padding: EdgeInsets.only(left: 10, right: 15),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(30.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.8),
+            spreadRadius: 1,
+            blurRadius: 1,
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: ctrl,
+        obscureText: obscure,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          icon: Icon(icon),
+          labelText: text,
+        ),
+      ),
+    );
+  }
+
 
   Widget _textFields() {
     return Container(
@@ -117,33 +139,12 @@ class _LogInState extends State<LogIn> {
       child: Column(
         children: <Widget>[
           // Username field
-          Container(
-            child: TextFormField(
-              controller: usCtrl,
-              decoration: InputDecoration(
-                  icon: Icon(Icons.account_circle),
-                  labelText: 'Username eingeben'),
-            ),
-          ),
+          _getMyTextField(usCtrl, Icons.account_circle, 'Username eingeben', false),
           // Password field
-          Container(
-            child: TextFormField(
-              controller: pwCtrl,
-              decoration: InputDecoration(
-                  icon: Icon(Icons.mail), labelText: 'Passwort eingeben'),
-              obscureText: true,
-            ),
-          ),
+          _getMyTextField(pwCtrl, Icons.mail, 'Passwort eingeben', true),
+          // Retype Password field [SignUp]
           _form == FormType.register
-              ? Container(
-                  child: TextFormField(
-                    controller: pw2Ctrl,
-                    decoration: InputDecoration(
-                        icon: Icon(Icons.fiber_pin),
-                        labelText: 'Passwort bestätigen'),
-                    obscureText: true,
-                  ),
-                )
+              ? _getMyTextField(pw2Ctrl, Icons.fiber_pin, 'Passwort bestätigen', true)
               : Container(),
         ],
       ),
@@ -282,18 +283,19 @@ class _LogInState extends State<LogIn> {
                 Container(
                   //height: screenHeight * (_form == FormType.register ? 0.4 : 0.3),
                   margin: const EdgeInsets.only(bottom: 27),
-                  padding: const EdgeInsets.only(top: 10, bottom: 25),
+                  padding: const EdgeInsets.only(top: 10, bottom: 35),
                   decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(18.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.8),
-                          spreadRadius: 1,
-                          blurRadius: 2,
-                          //offset: Offset(0, 7), // changes position of shadow
-                        ),
-                      ]),
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(18.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.8),
+                        spreadRadius: 1,
+                        blurRadius: 2,
+                        //offset: Offset(0, 7), // changes position of shadow
+                      ),
+                    ],
+                  ),
                   child: Column(
                     children: <Widget>[
                       //Container(height: 10),
