@@ -73,4 +73,3 @@ deploy:
   file: build/app/outputs/apk/app-release.apk
   on:
     tags: true
-    repo: /BPG9/Flutter
