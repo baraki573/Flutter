@@ -63,9 +63,6 @@ script: #install:
 - cd ..
 - cd ..
 - flutter build apk
-- ls
-- zip -r data.zip android/
-- ls
 
 
 deploy:
