@@ -61,7 +61,6 @@ script: #install:
 #- gradle build connectedCheck
 - flutter doctor -v
 - cd ..
-- cd ..
 - flutter build apk
 
 
