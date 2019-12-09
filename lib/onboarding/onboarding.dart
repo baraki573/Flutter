@@ -122,7 +122,7 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                                   gradient: LinearGradient(
                                     colors: pageList[index].titleGradient),
                                   style: TextStyle(
-                                    fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 12 : SizeConfig.safeBlockHorizontal * 7,
+                                    fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 11 : SizeConfig.safeBlockHorizontal * 7,
                                     fontFamily: "Nunito",
                                     fontWeight: FontWeight.w700,
                                   ),

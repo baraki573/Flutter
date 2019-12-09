@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:museum_app/SizeConfig.dart';
+import 'package:flutter/services.dart';
 import 'package:museum_app/bottom_navigationbar/navigationbar_pattern.dart';
 
 class LogIn extends StatefulWidget {
@@ -9,18 +11,33 @@ class LogIn extends StatefulWidget {
   _LogInState createState() => _LogInState();
 }
 
-enum FormType { login, register }
+enum FormType { login, signup }
 
 class _LogInState extends State<LogIn> {
-  FormType _form = FormType.login;
+  FormType _form;
   String _us, _pw, _pw2;
   final usCtrl = TextEditingController();
   final pwCtrl = TextEditingController();
   final pw2Ctrl = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _form = FormType.login;
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
+
+  @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     usCtrl.dispose();
     pwCtrl.dispose();
     pw2Ctrl.dispose();
@@ -36,17 +53,6 @@ class _LogInState extends State<LogIn> {
     return _us != "" && _pw != "";
   }
 
-  /*
-  void _formChange() async {
-    setState(() {
-      if (_form == FormType.register) {
-        _form = FormType.login;
-      } else {
-        _form = FormType.register;
-      }
-    });
-  }*/
-
   void _nextScreen() {
     Navigator.push(
       context,
@@ -55,7 +61,7 @@ class _LogInState extends State<LogIn> {
     );
   }
 
-  Widget _getMyButton(text, funct){
+  Widget _customButtons(text, funct) {
     return FlatButton(
       //color: Colors.grey[300],
       textColor: Colors.black54,
@@ -71,22 +77,23 @@ class _LogInState extends State<LogIn> {
     );
   }
 
-  Widget _topButtons(bool portrait) {
+  Widget _topButtons() {
+    var portrait = SizeConfig.orientationDevice == Orientation.portrait;
     String s1 = _form == FormType.login ? 'LOGIN' : 'LogIn';
     var funct1 = _form == FormType.login
         ? null
         : () => setState(() {
               _form = FormType.login;
             });
-    String s2 = _form == FormType.register ? 'SIGNUP' : 'SignUp';
-    var funct2 = _form == FormType.register
+    String s2 = _form == FormType.signup ? 'SIGNUP' : 'SignUp';
+    var funct2 = _form == FormType.signup
         ? null
         : () => setState(() {
-              _form = FormType.register;
+              _form = FormType.signup;
             });
     return new Container(
       margin: EdgeInsets.only(
-          right: (portrait ? 82 : 222), left: (portrait ? 82 : 222)),
+          right: (portrait ? 76 : 216), left: (portrait ? 76 : 216)),
       height: 35,
       decoration: new BoxDecoration(
         color: Colors.grey,
@@ -96,18 +103,17 @@ class _LogInState extends State<LogIn> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           // LogIn-Button
-          _getMyButton(s1, funct1),
+          _customButtons(s1, funct1),
           // SignUp-Button
-          _getMyButton(s2, funct2),
+          _customButtons(s2, funct2),
         ],
       ),
     );
   }
 
-
-  Widget _getMyTextField(ctrl, icon, text, obscure){
+  Widget _customTextField(ctrl, icon, text, obscure) {
     return Container(
-      margin: EdgeInsets.only(top: 15),
+      margin: EdgeInsets.only(top: 16, left: 16, right: 16),
       padding: EdgeInsets.only(left: 10, right: 15),
       decoration: BoxDecoration(
         color: Colors.grey[200],
@@ -132,66 +138,53 @@ class _LogInState extends State<LogIn> {
     );
   }
 
-
   Widget _textFields() {
     return Container(
       margin: const EdgeInsets.only(right: 15, left: 15),
       child: Column(
         children: <Widget>[
           // Username field
-          _getMyTextField(usCtrl, Icons.account_circle, 'Username eingeben', false),
+          _customTextField(
+              usCtrl, Icons.account_circle, 'Username eingeben', false),
           // Password field
-          _getMyTextField(pwCtrl, Icons.mail, 'Passwort eingeben', true),
+          _customTextField(pwCtrl, Icons.mail, 'Passwort eingeben', true),
           // Retype Password field [SignUp]
-          _form == FormType.register
-              ? _getMyTextField(pw2Ctrl, Icons.fiber_pin, 'Passwort bestätigen', true)
+          _form == FormType.signup
+              ? _customTextField(
+                  pw2Ctrl, Icons.fiber_pin, 'Passwort bestätigen', true)
               : Container(),
         ],
       ),
     );
   }
 
-  Widget _bottomButtons() {
-    if (_form == FormType.login) {
-      return FlatButton(
-        child: new Text('Passwort vergessen?'),
-        onPressed: _getUS,
-      );
-    } else {
-      return Text(
-          "Verwenden Sie für den Benutzernamen keine persönlichen Informationen.\n",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontStyle: FontStyle.italic,
-            fontSize: 18,
-          ));
-      /*child: new Column(
-          children: <Widget>[
-            new RaisedButton(
-              child: new Text('Accounterstellung'),
+  void _skipDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Hinweis"),
+          content:
+              Text("Möchten Sie wirklich ohne Accountverbindung fortfahen?\n"
+                  "Sie verpassen so spannende Sammelaufgaben, blah blah"),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("Zurück"),
               onPressed: () {
-                if (_getUS()) _nextScreen();
+                Navigator.of(context).pop();
               },
             ),
+            FlatButton(
+              child: Text("Fortfahren"),
+              onPressed: _nextScreen,
+            ),
           ],
-        ),
-      ;*/
-    }
-  }
-
-  Widget _introText() {
-    return Container(
-      child: Text(
-        'Bitte melden Sie sich unten mit Ihren Accountdaten an. Sollten Sie noch keinen Account besitzen, können Sie über \"Signup\" einen anfordern.',
-        textAlign: TextAlign.left,
-        style: TextStyle(
-          fontSize: 18,
-        ),
-      ),
+        );
+      },
     );
   }
 
-  void _showDialog() {
+  void _submitDialog() {
     _getUS();
     if (_us == "" || _pw == "" || _pw2 == "" || _pw != _pw2)
       showDialog(
@@ -255,94 +248,90 @@ class _LogInState extends State<LogIn> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
-    var isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
+    SizeConfig().init(context);
     return Scaffold(
-      /*appBar: AppBar(
-        title: Text("Account einrichten"),
-      ),*/
-      backgroundColor: Colors.amber,
-      body: Center(
-        child: ListView(
-          padding: const EdgeInsets.only(right: 10, left: 10),
-          shrinkWrap: true,
-          children: <Widget>[
-            //Container(
-            //decoration: BoxDecoration,
-            //margin: const EdgeInsets.only(right: 10, left: 10),
-            //_introText(),
-            //Container(height: screenHeight / 5),
-            // Debug only
-            //Text('Username: $_us; Password: $_pw; Password2: $_pw2'),
-            //child:
-            Stack(
-              overflow: Overflow.visible,
-              children: <Widget>[
-                // LogIn-Box
-                Container(
-                  //height: screenHeight * (_form == FormType.register ? 0.4 : 0.3),
-                  margin: const EdgeInsets.only(bottom: 27),
-                  padding: const EdgeInsets.only(top: 10, bottom: 35),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(18.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.8),
-                        spreadRadius: 1,
-                        blurRadius: 2,
-                        //offset: Offset(0, 7), // changes position of shadow
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: <Widget>[
-                      //Container(height: 10),
-                      _topButtons(isPortrait),
-                      _textFields(),
-                      //Container(height: 30),
-                    ],
-                  ),
-                ),
-                // Submit-Button
-                Positioned.fill(
-                  //top: _form == FormType.register ? 230 : 165,
-                  //top: screenHeight * 0.1,
-                  //bottom: screenHeight * 0.7,
-                  //left: screenWidth * 0.3,
-                  //right: screenWidth * 0.3,
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    //(0, _form==FormType.login?1.35:0.65),
-                    child: RaisedButton(
-                      textColor: Colors.white,
-                      color: Colors.blue,
-                      splashColor: Colors.blueAccent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: new BorderRadius.circular(18.0),
-                        //side: BorderSide(color: Colors.red)
-                      ),
-                      child: Text(
-                        "Submit",
-                        textScaleFactor: 1.5,
-                      ),
-                      onPressed: _form == FormType.register
-                          ? _showDialog
-                          : _nextScreen,
+      //backgroundColor: Colors.amber,
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/haupthalle_hlm_blue.png'),
+            fit: BoxFit.fill,
+          ),
+        ),
+        padding: const EdgeInsets.only(right: 16, left: 16),
+        child: Center(
+          child: Stack(
+            overflow: Overflow.visible,
+            children: <Widget>[
+              // LogIn-Box
+              Container(
+                height: SizeConfig.safeBlockVertical *
+                    (_form == FormType.signup ? 50 : 38),
+                margin: const EdgeInsets.only(bottom: 27),
+                padding: const EdgeInsets.only(top: 16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(18.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.8),
+                      spreadRadius: 1,
+                      blurRadius: 2,
                     ),
+                  ],
+                ),
+                child: Column(
+                  children: <Widget>[
+                    //Container(height: 10),
+                    _topButtons(),
+                    _textFields(),
+                    //Container(height: 30),
+                  ],
+                ),
+              ),
+              // Submit-Button
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  //(0, _form==FormType.login?1.35:0.65),
+                  child: RaisedButton(
+                    padding: EdgeInsets.only(
+                        left: 25, right: 25, top: 10, bottom: 10),
+                    textColor: Colors.white,
+                    color: Colors.blue,
+                    splashColor: Colors.blueAccent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.0),
+                      //side: BorderSide(color: Colors.red)
+                    ),
+                    child: Text(
+                      "Submit",
+                      textScaleFactor: 1.3,
+                    ),
+                    onPressed:
+                        _form == FormType.signup ? _submitDialog : _nextScreen,
                   ),
                 ),
-              ],
-            ),
-            //_bottomButtons()
-          ],
+              ),
+            ],
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _nextScreen,
-        tooltip: "Überspringen",
-        child: Icon(Icons.skip_next),
+      floatingActionButton: FlatButton(
+        textColor: Colors.white,
+        color: Colors.blue,
+        splashColor: Colors.blueAccent,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text("Skip"),
+            Icon(Icons.skip_next),
+          ],
+        ),
+        onPressed: _skipDialog,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18.0),
+        ),
       ),
     );
   }
