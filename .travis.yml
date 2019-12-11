@@ -42,7 +42,7 @@ before_script:
   #- export SDKMANAGER_OPTS="--add-modules java.se.ee"
   #- yes | sudo $ANDROID_HOME/tools/bin/sdkmanager --licenses
   #- yes | flutter doctor --android-licenses
-  - $ANDROID_HOME/tools/bin/sdkmanager --list
+  # - $ANDROID_HOME/tools/bin/sdkmanager --list
 
 addons:
   apt:
