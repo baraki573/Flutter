@@ -62,7 +62,7 @@ script: #install:
 - flutter doctor -v
 - cd ..
 - flutter build apk
-- cd build/app/outputs/apk
+- zip app build/app/outputs/apk
 - ls 
 
 
@@ -70,4 +70,6 @@ deploy:
   provider: releases
   api_key:
       secure: $GITHUB_OAUTH_TOKEN
-  file: build/app/outputs/apk/app.apk
+  file: app.zip
+  on:
+        tags: true
