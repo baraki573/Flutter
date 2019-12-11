@@ -37,8 +37,8 @@ before_script:
   - unzip -qq gradle-4.10.3-bin.zip
   - export GRADLE_HOME=`pwd`/gradle-4.10.3
   - export PATH=$GRADLE_HOME/bin:$PATH
-  - mkdir -p /home/travis/.android
-  - echo 'count=0' > /home/travis/.android/repositories.cfg
+  # - mkdir -p /home/travis/.android
+  # - echo 'count=0' > /home/travis/.android/repositories.cfg
   #- export SDKMANAGER_OPTS="--add-modules java.se.ee"
   #- yes | sudo $ANDROID_HOME/tools/bin/sdkmanager --licenses
   #- yes | flutter doctor --android-licenses
