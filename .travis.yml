@@ -1,75 +1,39 @@
-os: linux
-
-language: android
-
-licenses:
-- android-sdk-preview-license-.+
-- android-sdk-license-.+
-- google-gdk-license-.+
-
-android:
-  components:
-  - tools-26.1.1
-  - platform-tools-29.0.5
-  - build-tools-28.0.3
-  - android-28 # match your targetVersion android-29 old 28
-  - extras-49
-  licenses:
-  - 'android-sdk-preview-license-52d11cd2'
-  - 'android-sdk-license-.+'
-  - 'google-gdk-license-.+'
-
-jdk: oraclejdk8
-
-sudo: false
-
-before_script:
-  # Setup gradle.
-  - wget https://services.gradle.org/distributions/gradle-4.10.3-bin.zip
-  - unzip -qq gradle-4.10.3-bin.zip
-  - export GRADLE_HOME=`pwd`/gradle-4.10.3
-  - export PATH=$GRADLE_HOME/bin:$PATH
-  - mkdir -p /home/travis/.android
-  - echo 'count=0' > /home/travis/.android/repositories.cfg
-  #- export SDKMANAGER_OPTS="--add-modules java.se.ee"
-  #- yes | sudo $ANDROID_HOME/tools/bin/sdkmanager --licenses
-  #- yes | flutter doctor --android-licenses
-  - $ANDROID_HOME/tools/bin/sdkmanager --list
-
-addons:
-  apt:
-    # Flutter depends on /usr/lib/x86_64-linux-gnu/libstdc++.so.6 version GLIBCXX_3.4.18
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - libstdc++6
-    - fonts-droid
-
-cache:
-  directories:
-  - "$HOME/.pub-cache"
-
-
-script: #install:
-- sleep 1
-- git clone https://github.com/flutter/flutter.git -b stable --depth 1
-- export PATH="$PATH:`pwd`/flutter/bin"
-- pwd
-- ls -alh
-- echo $PATH
-- cd android
-#- gradle build connectedCheck
-- flutter doctor -v
-- cd ..
-- flutter build apk
-- ls 
-
-
-deploy:
-  provider: releases
-  skip_cleanup: true
-  api_key:
-      secure: $GITHUB_OAUTH_TOKEN
-  file: build/app/outputs/apk/app.apk
-  on:
+os: osx 
+language: generic 
+osx_image: xcode11.2
+before_script: 
+ - brew update 
+ - brew install --HEAD usbmuxd 
+ - brew unlink usbmuxd 
+ - brew link usbmuxd 
+ - brew install --HEAD libimobiledevice 
+ - brew install ideviceinstaller 
+ - brew install ios-deploy 
+ - git clone https://github.com/flutter/flutter.git -b beta --depth 1 
+script: 
+ - flutter/bin/flutter build ios --debug --no-codesign
+ - flutter/bin/flutter build apk --debug --no-codesign
+cache: 
+  directories: 
+  - $HOME/.pub-cache
+before_deploy: 
+  - pushd build/ios/iphoneos 
+  - mkdir Payload 
+  - cd Payload 
+  - ln -s ../Runner.app 
+  - cd .. 
+  - zip -r app.ipa Payload 
+  - ls
+  - popd
+jobs:
+include:
+  - script: echo "Running unit tests (1)"
+  - script: echo "Running unit tests (2)"
+  - stage: GitHub Release
+    script: echo "Deploying to GitHub releases ..."
+    deploy:
+      provider: releases
+      api_key: $GITHUB_OAUTH_TOKEN
+      skip_cleanup: true
+      on:
         tags: true
