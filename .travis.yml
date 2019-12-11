@@ -1,5 +1,5 @@
-os: linux
-
+os: osx 
+osx_image: xcode11.2
 language: android
 
 licenses:
@@ -24,6 +24,14 @@ jdk: oraclejdk8
 sudo: false
 
 before_script:
+  - brew update 
+  - brew install --HEAD usbmuxd 
+  - brew unlink usbmuxd 
+  - brew link usbmuxd 
+  - brew install --HEAD libimobiledevice 
+  - brew install ideviceinstaller 
+  - brew install ios-deploy 
+
   # Setup gradle.
   - wget https://services.gradle.org/distributions/gradle-4.10.3-bin.zip
   - unzip -qq gradle-4.10.3-bin.zip
@@ -62,6 +70,8 @@ script: #install:
 - flutter doctor -v
 - cd ..
 - flutter build apk
+- flutter build ios
+- zip app build/app/outputs
 - ls 
 
 
@@ -70,6 +80,6 @@ deploy:
   skip_cleanup: true
   api_key:
       secure: $GITHUB_OAUTH_TOKEN
-  file: build/app/outputs/apk/app.apk
+  file: app.zip
   on:
         tags: true
