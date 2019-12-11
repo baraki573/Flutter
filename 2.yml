@@ -1,0 +1,71 @@
+os:
+  - linux
+sudo: true
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - libstdc++6
+
+env:
+  global:
+    - ANDROID_SDK_ROOT=/opt/android
+
+before_script:
+  # Install the standalone Dart SDK
+  - sudo apt-get update
+  - sudo apt-get install apt-transport-https
+  - sudo sh -c 'curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
+  - sudo sh -c 'curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list'
+  - sudo apt-get update
+  - sudo apt-get install dart
+  - export PATH="$PATH:/usr/lib/dart/bin"
+
+  # Install Flutter
+  - git clone https://github.com/flutter/flutter.git -b stable --depth 1
+  - export PATH="$PATH:`pwd`/flutter/bin"
+
+
+  # Download and setup Android SDK tools.
+  - wget https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
+  - mkdir android-sdk-tools
+  - unzip -qq sdk-tools-linux-4333796.zip -d android-sdk-tools
+  - export PATH=`pwd`/android-sdk-tools/tools/bin:$PATH
+  - mkdir -p $ANDROID_SDK_ROOT
+  - echo " path:"
+  - echo "$PATH"
+
+  # This will install the Android SDK 28 using the previously installed SDK tools.
+  - export JAVA_OPTS='-XX:+IgnoreUnrecognizedVMOptions --add-modules java.se.ee'
+  - yes | sdkmanager --licenses --sdk_root=$ANDROID_SDK_ROOT
+  #- yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT "tools" "build-tools" "extras;android;m2repository" > /dev/null
+  - export PATH=${ANDROID_SDK_ROOT}/tools/bin:$PATH
+
+  - gem install fastlane
+
+cache:
+  directories:
+    - $HOME/.pub-cache
+
+script:
+  - ./ci-script.sh
+  # Prints the flutter version
+  # (allows you to ensure, for each build, that Flutter is set up correctly.)
+  - flutter doctor -v
+
+  # Run Flutter build
+  - flutter build apk
+jobs:
+include:
+  - script: echo "Running unit tests (1)"
+  - script: echo "Running unit tests (2)"
+  - stage: GitHub Release
+    script: echo "Deploying to GitHub releases ..."
+    deploy:
+      provider: releases
+      api_key: $GITHUB_OAUTH_TOKEN
+      skip_cleanup: true
+      on:
+        tags: true
+
