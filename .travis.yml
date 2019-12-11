@@ -62,7 +62,6 @@ script: #install:
 - flutter doctor -v
 - cd ..
 - flutter build apk
-- cd build/app/outputs/apk
 - ls 
 
 
