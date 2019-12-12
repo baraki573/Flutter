@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:museum_app/bottom_navigationbar/navigationbar_pattern.dart';
 import 'package:museum_app/onboarding/onboarding.dart';
+import 'package:museum_app/profile_page/profile_page.dart';
 
 //void main() => runApp(MyApp());
 void main() => runApp(MyApp());
@@ -15,7 +17,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.lightBlue,
       ),
-      home: Onboarding(),
+      home: BottomBarNavigationPatternExample(),
     );
   }
 }
