@@ -73,7 +73,7 @@ class FavWidget extends StatelessWidget {
                           builder: (context) {
                             return AlertDialog(
                               contentPadding:
-                              const EdgeInsets.fromLTRB(16, 5, 16, 10),
+                                  const EdgeInsets.fromLTRB(16, 5, 16, 10),
                               title: Text("$name: $index"),
                               content: Container(
                                 width: SizeConfig.safeBlockHorizontal * 70,
@@ -133,7 +133,7 @@ class FavWidget extends StatelessWidget {
   }
 }
 
-class BadgeWidget extends StatefulWidget{
+class BadgeWidget extends StatefulWidget {
   BadgeWidget({Key key}) : super(key: key);
 
   @override
@@ -159,127 +159,90 @@ class _BadgeWidgetState extends State<BadgeWidget> {
   }
 
   /// comlP represents percentages in the form "42.42" for "42.42%"
-  Widget _getBadge(
-      Color color, double current, double toget, ImageProvider img) {
-    var perc = max(min(current / toget * 100, 100), 0);
+  Widget _buildBadge(Badge b) {
     return Expanded(
       child: Container(
         margin: EdgeInsets.all(2.0),
         height: SizeConfig.safeBlockVertical /
             _perLine *
             (SizeConfig.orientationDevice == Orientation.portrait ? 51 : 130),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Progress circle
-            AnimatedCircularChart(
-              size: Size.square(SizeConfig.safeBlockVertical /
-                  _perLine *
-                  (SizeConfig.orientationDevice == Orientation.portrait
-                      ? 54
-                      : 135)),
-              initialChartData: [
-                CircularStackEntry(
-                  [
-                    CircularSegmentEntry(perc, color),
-                    CircularSegmentEntry(100 - perc, Colors.blueGrey[200]),
-                  ],
-                ),
-              ],
-              percentageValues: true,
-            ),
-            // Picture/Badge
-            Container(
-              width: SizeConfig.safeBlockHorizontal /
-                  _perLine *
-                  (SizeConfig.orientationDevice == Orientation.portrait
-                      ? 63
-                      : 50),
-              height: SizeConfig.safeBlockHorizontal /
-                  _perLine *
-                  (SizeConfig.orientationDevice == Orientation.portrait
-                      ? 63
-                      : 50),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: img,
-                  fit: BoxFit.fill,
-                ),
-              ),
-              child: FlatButton(
-                splashColor: color.withOpacity(.1),
-                highlightColor: color.withOpacity(.05),
-                onPressed: ()=>_badgePopUp(color, current, toget, img),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(80.0),
-                ),
-                child: null,
-              ),
-            ),
-          ],
-        ),
+        child: _getBadge(b, false),
       ),
     );
   }
 
-  void _badgePopUp(
-      Color color, double current, double toget, ImageProvider img) {
-    var perc = max(min(current / toget * 100, 100), 0);
+  void _badgePopUp(Badge b) {
     showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text("Badge $current"),
+            title: Text(b.name),
             contentPadding: EdgeInsets.only(bottom: 16),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Progress circle
-                    AnimatedCircularChart(
-                      size: Size.square(SizeConfig.safeBlockVertical *
-                          (SizeConfig.orientationDevice == Orientation.portrait
-                              ? 27
-                              : 52)),
-                      initialChartData: [
-                        CircularStackEntry(
-                          [
-                            CircularSegmentEntry(perc, color),
-                            CircularSegmentEntry(
-                                100 - perc, Colors.blueGrey[200]),
-                          ],
-                        ),
-                      ],
-                      percentageValues: true,
-                    ),
-                    // Picture/Badge
-                    Container(
-                      width: SizeConfig.safeBlockHorizontal *
-                          (SizeConfig.orientationDevice == Orientation.portrait
-                              ? 32
-                              : 19),
-                      height: SizeConfig.safeBlockHorizontal *
-                          (SizeConfig.orientationDevice == Orientation.portrait
-                              ? 32
-                              : 19),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                          image: img,
-                          fit: BoxFit.fill,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Text("$current / $toget"),
+                _getBadge(b, true),
+                Text(b.current.toString() + " / " + b.toGet.toString()),
               ],
             ),
           );
         });
+  }
+
+  Widget _getBadge(Badge b, popUp){
+    var perc = max(min(b.current / b.toGet * 100, 100), 0);
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Progress circle
+        AnimatedCircularChart(
+          key: popUp ? b._key2 : b._key,
+          size: Size.square(SizeConfig.safeBlockVertical /
+              _perLine *
+              (SizeConfig.orientationDevice == Orientation.portrait
+                  ? 54
+                  : 135) * (popUp ? 1.3 : 1)),
+          initialChartData: [
+            CircularStackEntry(
+              [
+                CircularSegmentEntry(perc, b.color),
+                CircularSegmentEntry(100 - perc, Colors.blueGrey[100]),
+              ],
+            ),
+          ],
+          percentageValues: true,
+        ),
+        // Picture/Badge
+        Container(
+          width: SizeConfig.safeBlockHorizontal /
+              _perLine *
+              (SizeConfig.orientationDevice == Orientation.portrait
+                  ? 63
+                  : 50) * (popUp ? 1.3 : 1),
+          height: SizeConfig.safeBlockHorizontal /
+              _perLine *
+              (SizeConfig.orientationDevice == Orientation.portrait
+                  ? 63
+                  : 50) * (popUp ? 1.3 : 1),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: DecorationImage(
+              image: b.img,
+              fit: BoxFit.fill,
+            ),
+          ),
+          child: FlatButton(
+            splashColor: b.color.withOpacity(.1),
+            highlightColor: b.color.withOpacity(.05),
+            onPressed: () => _badgePopUp(b),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(80.0),
+            ),
+            child: null,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -291,12 +254,56 @@ class _BadgeWidgetState extends State<BadgeWidget> {
       child: _getGrid(
         _perLine,
         List.generate(16, (index) {
-          return _getBadge(Colors.primaries[index], index.roundToDouble(), 16,
-              AssetImage('assets/images/profile_test.png'));
+          Badge b = Badge(
+              name: "Badge $index",
+              current: index.roundToDouble(),
+              toGet: 16,
+              img: AssetImage('assets/images/profile_test.png'),
+              color: Colors.primaries[index]);
+          return _buildBadge(b);
         }),
       ),
     );
   }
+}
+
+class Badge {
+  String name;
+  double current;
+  double toGet;
+  Color color;
+  ImageProvider img;
+  final GlobalKey<AnimatedCircularChartState> _key =
+      GlobalKey<AnimatedCircularChartState>();
+  final GlobalKey<AnimatedCircularChartState> _key2 =
+  GlobalKey<AnimatedCircularChartState>();
+
+
+  Badge({this.name, this.current, this.toGet, this.color, this.img});
+
+}
+
+class User {
+  String username;
+  ImageProvider img;
+  List<Badge> badges;
+
+  User({this.username, this.img, this.badges});
+}
+
+class Devision {
+  String name;
+  Color color;
+  List<Item> items;
+
+  Devision({this.name, this.color, this.items});
+}
+
+class Item {
+  String name;
+  ImageProvider img;
+
+  Item({this.name, this.img});
 }
 
 class StatWidget extends StatelessWidget {

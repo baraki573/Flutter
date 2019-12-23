@@ -77,13 +77,7 @@ class _ProfileState extends State<Profile> {
                 print("Options");
               },
               iconSize: 35,*/
-              icon: Icon(Icons.settings, size: 35),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+              icon: Icon(Icons.settings, size: 35)))]));}
 
   PopupMenuItem _myPopUpItem(String s, IconData i, OptionType t) {
     return PopupMenuItem(
@@ -110,11 +104,15 @@ class _ProfileState extends State<Profile> {
       //textColor: Colors.black,
       //disabledTextColor: Colors.green,
       splashColor: Colors.greenAccent,
-      child: Text(text, style: TextStyle(color: (selected?Colors.green:Colors.black),
-          fontSize: (SizeConfig.orientationDevice==Orientation.portrait?16:19))),
+      child: Text(text,
+          style: TextStyle(
+              color: (selected ? Colors.green : Colors.black),
+              fontSize: (SizeConfig.orientationDevice == Orientation.portrait
+                  ? 16
+                  : 19))),
       onPressed: () => setState(() {
-                _type = type;
-              }),
+        _type = type;
+      }),
     );
   }
 
@@ -155,4 +153,3 @@ class _ProfileState extends State<Profile> {
     );
   }
 }
-
