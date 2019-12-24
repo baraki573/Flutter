@@ -127,6 +127,7 @@ class _ProfileState extends State<Profile> {
       child: Column(
         children: <Widget>[
           ButtonBar(
+            buttonMinWidth: 100,
             alignment: MainAxisAlignment.center,
             children: <Widget>[
               _customButtons("Favoriten", InfoType.fav),
