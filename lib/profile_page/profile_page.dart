@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:museum_app/Models.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/profile_page/profile_widgets.dart';
 
@@ -17,8 +18,7 @@ class _ProfileState extends State<Profile> {
   InfoType _type = InfoType.fav;
 
   Widget _topInfo() {
-    var username = "Maria123_HD";
-    var profileImg = AssetImage('assets/images/profile_test.png');
+    User u = getUser();
     return Container(
       height: SizeConfig.safeBlockVertical *
           (SizeConfig.orientationDevice == Orientation.portrait ? 30 : 45),
@@ -39,7 +39,7 @@ class _ProfileState extends State<Profile> {
                   //borderRadius: BorderRadius.all(Radius.circular(80.0)),
                   shape: BoxShape.circle,
                   image: DecorationImage(
-                    image: profileImg,
+                    image: u.img,
                     fit: BoxFit.fill,
                   ),
                 ),
@@ -48,7 +48,7 @@ class _ProfileState extends State<Profile> {
                 //alignment: Alignment.center,
                 //padding: EdgeInsets.only(left: 50),
                 child: Text(
-                  username,
+                  u.username,
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

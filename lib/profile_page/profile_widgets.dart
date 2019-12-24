@@ -5,8 +5,15 @@ import 'package:museum_app/Models.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:flutter_circular_chart/flutter_circular_chart.dart';
 
-class FavWidget extends StatelessWidget {
-  Widget _getAbteilung(String name, Color color, List<ImageProvider> content) {
+class FavWidget extends StatefulWidget {
+  FavWidget({Key key}) : super(key: key);
+
+  @override
+  _FavWidgetState createState() => _FavWidgetState();
+}
+
+class _FavWidgetState extends State<FavWidget> {
+  Widget _buildAbteilung(Devision d) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -14,9 +21,9 @@ class FavWidget extends StatelessWidget {
         Container(
           padding: EdgeInsets.only(left: 20),
           child: Text(
-            name,
+            d.name,
             style: TextStyle(
-              color: color,
+              color: d.color,
               fontWeight: FontWeight.bold,
               fontSize: 17,
             ),
@@ -29,7 +36,7 @@ class FavWidget extends StatelessWidget {
               (SizeConfig.orientationDevice == Orientation.portrait ? 21 : 40),
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: content.length,
+            itemCount: d.items.length,
             itemBuilder: (context, index) {
               // One "bubble"
               return Container(
@@ -45,11 +52,11 @@ class FavWidget extends StatelessWidget {
                           ? 27
                           : 16),
                   decoration: BoxDecoration(
-                    border: Border.all(color: color, width: 3),
+                    border: Border.all(color: d.color, width: 3),
                     //color: Colors.white,
                     shape: BoxShape.circle,
                     image: DecorationImage(
-                      image: content[index],
+                      image: d.items[index].img,
                       fit: BoxFit.fill,
                     ),
                     /*boxShadow: [
@@ -62,34 +69,13 @@ class FavWidget extends StatelessWidget {
                       ],*/
                   ),
                   child: FlatButton(
-                    splashColor: color.withOpacity(.1),
-                    highlightColor: color.withOpacity(.05),
+                    splashColor: d.color.withOpacity(.1),
+                    highlightColor: d.color.withOpacity(.05),
                     //padding: EdgeInsets.symmetric(vertical: 0.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(80.0),
                     ),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              contentPadding:
-                                  const EdgeInsets.fromLTRB(16, 5, 16, 10),
-                              title: Text("$name: $index"),
-                              content: Container(
-                                width: SizeConfig.safeBlockHorizontal * 70,
-                                height: SizeConfig.safeBlockHorizontal * 70,
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: content[index],
-                                    fit: BoxFit.fill,
-                                  ),
-                                ),
-                              ),
-                            );
-                          });
-                      print("$name: $index");
-                    },
+                    onPressed: () => dialog(d.items[index]),
                     child: null,
                   ),
                 ),
@@ -101,10 +87,36 @@ class FavWidget extends StatelessWidget {
     );
   }
 
+  void dialog(Item i) {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              contentPadding:
+              const EdgeInsets.fromLTRB(16, 5, 16, 10),
+              title: Text(i.name),
+              content: Container(
+                width: SizeConfig.safeBlockHorizontal * 70,
+                height: SizeConfig.safeBlockHorizontal * 70,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: i.img,
+                    fit: BoxFit.fill,
+                  ),
+                ),
+              ),
+            );
+          });
+  }
+
   @override
   Widget build(BuildContext context) {
+    User u = getUser();
     return Column(
-      children: <Widget>[
+      children: List.generate(u.favDev.length, (index) {
+        return _buildAbteilung(u.favDev[index]);
+      }),
+      /*[
         _getAbteilung("Zoologisch", Colors.red, [
           AssetImage('assets/images/profile_test.png'),
           AssetImage('assets/images/profile_test2.png'),
@@ -129,7 +141,7 @@ class FavWidget extends StatelessWidget {
         ]),
         _getAbteilung("Bonus", Colors.deepPurple,
             [AssetImage('assets/images/haupthalle_hlm_blue.png')])
-      ],
+      ],*/
     );
   }
 }
@@ -190,7 +202,7 @@ class _BadgeWidgetState extends State<BadgeWidget> {
         });
   }
 
-  Widget _getBadge(Badge b, popUp){
+  Widget _getBadge(Badge b, popUp) {
     var perc = max(min(b.current / b.toGet * 100, 100), 0);
     return Stack(
       alignment: Alignment.center,
@@ -202,7 +214,8 @@ class _BadgeWidgetState extends State<BadgeWidget> {
               _perLine *
               (SizeConfig.orientationDevice == Orientation.portrait
                   ? 54
-                  : 135) * (popUp ? 1.3 : 1)),
+                  : 135) *
+              (popUp ? 1.3 : 1)),
           initialChartData: [
             CircularStackEntry(
               [
@@ -217,14 +230,12 @@ class _BadgeWidgetState extends State<BadgeWidget> {
         Container(
           width: SizeConfig.safeBlockHorizontal /
               _perLine *
-              (SizeConfig.orientationDevice == Orientation.portrait
-                  ? 63
-                  : 50) * (popUp ? 1.3 : 1),
+              (SizeConfig.orientationDevice == Orientation.portrait ? 63 : 50) *
+              (popUp ? 1.3 : 1),
           height: SizeConfig.safeBlockHorizontal /
               _perLine *
-              (SizeConfig.orientationDevice == Orientation.portrait
-                  ? 63
-                  : 50) * (popUp ? 1.3 : 1),
+              (SizeConfig.orientationDevice == Orientation.portrait ? 63 : 50) *
+              (popUp ? 1.3 : 1),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             image: DecorationImage(
