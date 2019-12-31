@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_circular_chart/flutter_circular_chart.dart';
+import 'package:museum_app/SizeConfig.dart';
 
 class Tour {
   String name;
@@ -8,6 +9,7 @@ class Tour {
   String description;
   ImageProvider img;
   List<Item> stops;
+  double rating = 0;
   DateTime ttl = null;
 
   Tour(
@@ -16,7 +18,8 @@ class Tour {
       this.description,
       this.img,
       this.stops,
-      this.ttl});
+      this.ttl,
+      this.rating});
 }
 
 class Badge {
@@ -34,6 +37,7 @@ class Badge {
 }
 
 class User {
+  //TODO limit username length
   String username;
   ImageProvider img;
   List<Badge> badges;
@@ -114,8 +118,10 @@ User getUser() {
     tours: [
       Tour(
         name: "Test Tour",
+        rating: 4.6,
         //author: test,
-        description: "ABC",
+        description:
+            "Einen Roman schreiben die User hier bestimmt nicht hin. Und wenn doch, muss ich mir dafür etwas einfallen lassen.",
         img: AssetImage('assets/images/profile_test.png'),
         stops: List.generate(4, (index) {
           return Item(
@@ -123,12 +129,13 @@ User getUser() {
             img: AssetImage('assets/images/profile_test.png'),
           );
         }),
-        ttl: DateTime.parse("2020-01-01"),
+        ttl: DateTime.parse("2020-02-03"),
       ),
       Tour(
-        name: "Test Tour2",
-        author: User(username: "kkd"),
-        description: "PKMDF",
+        name: "Meine erste Tour",
+        rating: 1.2,
+        author: User(username: "1412"),
+        description: "Diese Beschreibung ist zum Glück nicht so lang.",
         img: AssetImage('assets/images/profile_test2.png'),
         stops: List.generate(4, (index) {
           return Item(
@@ -137,6 +144,21 @@ User getUser() {
           );
         }),
         //ttl: DateTime.parse("2020-01-07"),
+      ),
+      Tour(
+        name: "Zoologische Tour mit interessanten Details",
+        rating: 5.9,
+        //author: User(username: "xXIchHabeNochNieSoEinenLangenUsernamenGesehen573Xx"),
+        author: User(username: "MyBestUser"),
+        description: "Diese Tour ist sehr lehrreich.",
+        img: AssetImage('assets/images/haupthalle_hlm.png'),
+        stops: List.generate(4, (index) {
+          return Item(
+            name: "Zoologisch $index",
+            img: AssetImage('assets/images/profile_test.png'),
+          );
+        }),
+        ttl: DateTime.parse("2020-01-05"),
       ),
     ],
   );

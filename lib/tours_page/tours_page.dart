@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:museum_app/Models.dart';
-
-import '../SizeConfig.dart';
+import 'package:museum_app/SizeConfig.dart';
+import 'package:museum_app/tours_page/tours_widgets.dart';
 
 class Tours extends StatefulWidget {
   Tours({Key key}) : super(key: key);
@@ -70,38 +70,7 @@ class _ToursState extends State<Tours> {
               _customButtons("Favoriten", TourType.fav),
             ],
           ),
-          (_type == TourType.all
-              ? Container()
-              : (_type == TourType.my ? Container() : Container())),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTour(Tour t) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.all(Radius.circular(17.0)),
-      ),
-      child: Row(
-        children: [
-          // Picture left
-          Container(
-            width: SizeConfig.safeBlockHorizontal * 40,
-            height: SizeConfig.safeBlockVertical * 40,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(17.0)),
-              image: DecorationImage(image: t.img),
-            ),
-          ),
-          // Info on the right
-          Column(
-            children: [
-              Text(t.name, style: TextStyle(fontWeight: FontWeight.bold)),
-              Text("ASDF")
-            ],
-          ),
+          TourList(_type),
         ],
       ),
     );

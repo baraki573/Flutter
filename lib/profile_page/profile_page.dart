@@ -40,7 +40,7 @@ class _ProfileState extends State<Profile> {
                   shape: BoxShape.circle,
                   image: DecorationImage(
                     image: u.img,
-                    fit: BoxFit.fill,
+                    fit: BoxFit.fill
                   ),
                 ),
               ),

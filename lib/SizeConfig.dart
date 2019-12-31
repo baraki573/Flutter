@@ -1,5 +1,11 @@
 import 'package:flutter/widgets.dart';
 
+double size(double portrait, double landscape) {
+	return SizeConfig.orientationDevice == Orientation.portrait
+			? portrait
+			: landscape;
+}
+
 class SizeConfig {
 			static MediaQueryData _mediaQueryData;
 			static double screenWidth;
