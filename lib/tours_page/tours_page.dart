@@ -38,10 +38,10 @@ class _ToursState extends State<Tours> {
     return FlatButton(
       //textColor: Colors.black,
       //disabledTextColor: Colors.green,
-      splashColor: Colors.red[200],
+      splashColor: Colors.pink[200],
       child: Text(text,
           style: TextStyle(
-              color: (selected ? Colors.red[500] : Colors.black),
+              color: (selected ? Colors.pink[500] : Colors.black),
               fontSize: (SizeConfig.orientationDevice == Orientation.portrait
                   ? 16
                   : 19))),
@@ -70,7 +70,7 @@ class _ToursState extends State<Tours> {
               _customButtons("Favoriten", TourType.fav),
             ],
           ),
-          TourList(_type),
+          TourList(tt: _type),
         ],
       ),
     );

@@ -43,14 +43,8 @@ class _FavWidgetState extends State<FavWidget> {
                 margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 5.0),
                 child: Container(
                   //alignment: Alignment.center,
-                  height: SizeConfig.safeBlockHorizontal *
-                      (SizeConfig.orientationDevice == Orientation.portrait
-                          ? 27
-                          : 16),
-                  width: SizeConfig.safeBlockHorizontal *
-                      (SizeConfig.orientationDevice == Orientation.portrait
-                          ? 27
-                          : 16),
+                  height: SizeConfig.safeBlockHorizontal * size(27, 16),
+                  width: SizeConfig.safeBlockHorizontal * size(27, 16),
                   decoration: BoxDecoration(
                     border: Border.all(color: d.color, width: 3),
                     //color: Colors.white,
@@ -88,25 +82,23 @@ class _FavWidgetState extends State<FavWidget> {
   }
 
   void dialog(Item i) {
-      showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              contentPadding:
-              const EdgeInsets.fromLTRB(16, 5, 16, 10),
-              title: Text(i.name),
-              content: Container(
-                width: SizeConfig.safeBlockHorizontal * 70,
-                height: SizeConfig.safeBlockHorizontal * 70,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: i.img,
-                    fit: BoxFit.fill,
-                  ),
-                ),
-              ),
-            );
-          });
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        contentPadding: const EdgeInsets.fromLTRB(16, 5, 16, 10),
+        title: Text(i.name),
+        content: Container(
+          width: SizeConfig.safeBlockHorizontal * 70,
+          height: SizeConfig.safeBlockHorizontal * 70,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: i.img,
+              fit: BoxFit.fill,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override

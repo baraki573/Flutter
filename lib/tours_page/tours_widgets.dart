@@ -8,16 +8,26 @@ import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/tours_page/tours_page.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
-class TourList extends StatelessWidget {
+class TourList extends StatefulWidget {
   final TourType tt;
 
-  TourList(this.tt);
+  TourList({Key key, this.tt}) : super(key: key);
 
-  Widget _pictureLeft(Tour t) => Container(
-        margin: EdgeInsets.only(left: 11, right: 7, top: 15, bottom: 15),
-        width: SizeConfig.safeBlockHorizontal * 31,
-        height: SizeConfig.safeBlockVertical * size(28, 63),
+  @override
+  _TourListState createState() {
+    print(tt);
+    return _TourListState();
+  }
+}
+
+class _TourListState extends State<TourList> {
+  Widget _pictureLeft(Tour t, Size s, {margin = const EdgeInsets.all(0)}) =>
+      Container(
+        margin: margin,
+        width: SizeConfig.safeBlockHorizontal * s.width,
+        height: SizeConfig.safeBlockVertical * s.height,
         decoration: BoxDecoration(
+          border: Border.all(color: Colors.black),
           borderRadius: BorderRadius.all(Radius.circular(10.0)),
           image: DecorationImage(image: t.img, fit: BoxFit.cover),
         ),
@@ -28,65 +38,71 @@ class TourList extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _tourName(t),
+            _textBox(
+              t.name,
+              Size(size(50, 80), size(6, 11)),
+              margin: EdgeInsets.only(bottom: 3),
+              fontSize: 22.0,
+              fontWeight: FontWeight.bold,
+            ),
+            //_tourName(t),
             // TODO better modelling -> the current one implies that every
             // user has acces to the full profile of authors (maybe store
             // the username instead of th whole user?)
-            _tourAuthor(t),
+            _textBox(
+              "von " + t.author,
+              Size(size(50, 80), size(3, 6)),
+              fontStyle: FontStyle.italic,
+              fontSize: size(14, 15),
+            ),
+            //_tourAuthor(t),
             _tourRating(t),
-            _tourDescr(t),
+            _textBox(
+              t.description,
+              Size(size(50, 80), size(7, 18)),
+              textAlign: TextAlign.justify,
+              fontSize: size(13, 15),
+            ),
+            //_tourDescr(t),
             _tourButtons(t),
           ],
         ),
       );
 
-  Widget _tourName(Tour t) => Container(
-        margin: EdgeInsets.only(bottom: 3),
-        //color: Colors.red,
-        height: SizeConfig.safeBlockVertical * size(6, 11),
+  Widget _textBox(String text, Size s,
+          {fontStyle = FontStyle.normal,
+          fontWeight = FontWeight.normal,
+          textAlign = TextAlign.left,
+          textColor = Colors.black,
+          margin = const EdgeInsets.all(0),
+          fontSize = 15.0}) =>
+      Container(
+        margin: margin,
+        width: SizeConfig.safeBlockHorizontal * s.width,
+        height: SizeConfig.safeBlockVertical * s.height,
         child: Text(
-          t.name,
-          textAlign: TextAlign.justify,
+          text,
+          textAlign: textAlign,
           style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
+            color: textColor,
+            fontSize: fontSize,
+            fontWeight: fontWeight,
+            fontStyle: fontStyle,
           ),
           overflow: TextOverflow.fade,
         ),
       );
 
-  Widget _tourAuthor(Tour t) => Text(
-        "von " + t.author.username,
-        style: TextStyle(
-          fontStyle: FontStyle.italic,
-          fontSize: size(14, 15),
-        ),
-      );
-
   Widget _tourRating(Tour t) => Container(
         margin: EdgeInsets.symmetric(vertical: 3.5),
-        child: Row(
-          children: [
-            RatingBarIndicator(
-              rating: min(max(t.rating, 0), 5),
-              itemSize: SizeConfig.safeBlockHorizontal * size(4.5, 3.5),
-              itemBuilder: (BuildContext context, int index) => Icon(
-                Icons.star,
-                color: Colors.red,
-              ),
-              unratedColor: Colors.grey.withAlpha(50),
-            ),
-          ],
-        ),
-      );
-
-  Widget _tourDescr(Tour t) => Container(
-        height: SizeConfig.safeBlockVertical * size(7, 17),
-        child: Text(
-          t.description,
-          textAlign: TextAlign.justify,
-          style: TextStyle(fontSize: size(13, 15)),
-          overflow: TextOverflow.fade,
+        child: RatingBarIndicator(
+          rating: min(max(t.rating, 0), 5),
+          itemSize: SizeConfig.safeBlockHorizontal * size(4.5, 3.5),
+          itemBuilder: (BuildContext context, int index) => Icon(
+            Icons.star,
+            color: Colors.pinkAccent,
+          ),
+          unratedColor: Colors.grey.withAlpha(50),
         ),
       );
 
@@ -99,16 +115,17 @@ class TourList extends StatelessWidget {
           FlatButton(
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0)),
-            color: Colors.red,
+            color: Colors.pinkAccent,
             child: Text("Anzeigen", style: TextStyle(fontSize: size(14, 17))),
-            onPressed: () {},
+            onPressed: () => _showTour(t),
           ),
-          (t.author.username == getUser().username
+          (t.author == getUser().username
               ? FlatButton(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0)),
-                  color: Colors.red,
-                  child: Text("Bearbeiten", style: TextStyle(fontSize: size(14, 17))),
+                  color: Colors.pinkAccent,
+                  child: Text("Bearbeiten",
+                      style: TextStyle(fontSize: size(14, 17))),
                   onPressed: () {},
                 )
               : Container()),
@@ -133,13 +150,15 @@ class TourList extends StatelessWidget {
           children: [
             Row(
               children: [
-                _pictureLeft(t),
+                _pictureLeft(t, Size(31, size(28, 63)),
+                    margin: EdgeInsets.only(
+                        left: 10, right: 10, top: 15, bottom: 15)),
                 _infoRight(t),
               ],
             ),
             Positioned(
-              bottom: 20,
-              right: -38,
+              bottom: 22,
+              right: -40,
               child: _buildBanner(t.ttl),
             ),
           ],
@@ -152,7 +171,14 @@ class TourList extends StatelessWidget {
       angle: -pi / 4,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 40, vertical: 2),
-        color: Colors.green,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+              colors: [Colors.pink[300], Colors.pink],
+              tileMode: TileMode.clamp,
+              begin: Alignment.topRight,
+              stops: [0.0, 1.0],
+              end: Alignment.bottomLeft),
+        ),
         child: _buildTime(time),
       ),
     );
@@ -160,7 +186,6 @@ class TourList extends StatelessWidget {
 
   Widget _buildTime(DateTime time) {
     var dur = time.difference(DateTime.now());
-    print(DateTime.now().toString());
     var d = dur.inDays;
     var h = dur.inHours;
     String s = "noch\n" +
@@ -171,19 +196,117 @@ class TourList extends StatelessWidget {
       children: [
         Icon(
           Icons.date_range,
-          color: Colors.red,
+          color: Colors.white,
           size: size(22, 25),
         ),
         Container(
           margin: EdgeInsets.only(left: 6),
-          width: 48,
+          width: 55,
           child: Text(
             s,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: size(13, 15), fontWeight: FontWeight.bold),
+            style:
+                TextStyle(fontSize: size(12, 14), fontWeight: FontWeight.bold),
           ),
         ),
       ],
+    );
+  }
+
+  void _showTour(Tour t) {
+    showDialog(
+      context: context,
+      builder: (context) => SimpleDialog(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10))),
+        backgroundColor: Colors.pinkAccent,
+        contentPadding: EdgeInsets.all(16),
+        children: [
+          // Picture
+          _pictureLeft(
+            t,
+            Size(85, size(30, 55)),
+            margin: EdgeInsets.only(bottom: 16),
+          ),
+          // Titel
+          _textBox(
+            t.name,
+            Size(85, size(10, 12.5)),
+            textColor: Colors.white,
+            fontSize: 25.0,
+            fontWeight: FontWeight.bold,
+          ),
+          // Autor
+          _textBox(
+            "von " + t.author,
+            Size(85, size(5, 7)),
+            textColor: Colors.white,
+            fontSize: 18.0,
+            fontStyle: FontStyle.italic,
+          ),
+          // Duration
+          // Stars
+          RatingBarIndicator(
+            rating: min(max(t.rating, 0), 5),
+            itemSize: SizeConfig.safeBlockHorizontal * size(7, 3.5),
+            itemBuilder: (BuildContext context, int index) => Icon(
+              Icons.star,
+              color: Colors.white,
+            ),
+            unratedColor: Colors.pink[300],
+          ),
+          // Description
+          _textBox(
+            t.description,
+            Size(85, size(15, 28)),
+            textAlign: TextAlign.justify,
+            fontSize: 18.0,
+            textColor: Colors.white,
+            margin: EdgeInsets.only(top: 5),
+          ),
+          // Buttons
+          ButtonBar(
+            alignment: MainAxisAlignment.center,
+            buttonPadding: EdgeInsets.all(12),
+            //buttonHeight: SizeConfig.safeBlockVertical * 12,
+            children: [
+              FlatButton(
+                splashColor: Colors.pink[100],
+                color: Colors.white,
+                shape: CircleBorder(side: BorderSide(color: Colors.black)),
+                child: Icon(
+                  Icons.file_download,
+                  color: Colors.black,
+                  size: 31,
+                ),
+                onPressed: () {},
+              ),
+              FlatButton(
+                splashColor: Colors.pink[100],
+                color: Colors.white,
+                shape: CircleBorder(side: BorderSide(color: Colors.black)),
+                child: Icon(
+                  Icons.remove_red_eye,
+                  color: Colors.black,
+                  size: 31,
+                ),
+                onPressed: () {},
+              ),
+              FlatButton(
+                splashColor: Colors.pink[100],
+                color: Colors.white,
+                shape: CircleBorder(side: BorderSide(color: Colors.black)),
+                child: Icon(
+                  Icons.share,
+                  color: Colors.black,
+                  size: 31,
+                ),
+                onPressed: () {},
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -192,9 +315,9 @@ class TourList extends StatelessWidget {
     User u = getUser();
     var list = u.tours
         // Filter Tours according to set TourType
-        .where((t) => (tt == TourType.my
-            ? t.author == u
-            : (tt == TourType.fav ? t.author != u : true)))
+        .where((t) => (widget.tt == TourType.my
+            ? t.author == u.username
+            : (widget.tt == TourType.fav ? t.author != u.username : true)))
         // Build every Tour-Widget
         .map(_buildTour)
         .toList();
@@ -206,7 +329,7 @@ class TourList extends StatelessWidget {
                 height: SizeConfig.safeBlockVertical *
                     (list.length < 2 &&
                             SizeConfig.orientationDevice == Orientation.portrait
-                        ? 12.5
+                        ? 11.5
                         : 0)),
           ],
     );

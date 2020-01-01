@@ -48,7 +48,7 @@ class _BottomBarNavigationPatternExampleState
     return Scaffold(
       body: AnimatedContainer(
         color: widget.barItems[selectedBarIndex].color,
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 500),
         child: arr[selectedBarIndex],
       ),
       bottomNavigationBar: AnimatedBottomBar(

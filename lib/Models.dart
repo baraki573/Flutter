@@ -5,12 +5,12 @@ import 'package:museum_app/SizeConfig.dart';
 
 class Tour {
   String name;
-  User author;
+  String author;
   String description;
   ImageProvider img;
   List<Item> stops;
   double rating = 0;
-  DateTime ttl = null;
+  DateTime ttl;
 
   Tour(
       {this.name,
@@ -119,9 +119,9 @@ User getUser() {
       Tour(
         name: "Test Tour",
         rating: 4.6,
-        //author: test,
+        //author: u.username,
         description:
-            "Einen Roman schreiben die User hier bestimmt nicht hin. Und wenn doch, muss ich mir dafür etwas einfallen lassen.",
+        "Diese Beschreibung ist zum Glück nicht so lang.",
         img: AssetImage('assets/images/profile_test.png'),
         stops: List.generate(4, (index) {
           return Item(
@@ -129,29 +129,14 @@ User getUser() {
             img: AssetImage('assets/images/profile_test.png'),
           );
         }),
-        ttl: DateTime.parse("2020-02-03"),
+        //ttl: DateTime.parse("2020-02-03"),
       ),
       Tour(
         name: "Meine erste Tour",
         rating: 1.2,
-        author: User(username: "1412"),
-        description: "Diese Beschreibung ist zum Glück nicht so lang.",
+        author: "1412",
+        description: "Einen Roman schreiben die User hier bestimmt nicht hin. Und wenn doch, muss ich mir dafür etwas einfallen lassen.",
         img: AssetImage('assets/images/profile_test2.png'),
-        stops: List.generate(4, (index) {
-          return Item(
-            name: "Zoologisch $index",
-            img: AssetImage('assets/images/profile_test.png'),
-          );
-        }),
-        //ttl: DateTime.parse("2020-01-07"),
-      ),
-      Tour(
-        name: "Zoologische Tour mit interessanten Details",
-        rating: 5.9,
-        //author: User(username: "xXIchHabeNochNieSoEinenLangenUsernamenGesehen573Xx"),
-        author: User(username: "MyBestUser"),
-        description: "Diese Tour ist sehr lehrreich.",
-        img: AssetImage('assets/images/haupthalle_hlm.png'),
         stops: List.generate(4, (index) {
           return Item(
             name: "Zoologisch $index",
@@ -160,8 +145,23 @@ User getUser() {
         }),
         ttl: DateTime.parse("2020-01-05"),
       ),
+      Tour(
+        name: "Zoologische Tour mit interessanten Details",
+        rating: 2.6,
+        //author: User(username: "xXIchHabeNochNieSoEinenLangenUsernamenGesehen573Xx"),
+        author: "MyBestUser",
+        description: "Diese Tour ist sehr lehrreich.",
+        img: AssetImage('assets/images/haupthalle_hlm.png'),
+        stops: List.generate(4, (index) {
+          return Item(
+            name: "Zoologisch $index",
+            img: AssetImage('assets/images/profile_test.png'),
+          );
+        }),
+
+      ),
     ],
   );
-  u.tours[0].author = u;
+  u.tours[0].author = u.username;
   return u;
 }
