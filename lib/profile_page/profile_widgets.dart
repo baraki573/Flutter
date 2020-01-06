@@ -1,9 +1,10 @@
 import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_circular_chart/flutter_circular_chart.dart';
 import 'package:museum_app/Models.dart';
 import 'package:museum_app/SizeConfig.dart';
-import 'package:flutter_circular_chart/flutter_circular_chart.dart';
 
 class FavWidget extends StatefulWidget {
   FavWidget({Key key}) : super(key: key);
@@ -13,7 +14,7 @@ class FavWidget extends StatefulWidget {
 }
 
 class _FavWidgetState extends State<FavWidget> {
-  Widget _buildAbteilung(Devision d) {
+  Widget _buildAbteilung(Devision d, List<Item> list) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -36,7 +37,7 @@ class _FavWidgetState extends State<FavWidget> {
               (SizeConfig.orientationDevice == Orientation.portrait ? 21 : 40),
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: d.items.length,
+            itemCount: list.length,
             itemBuilder: (context, index) {
               // One "bubble"
               return Container(
@@ -50,7 +51,7 @@ class _FavWidgetState extends State<FavWidget> {
                     //color: Colors.white,
                     shape: BoxShape.circle,
                     image: DecorationImage(
-                      image: d.items[index].img,
+                      image: list[index].img,
                       fit: BoxFit.fill,
                     ),
                     /*boxShadow: [
@@ -69,7 +70,7 @@ class _FavWidgetState extends State<FavWidget> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(80.0),
                     ),
-                    onPressed: () => dialog(d.items[index]),
+                    onPressed: () => dialog(list[index]),
                     child: null,
                   ),
                 ),
@@ -105,8 +106,9 @@ class _FavWidgetState extends State<FavWidget> {
   Widget build(BuildContext context) {
     User u = getUser();
     return Column(
-      children: List.generate(u.favDev.length, (index) {
-        return _buildAbteilung(u.favDev[index]);
+      children: List.generate(devisions.length, (index) {
+        return _buildAbteilung(devisions[index],
+            u.fav.where((e) => e.dev == devisions[index]).toList());
       }),
       /*[
         _getAbteilung("Zoologisch", Colors.red, [

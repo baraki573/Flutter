@@ -7,6 +7,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:museum_app/Models.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/tours_page/tours_page.dart';
+import 'package:museum_app/tours_page/walk_tour.dart';
 
 class TourList extends StatefulWidget {
   final TourType tt;
@@ -14,10 +15,8 @@ class TourList extends StatefulWidget {
   TourList({Key key, this.tt}) : super(key: key);
 
   @override
-  _TourListState createState() {
-    print(tt);
-    return _TourListState();
-  }
+  _TourListState createState() => _TourListState();
+
 }
 
 class _TourListState extends State<TourList> {
@@ -33,7 +32,8 @@ class _TourListState extends State<TourList> {
         ),
       );
 
-  Widget _infoRight(Tour t) => Container(
+  Widget _infoRight(Tour t) =>
+      Container(
         width: SizeConfig.safeBlockHorizontal * size(51, 55),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,12 +70,12 @@ class _TourListState extends State<TourList> {
       );
 
   Widget _textBox(String text, Size s,
-          {fontStyle = FontStyle.normal,
-          fontWeight = FontWeight.normal,
-          textAlign = TextAlign.left,
-          textColor = Colors.black,
-          margin = const EdgeInsets.all(0),
-          fontSize = 15.0}) =>
+      {fontStyle = FontStyle.normal,
+        fontWeight = FontWeight.normal,
+        textAlign = TextAlign.left,
+        textColor = Colors.black,
+        margin = const EdgeInsets.all(0),
+        fontSize = 15.0}) =>
       Container(
         margin: margin,
         width: SizeConfig.safeBlockHorizontal * s.width,
@@ -93,20 +93,24 @@ class _TourListState extends State<TourList> {
         ),
       );
 
-  Widget _tourRating(Tour t) => Container(
+  // TODO move these to the tour class
+  Widget _tourRating(Tour t) =>
+      Container(
         margin: EdgeInsets.symmetric(vertical: 3.5),
         child: RatingBarIndicator(
           rating: min(max(t.rating, 0), 5),
           itemSize: SizeConfig.safeBlockHorizontal * size(4.5, 3.5),
-          itemBuilder: (BuildContext context, int index) => Icon(
-            Icons.star,
-            color: Colors.pinkAccent,
-          ),
+          itemBuilder: (BuildContext context, int index) =>
+              Icon(
+                Icons.star,
+                color: Colors.pinkAccent,
+              ),
           unratedColor: Colors.grey.withAlpha(50),
         ),
       );
 
-  Widget _tourButtons(Tour t) => ButtonBar(
+  Widget _tourButtons(Tour t) =>
+      ButtonBar(
         buttonPadding: EdgeInsets.symmetric(horizontal: size(5, 9)),
         alignment: MainAxisAlignment.start,
         buttonMinWidth: SizeConfig.safeBlockHorizontal * size(22, 19),
@@ -121,18 +125,19 @@ class _TourListState extends State<TourList> {
           ),
           (t.author == getUser().username
               ? FlatButton(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0)),
-                  color: Colors.pinkAccent,
-                  child: Text("Bearbeiten",
-                      style: TextStyle(fontSize: size(14, 17))),
-                  onPressed: () {},
-                )
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0)),
+            color: Colors.pinkAccent,
+            child: Text("Bearbeiten",
+                style: TextStyle(fontSize: size(14, 17))),
+            onPressed: () {},
+          )
               : Container()),
         ],
       );
 
-  Widget _buildTour(Tour t) => Container(
+  Widget _buildTour(Tour t) =>
+      Container(
         margin: EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -206,7 +211,7 @@ class _TourListState extends State<TourList> {
             s,
             textAlign: TextAlign.center,
             style:
-                TextStyle(fontSize: size(12, 14), fontWeight: FontWeight.bold),
+            TextStyle(fontSize: size(12, 14), fontWeight: FontWeight.bold),
           ),
         ),
       ],
@@ -214,99 +219,119 @@ class _TourListState extends State<TourList> {
   }
 
   void _showTour(Tour t) {
-    showDialog(
+    SizeConfig().init(context);
+    showGeneralDialog(
+      barrierColor: Colors.grey.withOpacity(0.7),
+      barrierDismissible: true,
+      barrierLabel: '',
+      transitionDuration: Duration(milliseconds: 270),
       context: context,
-      builder: (context) => SimpleDialog(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(10))),
-        backgroundColor: Colors.pinkAccent,
-        contentPadding: EdgeInsets.all(16),
-        children: [
-          // Picture
-          _pictureLeft(
-            t,
-            Size(85, size(30, 55)),
-            margin: EdgeInsets.only(bottom: 16),
-          ),
-          // Titel
-          _textBox(
-            t.name,
-            Size(85, size(10, 12.5)),
-            textColor: Colors.white,
-            fontSize: 25.0,
-            fontWeight: FontWeight.bold,
-          ),
-          // Autor
-          _textBox(
-            "von " + t.author,
-            Size(85, size(5, 7)),
-            textColor: Colors.white,
-            fontSize: 18.0,
-            fontStyle: FontStyle.italic,
-          ),
-          // Duration
-          // Stars
-          RatingBarIndicator(
-            rating: min(max(t.rating, 0), 5),
-            itemSize: SizeConfig.safeBlockHorizontal * size(7, 3.5),
-            itemBuilder: (BuildContext context, int index) => Icon(
-              Icons.star,
-              color: Colors.white,
+      transitionBuilder: (context, a1, a2, widget) =>
+          Transform.scale(
+            scale: a1.value,
+            child: Opacity(
+              opacity: a1.value,
+              child: SimpleDialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10))),
+                backgroundColor: Colors.pinkAccent,
+                contentPadding: EdgeInsets.all(16),
+                children: [
+                  // Picture
+                  _pictureLeft(
+                    t,
+                    Size(85, size(30, 55)),
+                    margin: EdgeInsets.only(bottom: 16),
+                  ),
+                  // Titel
+                  _textBox(
+                    t.name,
+                    Size(85, size(10, 12.5)),
+                    textColor: Colors.white,
+                    fontSize: 25.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  // Autor
+                  _textBox(
+                    "von " + t.author,
+                    Size(85, size(5, 7)),
+                    textColor: Colors.white,
+                    fontSize: 18.0,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  // Duration
+                  // Stars
+                  RatingBarIndicator(
+                    rating: min(max(t.rating, 0), 5),
+                    itemSize: SizeConfig.safeBlockHorizontal * size(7, 3.5),
+                    itemBuilder: (BuildContext context, int index) =>
+                        Icon(
+                          Icons.star,
+                          color: Colors.white,
+                        ),
+                    unratedColor: Colors.pink[300],
+                  ),
+                  // Description
+                  _textBox(
+                    t.description,
+                    Size(85, size(15, 28)),
+                    textAlign: TextAlign.justify,
+                    fontSize: 18.0,
+                    textColor: Colors.white,
+                    margin: EdgeInsets.only(top: 5),
+                  ),
+                  // Buttons
+                  ButtonBar(
+                    alignment: MainAxisAlignment.center,
+                    buttonPadding: EdgeInsets.all(12),
+                    //buttonHeight: SizeConfig.safeBlockVertical * 12,
+                    children: [
+                      FlatButton(
+                        splashColor: Colors.pink[100],
+                        color: Colors.white,
+                        shape: CircleBorder(
+                            side: BorderSide(color: Colors.black)),
+                        child: Icon(
+                          Icons.play_arrow,
+                          color: Colors.black,
+                          size: 31,
+                        ),
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(
+                              builder: (context) => TourWalker(tour: t)));
+                        },
+                      ),
+                      FlatButton(
+                        splashColor: Colors.pink[100],
+                        color: Colors.white,
+                        shape: CircleBorder(
+                            side: BorderSide(color: Colors.black)),
+                        child: Icon(
+                          Icons.remove_red_eye,
+                          color: Colors.black,
+                          size: 31,
+                        ),
+                        onPressed: () {},
+                      ),
+                      FlatButton(
+                        splashColor: Colors.pink[100],
+                        color: Colors.white,
+                        shape: CircleBorder(
+                            side: BorderSide(color: Colors.black)),
+                        child: Icon(
+                          Icons.share,
+                          color: Colors.black,
+                          size: 31,
+                        ),
+                        onPressed: () {},
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            unratedColor: Colors.pink[300],
           ),
-          // Description
-          _textBox(
-            t.description,
-            Size(85, size(15, 28)),
-            textAlign: TextAlign.justify,
-            fontSize: 18.0,
-            textColor: Colors.white,
-            margin: EdgeInsets.only(top: 5),
-          ),
-          // Buttons
-          ButtonBar(
-            alignment: MainAxisAlignment.center,
-            buttonPadding: EdgeInsets.all(12),
-            //buttonHeight: SizeConfig.safeBlockVertical * 12,
-            children: [
-              FlatButton(
-                splashColor: Colors.pink[100],
-                color: Colors.white,
-                shape: CircleBorder(side: BorderSide(color: Colors.black)),
-                child: Icon(
-                  Icons.file_download,
-                  color: Colors.black,
-                  size: 31,
-                ),
-                onPressed: () {},
-              ),
-              FlatButton(
-                splashColor: Colors.pink[100],
-                color: Colors.white,
-                shape: CircleBorder(side: BorderSide(color: Colors.black)),
-                child: Icon(
-                  Icons.remove_red_eye,
-                  color: Colors.black,
-                  size: 31,
-                ),
-                onPressed: () {},
-              ),
-              FlatButton(
-                splashColor: Colors.pink[100],
-                color: Colors.white,
-                shape: CircleBorder(side: BorderSide(color: Colors.black)),
-                child: Icon(
-                  Icons.share,
-                  color: Colors.black,
-                  size: 31,
-                ),
-                onPressed: () {},
-              ),
-            ],
-          ),
-        ],
-      ),
+      pageBuilder: (context, animation1, animation2) {},
     );
   }
 
@@ -314,11 +339,12 @@ class _TourListState extends State<TourList> {
   Widget build(BuildContext context) {
     User u = getUser();
     var list = u.tours
-        // Filter Tours according to set TourType
-        .where((t) => (widget.tt == TourType.my
-            ? t.author == u.username
-            : (widget.tt == TourType.fav ? t.author != u.username : true)))
-        // Build every Tour-Widget
+    // Filter Tours according to set TourType
+        .where((t) =>
+    (widget.tt == TourType.my
+        ? t.author == u.username
+        : (widget.tt == TourType.fav ? t.author != u.username : true)))
+    // Build every Tour-Widget
         .map(_buildTour)
         .toList();
 

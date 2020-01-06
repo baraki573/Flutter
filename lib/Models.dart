@@ -12,9 +12,9 @@ class Tour {
   DateTime ttl;
 
   Tour(
-      {this.name,
-      this.author,
-      this.description,
+      {@required this.name,
+      @required this.author,
+      this.description="",
       this.img,
       this.stops,
       this.ttl,
@@ -40,23 +40,25 @@ class User {
   String username;
   ImageProvider img;
   List<Badge> badges;
-  List<Devision> favDev;
+  List<Item> fav;
   List<Tour> tours;
 
-  User({this.username, this.img, this.badges, this.favDev, this.tours});
+  User({@required this.username, this.img, this.badges, this.fav, this.tours});
 }
 
 class Devision {
   String name;
   Color color;
-  List<Item> items;
 
-  Devision({this.name, this.color, this.items});
+  //List<Item> items;
+
+  Devision({this.name, this.color});
 }
 
 class Item {
   String name;
   ImageProvider img;
+  Devision dev;
   int year;
   String artType;
   String creator;
@@ -66,9 +68,26 @@ class Item {
   String descr;
   String interContext;
 
-  Item({this.name, this.img, this.year, this.artType, this.creator,
-      this.material, this.size, this.location, this.descr, this.interContext});
+  Item(
+      {@required this.name,
+      @required this.img,
+      this.year,
+      this.artType,
+      this.creator,
+      this.material,
+      this.size,
+      this.location,
+      this.descr,
+      this.interContext,
+      @required this.dev});
 }
+
+List<Devision> devisions = [
+  Devision(name: "Zoologisch", color: Colors.red),
+  Devision(name: "Skulpturen", color: Colors.blue),
+  Devision(name: "Bilder", color: Colors.yellow),
+  Devision(name: "Bonus", color: Colors.deepPurple)
+];
 
 User getUser() {
   var u = User(
@@ -82,58 +101,48 @@ User getUser() {
           img: AssetImage('assets/images/profile_test.png'),
           color: Colors.primaries[index]);
     }),
-    favDev: [
-      Devision(
-          name: "Zoologisch",
-          color: Colors.red,
-          items: List.generate(4, (index) {
-            String s = (index % 3 == 0 ? "" : "2");
-            return Item(
-              name: "Zoologisch $index",
-              img: AssetImage('assets/images/profile_test' + s + '.png'),
-            );
-          })),
-      Devision(
-          name: "Skulpturen",
-          color: Colors.blue,
-          items: List.generate(2, (index) {
-            String s = (index % 2 == 0 ? "" : "2");
-            return Item(
-              name: "Skulpturen $index",
-              img: AssetImage('assets/images/profile_test' + s + '.png'),
-            );
-          })),
-      Devision(
-          name: "Bilder",
-          color: Colors.yellow,
-          items: List.generate(10, (index) {
-            String s = (index % 3 == 0 ? "" : "2");
-            return Item(
-              name: "Bilder $index",
-              img: AssetImage('assets/images/profile_test' + s + '.png'),
-            );
-          })),
-      Devision(
-          name: "Bonus",
-          color: Colors.deepPurple,
-          items: List.generate(1, (index) {
-            return Item(
-              name: "Bonus $index",
-              img: AssetImage('assets/images/haupthalle_hlm_blue.png'),
-            );
-          })),
-    ],
+    fav: List.generate(4, (index) {
+          String s = (index % 3 == 0 ? "" : "2");
+          return Item(
+            name: "Zoologisch $index",
+            dev: devisions[0],
+            img: AssetImage('assets/images/profile_test' + s + '.png'),
+          );
+        }) +
+        List.generate(2, (index) {
+          String s = (index % 2 == 0 ? "" : "2");
+          return Item(
+            name: "Skulpturen $index",
+            dev: devisions[1],
+            img: AssetImage('assets/images/profile_test' + s + '.png'),
+          );
+        }) +
+        List.generate(10, (index) {
+          String s = (index % 3 == 0 ? "" : "2");
+          return Item(
+            dev: devisions[2],
+            name: "Bilder $index",
+            img: AssetImage('assets/images/profile_test' + s + '.png'),
+          );
+        }) +
+        List.generate(1, (index) {
+          return Item(
+            dev: devisions[3],
+            name: "Bonus $index",
+            img: AssetImage('assets/images/haupthalle_hlm_blue.png'),
+          );
+        }),
     tours: [
       Tour(
         name: "Test Tour",
         rating: 4.6,
         //author: u.username,
-        description:
-        "Diese Beschreibung ist zum Glück nicht so lang.",
+        description: "Diese Beschreibung ist zum Glück nicht so lang.",
         img: AssetImage('assets/images/profile_test.png'),
-        stops: List.generate(4, (index) {
+        stops: List.generate(17, (index) {
           return Item(
             name: "Zoologisch $index",
+            dev: devisions[0],
             img: AssetImage('assets/images/profile_test.png'),
           );
         }),
@@ -143,12 +152,14 @@ User getUser() {
         name: "Meine erste Tour",
         rating: 1.2,
         author: "1412",
-        description: "Einen Roman schreiben die User hier bestimmt nicht hin. Und wenn doch, muss ich mir dafür etwas einfallen lassen.",
+        description:
+            "Einen Roman schreiben die User hier bestimmt nicht hin. Und wenn doch, muss ich mir dafür etwas einfallen lassen.",
         img: AssetImage('assets/images/profile_test2.png'),
         stops: List.generate(4, (index) {
           return Item(
             name: "Zoologisch $index",
             img: AssetImage('assets/images/profile_test.png'),
+            dev: devisions[0],
           );
         }),
         ttl: DateTime.parse("2020-01-05"),
@@ -163,10 +174,10 @@ User getUser() {
         stops: List.generate(4, (index) {
           return Item(
             name: "Zoologisch $index",
+            dev: devisions[0],
             img: AssetImage('assets/images/profile_test.png'),
           );
         }),
-
       ),
     ],
   );
