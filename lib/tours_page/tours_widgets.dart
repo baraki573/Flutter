@@ -3,10 +3,10 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:museum_app/Models.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/tours_page/tours_page.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class TourList extends StatefulWidget {
   final TourType tt;
@@ -327,10 +327,7 @@ class _TourListState extends State<TourList> {
           [
             Container(
                 height: SizeConfig.safeBlockVertical *
-                    (list.length < 2 &&
-                            SizeConfig.orientationDevice == Orientation.portrait
-                        ? 11.5
-                        : 0)),
+                    (list.length < 2 ? size(11.5, 0) : 0)),
           ],
     );
   }

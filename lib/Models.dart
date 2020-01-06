@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_circular_chart/flutter_circular_chart.dart';
-import 'package:museum_app/SizeConfig.dart';
 
 class Tour {
   String name;
@@ -58,8 +57,17 @@ class Devision {
 class Item {
   String name;
   ImageProvider img;
+  int year;
+  String artType;
+  String creator;
+  String material;
+  String size;
+  String location;
+  String descr;
+  String interContext;
 
-  Item({this.name, this.img});
+  Item({this.name, this.img, this.year, this.artType, this.creator,
+      this.material, this.size, this.location, this.descr, this.interContext});
 }
 
 User getUser() {

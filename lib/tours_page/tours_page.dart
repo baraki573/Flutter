@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:museum_app/Models.dart';
 import 'package:museum_app/SizeConfig.dart';
+import 'package:museum_app/map/map_page.dart';
 import 'package:museum_app/tours_page/tours_widgets.dart';
 
 class Tours extends StatefulWidget {
@@ -22,12 +22,33 @@ class _ToursState extends State<Tours> {
       height: SizeConfig.safeBlockVertical *
           (SizeConfig.orientationDevice == Orientation.portrait ? 30 : 45),
       child: Center(
-        child: Container(
-          margin: EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage('assets/images/product_tour.png')),
-          ),
+        child: Stack(
+          children: [
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage('assets/images/product_tour.png')),
+              ),
+            ),
+            Positioned(
+              right: -13,
+              top: 4,
+              child: FlatButton(
+                padding: EdgeInsets.all(3),
+                shape: CircleBorder(),
+                child: Icon(
+                  Icons.map,
+                  color: Colors.white,
+                  size: 40,
+                ),
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => MapPage()));
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -87,5 +108,3 @@ class _ToursState extends State<Tours> {
     );
   }
 }
-
-
