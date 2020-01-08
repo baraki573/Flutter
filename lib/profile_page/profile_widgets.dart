@@ -51,7 +51,7 @@ class _FavWidgetState extends State<FavWidget> {
                     //color: Colors.white,
                     shape: BoxShape.circle,
                     image: DecorationImage(
-                      image: list[index].img,
+                      image: list[index].imgs[0],
                       fit: BoxFit.fill,
                     ),
                     /*boxShadow: [
@@ -93,7 +93,7 @@ class _FavWidgetState extends State<FavWidget> {
           height: SizeConfig.safeBlockHorizontal * 70,
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: i.img,
+              image: i.imgs[0],
               fit: BoxFit.fill,
             ),
           ),

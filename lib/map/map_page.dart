@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:photo_view/photo_view.dart';
 
+import '../SizeConfig.dart';
+
 class MapPage extends StatefulWidget {
   MapPage({Key key}) : super(key: key);
 
@@ -24,23 +26,23 @@ class _MapPageState extends State<MapPage> {
             backgroundDecoration: BoxDecoration(color: Colors.white),
             maxScale: 3.0,
             minScale: PhotoViewComputedScale.covered,
-            imageProvider: AssetImage("assets/images/orientierungsplan.png"),
+            imageProvider: AssetImage("assets/images/orientierungsplan_high.png"),
           ),
         ),
         Positioned(
-          left: -15,
-          top: 30,
+          top: 35,
+          left: 7,
+          height: SizeConfig.safeBlockVertical * 6,
+          width: SizeConfig.safeBlockVertical * 6,
           child: FlatButton(
-            color: Colors.white,
-            shape: CircleBorder(side: BorderSide(color: Colors.black)),
-            child: Icon(
-              Icons.arrow_back,
-              color: Colors.black,
-              size: 47,
+            shape: RoundedRectangleBorder(
+              side: BorderSide(color: Colors.black),
+                borderRadius: BorderRadius.circular(8),
             ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            padding: EdgeInsets.all(0),
+            color: Colors.white.withOpacity(.5),
+            child: Icon(Icons.arrow_back, color: Colors.black, size: 32),
+            onPressed: () => Navigator.pop(context),
           ),
         ),
       ],

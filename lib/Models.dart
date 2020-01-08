@@ -8,17 +8,17 @@ class Tour {
   String description;
   ImageProvider img;
   List<Item> stops;
-  double rating = 0;
+  double rating;
   DateTime ttl;
 
   Tour(
       {@required this.name,
       @required this.author,
-      this.description="",
+      this.description = "",
       this.img,
       this.stops,
       this.ttl,
-      this.rating});
+      this.rating = 0});
 }
 
 class Badge {
@@ -57,9 +57,9 @@ class Devision {
 
 class Item {
   String name;
-  ImageProvider img;
+  List<ImageProvider> imgs;
   Devision dev;
-  int year;
+  String year;
   String artType;
   String creator;
   String material;
@@ -70,16 +70,32 @@ class Item {
 
   Item(
       {@required this.name,
-      @required this.img,
+      @required this.imgs,
       this.year,
       this.artType,
-      this.creator,
+      @required this.creator,
       this.material,
       this.size,
       this.location,
-      this.descr,
+      this.descr = "",
       this.interContext,
       @required this.dev});
+
+  Map<String, String> getInformation(){
+    Map<String, String> map = {
+      "Abteilung": dev.name,
+      "Zeitraum": year,
+      "Ersteller": creator,
+      "Material": material,
+      "Größe": size,
+      "Ort": location,
+      "Kontext": interContext
+    };
+    map.removeWhere((key, val) => val==null);
+
+    return map;
+  }
+
 }
 
 List<Devision> devisions = [
@@ -106,7 +122,8 @@ User getUser() {
           return Item(
             name: "Zoologisch $index",
             dev: devisions[0],
-            img: AssetImage('assets/images/profile_test' + s + '.png'),
+            imgs: [AssetImage('assets/images/profile_test' + s + '.png')],
+            creator: "Me",
           );
         }) +
         List.generate(2, (index) {
@@ -114,7 +131,8 @@ User getUser() {
           return Item(
             name: "Skulpturen $index",
             dev: devisions[1],
-            img: AssetImage('assets/images/profile_test' + s + '.png'),
+            imgs: [AssetImage('assets/images/profile_test' + s + '.png')],
+            creator: "DaVinci",
           );
         }) +
         List.generate(10, (index) {
@@ -122,30 +140,43 @@ User getUser() {
           return Item(
             dev: devisions[2],
             name: "Bilder $index",
-            img: AssetImage('assets/images/profile_test' + s + '.png'),
+            imgs: [AssetImage('assets/images/profile_test' + s + '.png')],
+            creator: "Artist",
           );
         }) +
         List.generate(1, (index) {
           return Item(
             dev: devisions[3],
             name: "Bonus $index",
-            img: AssetImage('assets/images/haupthalle_hlm_blue.png'),
+            imgs: [AssetImage('assets/images/haupthalle_hlm_blue.png')],
+            creator: "VanGogh",
           );
         }),
     tours: [
       Tour(
         name: "Test Tour",
         rating: 4.6,
+        author: "Maria123_XD",
         //author: u.username,
         description: "Diese Beschreibung ist zum Glück nicht so lang.",
         img: AssetImage('assets/images/profile_test.png'),
         stops: List.generate(17, (index) {
+          String s = (index % 3 == 0 ? "" : "2");
           return Item(
-            name: "Zoologisch $index",
-            dev: devisions[0],
-            img: AssetImage('assets/images/profile_test.png'),
-          );
+              name: "Zoologisch $index",
+              dev: devisions[0],
+              imgs: List.generate((index % 3) + 1,
+                  (i) => AssetImage('assets/images/profile_test' + s + '.png')),
+              creator: "Who",
+              year: "Im Jahre 500 vor DaVinci",
+              material: "Feinstes Mahagoni",
+              size: "4 Lichtjahre",
+              artType: "Radierung",
+              location: "Rom",
+              descr:
+                  "Hier kann man sein gesamtes Herzblut reinstecken und dem User viele wertvolle Informationen präsentieren. Idealerweise wird hier jedoch nicht zu viel geschrieben. Es ist jedoch möglich, hier sehr lange und detailierte Beschreibungen einzugeben, die korrekt angezeigt werden können.");
         }),
+
         //ttl: DateTime.parse("2020-02-03"),
       ),
       Tour(
@@ -158,8 +189,9 @@ User getUser() {
         stops: List.generate(4, (index) {
           return Item(
             name: "Zoologisch $index",
-            img: AssetImage('assets/images/profile_test.png'),
+            imgs: [AssetImage('assets/images/profile_test.png')],
             dev: devisions[0],
+            creator: "Unknown",
           );
         }),
         ttl: DateTime.parse("2020-01-05"),
@@ -175,12 +207,13 @@ User getUser() {
           return Item(
             name: "Zoologisch $index",
             dev: devisions[0],
-            img: AssetImage('assets/images/profile_test.png'),
+            imgs: [AssetImage('assets/images/profile_test.png')],
+            creator: "null",
           );
         }),
       ),
     ],
   );
-  u.tours[0].author = u.username;
+  //u.tours[0].author = u.username;
   return u;
 }
