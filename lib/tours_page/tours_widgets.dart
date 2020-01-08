@@ -34,7 +34,7 @@ class _TourListState extends State<TourList> {
 
   Widget _infoRight(Tour t) =>
       Container(
-        width: SizeConfig.safeBlockHorizontal * size(51, 55),
+        width: horSize(51, 55),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -99,7 +99,7 @@ class _TourListState extends State<TourList> {
         margin: EdgeInsets.symmetric(vertical: 3.5),
         child: RatingBarIndicator(
           rating: min(max(t.rating, 0), 5),
-          itemSize: SizeConfig.safeBlockHorizontal * size(4.5, 3.5),
+          itemSize: horSize(4.5, 3.5),
           itemBuilder: (BuildContext context, int index) =>
               Icon(
                 Icons.star,
@@ -113,8 +113,8 @@ class _TourListState extends State<TourList> {
       ButtonBar(
         buttonPadding: EdgeInsets.symmetric(horizontal: size(5, 9)),
         alignment: MainAxisAlignment.start,
-        buttonMinWidth: SizeConfig.safeBlockHorizontal * size(22, 19),
-        buttonHeight: SizeConfig.safeBlockVertical * size(6, 10),
+        buttonMinWidth: horSize(22, 19),
+        buttonHeight: verSize(6, 10),
         children: [
           FlatButton(
             shape: RoundedRectangleBorder(
@@ -263,7 +263,7 @@ class _TourListState extends State<TourList> {
                   // Stars
                   RatingBarIndicator(
                     rating: min(max(t.rating, 0), 5),
-                    itemSize: SizeConfig.safeBlockHorizontal * size(7, 3.5),
+                    itemSize: horSize(7, 3.5),
                     itemBuilder: (BuildContext context, int index) =>
                         Icon(
                           Icons.star,
@@ -349,11 +349,11 @@ class _TourListState extends State<TourList> {
         .toList();
 
     return Column(
-      children: list +
-          [
+      children: list
++[
             Container(
                 height: SizeConfig.safeBlockVertical *
-                    (list.length < 2 ? size(11.5, 0) : 0)),
+                    (list.length < 2 ? size(11, 0) : 0))
           ],
     );
   }

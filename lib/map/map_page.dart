@@ -32,8 +32,8 @@ class _MapPageState extends State<MapPage> {
         Positioned(
           top: 35,
           left: 7,
-          height: SizeConfig.safeBlockVertical * 6,
-          width: SizeConfig.safeBlockVertical * 6,
+          height: verSize(6, 11),
+          width: verSize(6, 11),
           child: FlatButton(
             shape: RoundedRectangleBorder(
               side: BorderSide(color: Colors.black),

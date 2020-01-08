@@ -44,8 +44,8 @@ class _FavWidgetState extends State<FavWidget> {
                 margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 5.0),
                 child: Container(
                   //alignment: Alignment.center,
-                  height: SizeConfig.safeBlockHorizontal * size(27, 16),
-                  width: SizeConfig.safeBlockHorizontal * size(27, 16),
+                  height: horSize(27, 16),
+                  width: horSize(27, 16),
                   decoration: BoxDecoration(
                     border: Border.all(color: d.color, width: 3),
                     //color: Colors.white,

@@ -34,7 +34,7 @@ class _TourWalkerState extends State<TourWalker> {
       ),
       padding: EdgeInsets.only(top: 21),
       width: SizeConfig.safeBlockHorizontal * 100,
-      height: SizeConfig.safeBlockVertical * size(17, 32.5),
+      height: verSize(17, 31),
       child: Stack(
         children: [
           // Back Arrow
@@ -44,7 +44,10 @@ class _TourWalkerState extends State<TourWalker> {
             child: FlatButton(
                 onPressed: _currentItem == 0
                     ? null
-                    : () => setState(()  {_currentItem--; _currentImage=0;}),
+                    : () => setState(() {
+                          _currentItem--;
+                          _currentImage = 0;
+                        }),
                 child: Icon(Icons.arrow_back, size: 30, color: colorNav)),
           ),
           // Index Display
@@ -69,7 +72,10 @@ class _TourWalkerState extends State<TourWalker> {
             child: FlatButton(
                 onPressed: _currentItem == length - 1
                     ? null
-                    : () => setState(() {_currentItem++; _currentImage=0;}),
+                    : () => setState(() {
+                          _currentItem++;
+                          _currentImage = 0;
+                        }),
                 child: Icon(Icons.arrow_forward, size: 30, color: colorNav)),
           ),
           // Tour Name
@@ -78,7 +84,7 @@ class _TourWalkerState extends State<TourWalker> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 16),
               width: SizeConfig.safeBlockHorizontal * 100,
-              height: SizeConfig.safeBlockVertical * size(3, 5),
+              height: verSize(3, 5),
               child: Text(
                 widget.tour.name,
                 style: TextStyle(
@@ -94,7 +100,7 @@ class _TourWalkerState extends State<TourWalker> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 16),
               width: SizeConfig.safeBlockHorizontal * 100,
-              height: SizeConfig.safeBlockVertical * size(3, 5),
+              height: verSize(3, 5),
               child: Text(
                 "von " + widget.tour.author,
                 style: TextStyle(
@@ -111,78 +117,76 @@ class _TourWalkerState extends State<TourWalker> {
 
   Widget _content() {
     Item item = widget.tour.stops[_currentItem];
-    return Container(
-      height: SizeConfig.safeBlockVertical * size(87.1, 75),
-      //padding: EdgeInsets.all(0),
-      //color: Colors.red,
-      child: ListView(
-        //shrinkWrap: true,
-        padding: EdgeInsets.all(0),
-        children: [
-          // Images
-          CarouselSlider(
-            //enlargeCenterPage: true,
-            onPageChanged: (index) => setState(() => _currentImage = index),
-            viewportFraction: 1.0,
-            height: SizeConfig.safeBlockVertical * 52,
-            enableInfiniteScroll: false,
-            items: item.imgs
-                .map(
-                  (img) => Stack(
-                    children: [
-                      Container(
-                        //margin: EdgeInsets.symmetric(horizontal: 16),
-                        //height: SizeConfig.safeBlockVertical * 40,
-                        //width: SizeConfig.safeBlockHorizontal * 100,
-                        decoration: BoxDecoration(
-                          //borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                          border: Border.all(color: Colors.black),
-                          image: DecorationImage(image: img, fit: BoxFit.cover),
+    return Expanded(
+        child: ListView(
+          //shrinkWrap: true,
+          padding: EdgeInsets.all(0),
+          children: [
+            // Images
+            CarouselSlider(
+              //enlargeCenterPage: true,
+              onPageChanged: (index) => setState(() => _currentImage = index),
+              viewportFraction: 1.0,
+              height: verSize(52, 68.5),
+              enableInfiniteScroll: false,
+              items: item.imgs
+                  .map(
+                    (img) => Stack(
+                      children: [
+                        Container(
+                          //margin: EdgeInsets.symmetric(horizontal: 16),
+                          //height: SizeConfig.safeBlockVertical * 40,
+                          //width: SizeConfig.safeBlockHorizontal * 100,
+                          decoration: BoxDecoration(
+                            //borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                            border: Border.all(color: Colors.black),
+                            image:
+                                DecorationImage(image: img, fit: BoxFit.cover),
+                          ),
                         ),
-                      ),
-                      Positioned(
-                        top: 7,
-                        right: 23,
-                        height: SizeConfig.safeBlockVertical * 6,
-                        width: SizeConfig.safeBlockVertical * 6,
-                        child: FlatButton(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          padding: EdgeInsets.all(0),
-                          color: Colors.black.withOpacity(0.3),
-                          child: Icon(Icons.zoom_out_map,
-                              color: Colors.white, size: 30),
-                          onPressed: () {
-                            _imagePopup(context, item.imgs[_currentImage]);
-                          },
+                        Positioned(
+                          top: 7,
+                          right: 23,
+                          height: SizeConfig.safeBlockVertical * 6,
+                          width: SizeConfig.safeBlockVertical * 6,
+                          child: FlatButton(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            padding: EdgeInsets.all(0),
+                            color: Colors.black.withOpacity(0.3),
+                            child: Icon(Icons.zoom_out_map,
+                                color: Colors.white, size: 30),
+                            onPressed: () {
+                              _imagePopup(context, item.imgs[_currentImage]);
+                            },
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                  )
+                  .toList(),
+            ),
+            // Dot Indicator
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                item.imgs.length,
+                (index) => Container(
+                  width: 8.0,
+                  height: 8.0,
+                  margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentImage == index
+                        ? Colors.black
+                        : Colors.grey.withOpacity(0.75),
                   ),
-                )
-                .toList(),
-          ),
-          // Dot Indicator
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              item.imgs.length,
-              (index) => Container(
-                width: 8.0,
-                height: 8.0,
-                margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _currentImage == index
-                      ? Colors.black
-                      : Colors.grey.withOpacity(0.75),
                 ),
               ),
             ),
-          ),
-          _information(item),
-        ],
-      ),
+            _information(item),
+          ],
+        ),
     );
   }
 
@@ -197,7 +201,7 @@ class _TourWalkerState extends State<TourWalker> {
             style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.pink),//Color(0xfff7bc3d)),
+                color: Colors.pink), //Color(0xfff7bc3d)),
           ),
           ExpandablePanel(
             collapsed: Text(item.descr,
@@ -229,15 +233,14 @@ class _TourWalkerState extends State<TourWalker> {
     return Container(
       margin: EdgeInsets.only(right: 23, bottom: 25),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.all(Radius.circular(10)),
-        border: Border.all(color: Colors.black),
-        boxShadow: [BoxShadow(offset: Offset.fromDirection(pi/4))]
-      ),
+          color: Colors.white,
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+          border: Border.all(color: Colors.black),
+          boxShadow: [BoxShadow(offset: Offset.fromDirection(pi / 4))]),
       child: Table(
         columnWidths: {
-          0: FixedColumnWidth(SizeConfig.safeBlockHorizontal * 30),
-          1: FixedColumnWidth(SizeConfig.safeBlockHorizontal * 47)
+          0: FixedColumnWidth(horSize(30, 25)),
+          1: FixedColumnWidth(horSize(47, 62))
         },
         defaultVerticalAlignment: TableCellVerticalAlignment.middle,
         border: TableBorder.symmetric(inside: BorderSide(color: Colors.black)),

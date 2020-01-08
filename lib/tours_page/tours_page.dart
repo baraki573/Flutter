@@ -19,8 +19,7 @@ class _ToursState extends State<Tours> {
 
   Widget _topInfo() {
     return Container(
-      height: SizeConfig.safeBlockVertical *
-          (SizeConfig.orientationDevice == Orientation.portrait ? 30 : 45),
+      height: verSize(30, 45),
       child: Center(
         child: Stack(
           children: [
@@ -77,6 +76,7 @@ class _ToursState extends State<Tours> {
       //height: SizeConfig.safeBlockVertical * 100,
       decoration: BoxDecoration(
         color: Colors.white,
+        border: Border.all(color: Colors.white, width: 2),
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20.0), topRight: Radius.circular(20.0)),
       ),

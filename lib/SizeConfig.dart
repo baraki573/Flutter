@@ -6,6 +6,14 @@ double size(double portrait, double landscape) {
 			: landscape;
 }
 
+double horSize(double portrait, double landscape) {
+	return SizeConfig.safeBlockHorizontal * size(portrait, landscape);
+}
+
+double verSize(double portrait, double landscape) {
+	return SizeConfig.safeBlockVertical * size(portrait, landscape);
+}
+
 class SizeConfig {
 			static MediaQueryData _mediaQueryData;
 			static double screenWidth;
