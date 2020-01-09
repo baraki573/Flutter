@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:museum_app/SizeConfig.dart';
 import 'package:flutter/services.dart';
+import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/bottom_navigationbar/navigationbar_pattern.dart';
 
 class LogIn extends StatefulWidget {
@@ -84,7 +84,6 @@ class _LogInState extends State<LogIn> {
   }
 
   Widget _topButtons() {
-    var portrait = SizeConfig.orientationDevice == Orientation.portrait;
     String s1 = _form == FormType.login ? 'LOGIN' : 'LogIn';
     var funct1 = _form == FormType.login
         ? null
@@ -98,8 +97,7 @@ class _LogInState extends State<LogIn> {
               _form = FormType.signup;
             });
     return new Container(
-      margin: EdgeInsets.only(
-          right: (portrait ? 76 : 216), left: (portrait ? 76 : 216)),
+      margin: EdgeInsets.only(right: size(76, 216), left: size(76, 216)),
       height: 35,
       decoration: new BoxDecoration(
         color: Colors.grey,

@@ -28,7 +28,7 @@ class _TourListState extends State<TourList> {
         decoration: BoxDecoration(
           border: Border.all(color: Colors.black),
           borderRadius: BorderRadius.all(Radius.circular(10.0)),
-          image: DecorationImage(image: t.img, fit: BoxFit.cover),
+          image: DecorationImage(image: t.stops[0].imgs[0], fit: BoxFit.cover),
         ),
       );
 

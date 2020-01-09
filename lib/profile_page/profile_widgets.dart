@@ -33,8 +33,7 @@ class _FavWidgetState extends State<FavWidget> {
         // Horizontal Scrollable
         Container(
           padding: EdgeInsets.only(bottom: 20.0, top: 2.0),
-          height: SizeConfig.safeBlockVertical *
-              (SizeConfig.orientationDevice == Orientation.portrait ? 21 : 40),
+          height: verSize(21, 40),
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: list.length,
@@ -170,9 +169,7 @@ class _BadgeWidgetState extends State<BadgeWidget> {
     return Expanded(
       child: Container(
         margin: EdgeInsets.all(2.0),
-        height: SizeConfig.safeBlockVertical /
-            _perLine *
-            (SizeConfig.orientationDevice == Orientation.portrait ? 51 : 130),
+        height: verSize(51, 130) / _perLine,
         child: _getBadge(b, false),
       ),
     );
@@ -184,7 +181,7 @@ class _BadgeWidgetState extends State<BadgeWidget> {
         builder: (context) {
           return AlertDialog(
             title: Text(b.name),
-            contentPadding: EdgeInsets.only(bottom: 16),
+            contentPadding: EdgeInsets.only(bottom: 10),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -197,6 +194,7 @@ class _BadgeWidgetState extends State<BadgeWidget> {
   }
 
   Widget _getBadge(Badge b, popUp) {
+    SizeConfig().init(context);
     var perc = max(min(b.current / b.toGet * 100, 100), 0);
     return Stack(
       alignment: Alignment.center,
@@ -204,12 +202,7 @@ class _BadgeWidgetState extends State<BadgeWidget> {
         // Progress circle
         AnimatedCircularChart(
           key: popUp ? b.key2 : b.key,
-          size: Size.square(SizeConfig.safeBlockVertical /
-              _perLine *
-              (SizeConfig.orientationDevice == Orientation.portrait
-                  ? 54
-                  : 135) *
-              (popUp ? 1.3 : 1)),
+          size: Size.square(verSize(54, 135) * (popUp ? 1.3 : 1) / _perLine),
           initialChartData: [
             CircularStackEntry(
               [
@@ -222,14 +215,8 @@ class _BadgeWidgetState extends State<BadgeWidget> {
         ),
         // Picture/Badge
         Container(
-          width: SizeConfig.safeBlockHorizontal /
-              _perLine *
-              (SizeConfig.orientationDevice == Orientation.portrait ? 63 : 50) *
-              (popUp ? 1.3 : 1),
-          height: SizeConfig.safeBlockHorizontal /
-              _perLine *
-              (SizeConfig.orientationDevice == Orientation.portrait ? 63 : 50) *
-              (popUp ? 1.3 : 1),
+          width: horSize(63, 50) * (popUp ? 1.3 : 1) / _perLine,
+          height: horSize(63, 50) * (popUp ? 1.3 : 1) / _perLine,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             image: DecorationImage(
@@ -254,21 +241,11 @@ class _BadgeWidgetState extends State<BadgeWidget> {
   @override
   Widget build(BuildContext context) {
     this.context = context;
+    User u = getUser();
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16),
       alignment: Alignment.center,
-      child: _getGrid(
-        _perLine,
-        List.generate(16, (index) {
-          Badge b = Badge(
-              name: "Badge $index",
-              current: index.roundToDouble(),
-              toGet: 16,
-              img: AssetImage('assets/images/profile_test.png'),
-              color: Colors.primaries[index]);
-          return _buildBadge(b);
-        }),
-      ),
+      child: _getGrid(_perLine, u.badges.map((b) => _buildBadge(b)).toList()),
     );
   }
 }
