@@ -1,7 +1,8 @@
-import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:museum_app/Models.dart';
 import 'package:museum_app/SizeConfig.dart';
+import 'package:museum_app/profile_page/profile_widgets.dart';
 
 class Profile extends StatefulWidget {
   Profile({Key key}) : super(key: key);
@@ -11,13 +12,13 @@ class Profile extends StatefulWidget {
 }
 
 enum InfoType { fav, badge, stat }
+enum OptionType { editUs, editPw, editPp, about }
 
 class _ProfileState extends State<Profile> {
   InfoType _type = InfoType.fav;
 
   Widget _topInfo() {
-    var username = "Maria123_HD";
-    var profileImg = AssetImage('assets/images/profile_test.png');
+    User u = getUser();
     return Container(
       height: SizeConfig.safeBlockVertical *
           (SizeConfig.orientationDevice == Orientation.portrait ? 30 : 45),
@@ -35,10 +36,11 @@ class _ProfileState extends State<Profile> {
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.black, width: 2),
                   color: Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(80.0)),
+                  //borderRadius: BorderRadius.all(Radius.circular(80.0)),
+                  shape: BoxShape.circle,
                   image: DecorationImage(
-                    image: profileImg,
-                    fit: BoxFit.fill,
+                    image: u.img,
+                    fit: BoxFit.fill
                   ),
                 ),
               ),
@@ -46,7 +48,7 @@ class _ProfileState extends State<Profile> {
                 //alignment: Alignment.center,
                 //padding: EdgeInsets.only(left: 50),
                 child: Text(
-                  username,
+                  u.username,
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -60,32 +62,57 @@ class _ProfileState extends State<Profile> {
           Positioned(
             right: SizeConfig.blockSizeHorizontal * 2,
             top: SizeConfig.blockSizeVertical * 2,
-            child: IconButton(
-              //padding: EdgeInsets.all(1.0),
-              onPressed: () {
+            child: PopupMenuButton(
+              itemBuilder: (context) => [
+                _myPopUpItem(
+                    "Profilbild ändern", Icons.image, OptionType.editPp),
+                _myPopUpItem(
+                    "Username ändern", Icons.person, OptionType.editUs),
+                _myPopUpItem(
+                    "Passwort ändern", Icons.fiber_pin, OptionType.editPw),
+                _myPopUpItem("Über diese App", Icons.info, OptionType.about),
+              ],
+              onSelected: (result) => _select(result),
+              /*onPressed: () {
                 print("Options");
               },
-              iconSize: 35,
-              icon: Icon(Icons.settings),
-            ),
-          ),
-        ],
-      ),
+              iconSize: 35,*/
+              icon: Icon(Icons.settings, size: 35)))]));}
+
+  PopupMenuItem _myPopUpItem(String s, IconData i, OptionType t) {
+    return PopupMenuItem(
+      child: Row(children: [
+        Container(padding: EdgeInsets.only(right: 4), child: Icon(i)),
+        Text(s)
+      ]),
+      value: t,
     );
+  }
+
+  void _select(val) {
+    switch (val) {
+      // TODO build own about dialog in german. Maybe general dialog, val determines content
+      case OptionType.about:
+        showAboutDialog(context: context);
+        break;
+    }
   }
 
   Widget _customButtons(String text, InfoType type) {
     var selected = _type == type;
     return FlatButton(
-      textColor: Colors.black,
-      disabledTextColor: Colors.green,
+      //textColor: Colors.black,
+      //disabledTextColor: Colors.green,
       splashColor: Colors.greenAccent,
-      child: Text(text),
-      onPressed: (selected
-          ? null
-          : () => setState(() {
-                _type = type;
-              })),
+      child: Text(text,
+          style: TextStyle(
+              color: (selected ? Colors.green : Colors.black),
+              fontSize: (SizeConfig.orientationDevice == Orientation.portrait
+                  ? 16
+                  : 19))),
+      onPressed: () => setState(() {
+        _type = type;
+      }),
     );
   }
 
@@ -100,6 +127,7 @@ class _ProfileState extends State<Profile> {
       child: Column(
         children: <Widget>[
           ButtonBar(
+            buttonMinWidth: 100,
             alignment: MainAxisAlignment.center,
             children: <Widget>[
               _customButtons("Favoriten", InfoType.fav),
@@ -122,168 +150,6 @@ class _ProfileState extends State<Profile> {
       children: <Widget>[
         _topInfo(),
         _bottomInfo(),
-      ],
-    );
-  }
-}
-
-class FavWidget extends StatelessWidget {
-  Widget _getAbteilung(String name, Color color, List<ImageProvider> content) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        // Headline
-        Container(
-          padding: EdgeInsets.only(left: 20),
-          child: Text(
-            name,
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.bold,
-              fontSize: 17,
-            ),
-          ),
-        ),
-        // Horizontal Scrollable
-        Container(
-          padding: EdgeInsets.only(bottom: 20.0, top: 2.0),
-          height: SizeConfig.safeBlockVertical *
-              (SizeConfig.orientationDevice == Orientation.portrait ? 21 : 40),
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: content.length,
-            itemBuilder: (context, index) {
-              // One "bubble"
-              return Container(
-                margin: EdgeInsets.symmetric(horizontal: 12.0, vertical: 5.0),
-                child: FlatButton(
-                  padding: EdgeInsets.symmetric(vertical: 0.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(80.0),
-                    //side: BorderSide(color: Colors.red)
-                  ),
-                  onPressed: () {
-                    print("$name: $index");
-                  },
-                  child: Container(
-                    //padding: EdgeInsets.symmetric(vertical: 5.0),
-                    alignment: Alignment.center,
-                    width: SizeConfig.safeBlockHorizontal *
-                        (SizeConfig.orientationDevice == Orientation.portrait
-                            ? 27
-                            : 15),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black),
-                      color: Colors.white,
-                      borderRadius: BorderRadius.all(Radius.circular(80.0)),
-                      image: DecorationImage(
-                        image: content[index],
-                        fit: BoxFit.fill,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: color.withOpacity(0.8),
-                          spreadRadius: 1,
-                          blurRadius: 1,
-                          offset: Offset.fromDirection(pi / 4, 4.0),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        _getAbteilung("Zoologisch", Colors.red, [
-          AssetImage('assets/images/profile_test.png'),
-          AssetImage('assets/images/profile_test2.png'),
-          AssetImage('assets/images/profile_test2.png'),
-          AssetImage('assets/images/profile_test.png')
-        ]),
-        _getAbteilung("Skulpturen", Colors.blue, [
-          AssetImage('assets/images/profile_test.png'),
-          AssetImage('assets/images/profile_test.png')
-        ]),
-        _getAbteilung("Bilder", Colors.amber, [
-          AssetImage('assets/images/profile_test.png'),
-          AssetImage('assets/images/profile_test2.png'),
-          AssetImage('assets/images/profile_test.png'),
-          AssetImage('assets/images/profile_test.png'),
-          AssetImage('assets/images/profile_test2.png'),
-          AssetImage('assets/images/profile_test.png'),
-          AssetImage('assets/images/profile_test.png'),
-          AssetImage('assets/images/profile_test2.png'),
-          AssetImage('assets/images/profile_test.png'),
-          AssetImage('assets/images/profile_test2.png')
-        ]),
-        _getAbteilung("Bonus", Colors.deepPurple, [AssetImage('assets/images/haupthalle_hlm_blue.png')])
-      ],
-    );
-  }
-}
-
-class BadgeWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        height: SizeConfig.safeBlockVertical*(SizeConfig.orientationDevice==Orientation.portrait? 50:65),
-        child: GridView.count(
-          crossAxisCount: 2,
-          children: List.generate(
-            100,
-            (index) {
-              return Container(
-                margin: EdgeInsets.all(2.0),
-                color: Colors.red,
-                width: 2,
-                child: Text("llj"),
-              );
-            },
-          ),
-        ),
-    );
-  }
-}
-
-class StatWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        Text(
-          "Rundgänge: 5",
-          style: TextStyle(fontSize: 20),
-        ),
-        Text(
-          "Rundgänge: 5",
-          style: TextStyle(fontSize: 20),
-        ),
-        Text(
-          "Rundgänge: 5",
-          style: TextStyle(fontSize: 20),
-        ),
-        Text(
-          "Rundgänge: 5",
-          style: TextStyle(fontSize: 20),
-        ),
-        Text(
-          "Rundgänge: 5",
-          style: TextStyle(fontSize: 20),
-        ),
-        Text(
-          "Rundgänge: 5",
-          style: TextStyle(fontSize: 20),
-        ),
       ],
     );
   }

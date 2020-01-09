@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:museum_app/bottom_navigationbar/animated_navigationbar.dart';
 import 'package:museum_app/profile_page/profile_page.dart';
+import 'package:museum_app/tours_page/tours_page.dart';
 
 class BottomBarNavigationPatternExample extends StatefulWidget {
   final List<BarItem> barItems = [
@@ -37,7 +38,7 @@ class _BottomBarNavigationPatternExampleState
 
   List<Widget> arr = [
     Container(),
-    Container(),
+    Tours(),
     Container(),
     Profile(),
   ];
@@ -47,7 +48,7 @@ class _BottomBarNavigationPatternExampleState
     return Scaffold(
       body: AnimatedContainer(
         color: widget.barItems[selectedBarIndex].color,
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 500),
         child: arr[selectedBarIndex],
       ),
       bottomNavigationBar: AnimatedBottomBar(

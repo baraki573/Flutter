@@ -45,6 +45,7 @@ class _AnimatedBottomBarState extends State<AnimatedBottomBar>
       BarItem item = widget.barItems[i];
       bool isSelected = selectedBarIndex == i;
       _barItems.add(InkWell(
+        borderRadius: BorderRadius.circular(30.0),
         splashColor: Colors.transparent,
         onTap: () {
           setState(() {

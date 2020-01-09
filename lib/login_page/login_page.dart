@@ -54,6 +54,12 @@ class _LogInState extends State<LogIn> {
   }
 
   void _nextScreen() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     Navigator.push(
       context,
       MaterialPageRoute(
