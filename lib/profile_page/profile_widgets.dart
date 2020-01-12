@@ -14,74 +14,54 @@ class FavWidget extends StatefulWidget {
 }
 
 class _FavWidgetState extends State<FavWidget> {
-  Widget _buildAbteilung(Devision d, List<Item> list) {
+  Widget _buildAbteilung(Devision d, List<Exhibit> list) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        // Headline
-        Container(
-          padding: EdgeInsets.only(left: 20),
-          child: Text(
-            d.name,
-            style: TextStyle(
-              color: d.color,
-              fontWeight: FontWeight.bold,
-              fontSize: 17,
-            ),
-          ),
-        ),
-        // Horizontal Scrollable
-        Container(
-          padding: EdgeInsets.only(bottom: 20.0, top: 2.0),
-          height: verSize(21, 40),
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: list.length,
-            itemBuilder: (context, index) {
-              // One "bubble"
-              return Container(
-                margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 5.0),
-                child: Container(
-                  //alignment: Alignment.center,
-                  height: horSize(27, 16),
-                  width: horSize(27, 16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: d.color, width: 3),
-                    //color: Colors.white,
-                    shape: BoxShape.circle,
-                    image: DecorationImage(
-                      image: list[index].imgs[0],
-                      fit: BoxFit.fill,
-                    ),
-                    /*boxShadow: [
-                        BoxShadow(
-                          color: color.withOpacity(0.5),
-                          spreadRadius: 1,
-                          blurRadius: 1,
-                          offset: Offset.fromDirection(pi / 4, 4.0),
-                        ),
-                      ],*/
-                  ),
-                  child: FlatButton(
-                    splashColor: d.color.withOpacity(.1),
-                    highlightColor: d.color.withOpacity(.05),
-                    //padding: EdgeInsets.symmetric(vertical: 0.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(80.0),
-                    ),
-                    onPressed: () => dialog(list[index]),
-                    child: null,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          // Headline
+          Container(
+              padding: EdgeInsets.only(left: 20),
+              child: Text(d.name,
+                  style: TextStyle(
+                    color: d.color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                  ))),
+          // Horizontal Scrollable
+          Container(
+              padding: EdgeInsets.only(bottom: 20.0, top: 2.0),
+              height: verSize(21, 40),
+              child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: list.length,
+                  itemBuilder: (context, index) {
+                    // One "bubble"
+                    return Container(
+                        margin: EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 5.0),
+                        height: horSize(27, 16),
+                        width: horSize(27, 16),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: d.color, width: 3),
+                            shape: BoxShape.circle,
+                            image: DecorationImage(
+                              image: list[index].imgs[0],
+                              fit: BoxFit.fill,
+                            )),
+                        child: FlatButton(
+                          splashColor: d.color.withOpacity(.1),
+                          highlightColor: d.color.withOpacity(.05),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(80.0),
+                          ),
+                          onPressed: () => dialog(list[index]),
+                          child: null,
+                        ));
+                  }))
+        ]);
   }
 
-  void dialog(Item i) {
+  void dialog(Exhibit i) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

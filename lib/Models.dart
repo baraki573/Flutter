@@ -1,18 +1,38 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_circular_chart/flutter_circular_chart.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class Tour {
   String name;
   String author;
   String description;
-  List<Item> stops;
+  List<Stop> stops;
+  Map<String, List<Task>> tasks;
   double rating;
-  DateTime ttl;
+  DateTime creationTime;
 
   Tour(this.name, this.author, this.stops,
-      {this.description = "", this.rating = 0, this.ttl})
-      : assert(stops.length >= 2);
+      {this.description = "",
+      this.rating = 0,
+      this.creationTime,
+      this.tasks = const {}}) {
+    assert(stops.length >= 2);
+  }
+
+  Widget getRating(
+          {color = Colors.black, color2 = Colors.white, size = 40.0}) =>
+      RatingBarIndicator(
+        rating: min(max(rating, 0), 5),
+        itemSize: size,
+        itemBuilder: (BuildContext context, int index) => Icon(
+          Icons.star,
+          color: color,
+        ),
+        unratedColor: color2.withOpacity(.5),
+      );
 }
 
 class Badge {
@@ -34,7 +54,7 @@ class User {
   String username;
   ImageProvider img;
   List<Badge> badges = [];
-  List<Item> fav = [];
+  List<Exhibit> fav = [];
   List<Tour> tours = [];
 
   User(this.username,
@@ -51,9 +71,27 @@ class Devision {
   Devision(this.name, this.color);
 }
 
-class Item {
+enum SubmitMode { TEXT, PHOTO, SOUND }
+
+class Task {
+  String descr;
+  String task;
+  SubmitMode mode;
+
+  Task(this.task, this.mode, {this.descr = ""});
+}
+
+class Stop {
   String name;
+  String descr;
   List<ImageProvider> imgs;
+
+  Stop(this.name, this.descr, this.imgs) : assert(imgs.length >= 1);
+}
+
+class Exhibit extends Stop {
+  //String name;
+  //List<ImageProvider> imgs;
   Devision dev;
   String year;
   String artType;
@@ -61,14 +99,15 @@ class Item {
   String material;
   String size;
   String location;
-  String descr;
+
+  //String descr;
   String interContext;
 
-  Item(
-    this.name,
+  Exhibit(
+    name,
     this.dev,
-    this.descr,
-    this.imgs, {
+    descr,
+    imgs, {
     this.creator,
     this.year,
     this.artType,
@@ -76,7 +115,7 @@ class Item {
     this.size,
     this.location,
     this.interContext,
-  }) : assert(imgs.length >= 1);
+  }) : super(name, descr, imgs);
 
   Map<String, String> getInformation() {
     Map<String, String> map = {
@@ -115,7 +154,7 @@ User getUser() {
     }),
     fav: List.generate(4, (index) {
           String s = (index % 3 == 0 ? "" : "2");
-          return Item(
+          return Exhibit(
             "Zoologisch $index",
             devisions[0],
             "Description foo",
@@ -125,7 +164,7 @@ User getUser() {
         }) +
         List.generate(2, (index) {
           String s = (index % 2 == 0 ? "" : "2");
-          return Item(
+          return Exhibit(
             "Skulpturen $index",
             devisions[1],
             "More Descriptions",
@@ -135,7 +174,7 @@ User getUser() {
         }) +
         List.generate(10, (index) {
           String s = (index % 3 == 0 ? "" : "2");
-          return Item(
+          return Exhibit(
             "Bilder $index",
             devisions[2],
             "Interessante Details",
@@ -144,7 +183,7 @@ User getUser() {
           );
         }) +
         List.generate(1, (index) {
-          return Item(
+          return Exhibit(
             "Bonus $index",
             devisions[3],
             "To be written",
@@ -156,9 +195,16 @@ User getUser() {
       Tour(
         "Test Tour",
         "Maria123_XD",
-        List.generate(17, (index) {
+        [
+          Stop(
+            "Einführung",
+            "Hier steht ein super spannender Einführungstext zur Tour, der mir bspw. inhaltlich schon Informationen vermittelt, um mich auf die Objekte vorzubereiten.\n"+
+                "Man könnte hier bspw. die Fragestellung näher erläutern, die nun mit den verschiedenen Objekten verfolgt wird. Ggfs. wird hier auch ein \"Rätsel\" aufgemacht, das es im Laufe der Tour zu lösen gilt ...",
+            [AssetImage('assets/images/haupthalle_hlm_blue.png')],
+          ),
+        ] + List.generate(17, (index) {
           String s = (index % 3 == 0 ? "" : "2");
-          return Item(
+          return Exhibit(
             "Zoologisch $index",
             devisions[0],
             "Hier kann man sein gesamtes Herzblut reinstecken und dem User viele wertvolle Informationen präsentieren. Idealerweise wird hier jedoch nicht zu viel geschrieben. Es ist jedoch möglich, hier sehr lange und detailierte Beschreibungen einzugeben, die korrekt angezeigt werden können.",
@@ -176,13 +222,12 @@ User getUser() {
         //author: u.username,
         description: "Diese Beschreibung ist zum Glück nicht so lang.",
         //img: AssetImage('assets/images/profile_test.png'),
-        //ttl: DateTime.parse("2020-02-03"),
       ),
       Tour(
         "Meine erste Tour",
         "1412",
         List.generate(4, (index) {
-          return Item(
+          return Exhibit(
             "Zoologisch $index",
             devisions[0],
             "",
@@ -190,7 +235,7 @@ User getUser() {
             //creator: "Unknown",
           );
         }),
-        ttl: DateTime.parse("2020-01-05"),
+        creationTime: DateTime.parse("2020-02-05"),
         rating: 1.2,
         description:
             "Einen Roman schreiben die User hier bestimmt nicht hin. Und wenn doch, muss ich mir dafür etwas einfallen lassen.",
@@ -199,15 +244,22 @@ User getUser() {
       Tour(
         "Zoologische Tour mit interessanten Details",
         "MyBestUser",
-        List.generate(4, (index) {
-          return Item(
-            "Zoologisch $index",
-            devisions[0],
-            "Ich weiß nicht, was ich hier rein schreiben soll.",
-            [AssetImage('assets/images/profile_test.png')],
-            creator: "null",
-          );
-        }),
+        [
+              Stop(
+                "Einführung",
+                "Mit dieser Tour werden Sie interessante neue Fakten kennenlernen. Sie werden das Museum so erkunden, wie es bis heute noch kein Mensch getan hat. Nebenbei werden Sie spannende Aufgaben lösen.",
+                [AssetImage('assets/images/profile_test.png')],
+              ),
+            ] +
+            List.generate(4, (index) {
+              return Exhibit(
+                "Zoologisch $index",
+                devisions[0],
+                "Ich weiß nicht, was ich hier rein schreiben soll.",
+                [AssetImage('assets/images/profile_test.png')],
+                creator: "null",
+              );
+            }),
         rating: 2.6,
         //author: User(username: "xXIchHabeNochNieSoEinenLangenUsernamenGesehen573Xx"),
         description: "Diese Tour ist sehr lehrreich.",
