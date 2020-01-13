@@ -97,7 +97,7 @@ class _LogInState extends State<LogIn> {
               _form = FormType.signup;
             });
     return new Container(
-      margin: EdgeInsets.only(right: size(76, 216), left: size(76, 216)),
+      margin: EdgeInsets.only(right: size(88, 216), left: size(88, 216)),
       height: 35,
       decoration: new BoxDecoration(
         color: Colors.grey,

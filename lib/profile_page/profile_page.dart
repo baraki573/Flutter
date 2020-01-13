@@ -38,10 +38,7 @@ class _ProfileState extends State<Profile> {
                   color: Colors.white,
                   //borderRadius: BorderRadius.all(Radius.circular(80.0)),
                   shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: u.img,
-                    fit: BoxFit.fill
-                  ),
+                  image: DecorationImage(image: u.img, fit: BoxFit.fill),
                 ),
               ),
               Container(
@@ -77,7 +74,13 @@ class _ProfileState extends State<Profile> {
                 print("Options");
               },
               iconSize: 35,*/
-              icon: Icon(Icons.settings, size: 35)))]));}
+              icon: Icon(Icons.settings, size: 35),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   PopupMenuItem _myPopUpItem(String s, IconData i, OptionType t) {
     return PopupMenuItem(

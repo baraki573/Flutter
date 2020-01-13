@@ -12,8 +12,10 @@ class MyApp extends StatelessWidget {
     precacheImage(AssetImage("assets/images/orientierungsplan_high.png"), context);
     return MaterialApp(
       debugShowCheckedModeBanner: true,
+      locale: Locale('de'),
       title: 'Museum App',
       theme: ThemeData(
+        buttonTheme:ButtonThemeData(minWidth: 5),
         primarySwatch: Colors.lightBlue,
       ),
       home: Onboarding(),

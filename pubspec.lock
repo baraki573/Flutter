@@ -35,7 +35,7 @@ packages:
       name: carousel_slider
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.4.0"
+    version: "1.4.1"
   charcode:
     dependency: transitive
     description:
@@ -103,7 +103,7 @@ packages:
       name: flutter_rating_bar
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.0+1"
+    version: "3.0.1+1"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -130,6 +130,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.16.1"
+  keyboard_visibility:
+    dependency: "direct main"
+    description:
+      name: keyboard_visibility
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.5.6"
   matcher:
     dependency: transitive
     description:

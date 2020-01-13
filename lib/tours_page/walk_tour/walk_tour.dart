@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:expandable_bottom_bar/expandable_bottom_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -115,20 +117,21 @@ class _TourWalkerState extends State<TourWalker>
       length,
       (index) => Container(
         margin: EdgeInsets.symmetric(vertical: 7),
+        foregroundDecoration:
+            BoxDecoration(color: index==_currentItem?Colors.white.withOpacity(.35):Colors.transparent),
         decoration: BoxDecoration(
           color: Colors.pinkAccent,
           border: Border.all(color: Colors.black),
           borderRadius: BorderRadius.all(Radius.circular(15)),
         ),
-        child: FlatButton(
-          onPressed: () => setState(() {
-            //_currentImage = 0;
-            _currentItem = index;
-            bbc.swap();
-          }),
-          padding: EdgeInsets.all(0),
-          child: ClipRRect(
-            borderRadius: BorderRadius.all(Radius.circular(15)),
+        child: ClipRRect(
+          borderRadius: BorderRadius.all(Radius.circular(15)),
+          child: FlatButton(
+            onPressed: index==_currentItem?null:() => setState(() {
+              _currentItem = index;
+              bbc.swap();
+            }),
+            padding: EdgeInsets.all(0),
             child: Row(
               mainAxisSize: MainAxisSize.max,
               children: [
@@ -162,103 +165,145 @@ class _TourWalkerState extends State<TourWalker>
     );
   }
 
+  void _exitTour() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Achtung"),
+        content: Text(
+            "Wenn Sie die Tour jetzt beenden, gehen ggf. Ihre gesamten Antworten verloren."),
+        actions: [
+          FlatButton(
+            onPressed: () {
+              widget.tour.tasks
+                  .forEach((s, list) => list.forEach((t) => t.ctrl.clear()));
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: Text("Beenden"),
+          ),
+          FlatButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Tour fortsetzen"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     int length = widget.tour.stops.length;
-    return Scaffold(
-      extendBody: true,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: GestureDetector(
-        onVerticalDragUpdate: bbc.onDrag,
-        onVerticalDragEnd: bbc.onDragEnd,
-        child: FloatingActionButton.extended(
-          label:
-              Text("Zieh mich", style: TextStyle(fontWeight: FontWeight.bold)),
-          elevation: 1,
-          // here: buttonColor
-          backgroundColor: Colors.pink,
-          // here: textColor
-          foregroundColor: Colors.white,
-          onPressed: () => bbc.swap(),
-        ),
-      ),
-      bottomNavigationBar: BottomExpandableAppBar(
-        controller: bbc,
-        expandedHeight: dragLength,
-        shape: AutomaticNotchedShape(
-            RoundedRectangleBorder(), StadiumBorder(side: BorderSide())),
-        //expandedBackColor: Colors.red,
-        expandedDecoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
-            color: Colors.grey[100],
-            border: Border.all(color: Colors.black, width: 1.5)),
-        expandedBody: ClipRRect(
-          borderRadius: BorderRadius.circular(30),
-          child: ListView(
-              padding:
-                  EdgeInsets.only(left: 16, right: 16, top: 20, bottom: 50),
-              children: _previewStops(widget.tour
-                  .stops) //List.generate(100, (i) => Text("Hier ist Nummer $i")),
-              ),
-        ),
-        bottomAppBarBody: Container(
-          decoration: BoxDecoration(
-            color: Colors.pink,
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(15), topRight: Radius.circular(15)),
-            border: Border.all(color: Colors.black, width: 1.5),
+    var bottomOff = MediaQuery.of(context).viewInsets.bottom;
+
+    return WillPopScope(
+      onWillPop: () {
+        if (_currentItem == 0)
+          _exitTour();
+        else
+          setState(() => _currentItem--);
+        return Future.value(false);
+      },
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          extendBody: true,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerDocked,
+          floatingActionButton: GestureDetector(
+            onVerticalDragUpdate: bbc.onDrag,
+            onVerticalDragEnd: bbc.onDragEnd,
+            child: FloatingActionButton.extended(
+              label: Text("Zieh mich",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              elevation: 1,
+              // here: buttonColor
+              backgroundColor: Colors.pink,
+              // here: textColor
+              foregroundColor: Colors.white,
+              onPressed: () => bbc.swap(),
+            ),
           ),
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              FlatButton(
-                onPressed: () => Navigator.pop(context),
-                child: Row(children: [
-                  Icon(Icons.flag, color: Colors.white),
-                  Text(
-                    "Beenden",
-                    style: TextStyle(color: Colors.white),
-                  )
-                ]),
+          bottomNavigationBar: BottomExpandableAppBar(
+            //bottomOffset: MediaQuery.of(context).viewInsets.bottom+10,
+            controller: bbc,
+            expandedHeight: dragLength,
+            shape: AutomaticNotchedShape(
+                RoundedRectangleBorder(), StadiumBorder(side: BorderSide())),
+            //expandedBackColor: Colors.red,
+            expandedDecoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+                color: Colors.grey[100],
+                border: Border.all(color: Colors.black, width: 1.5)),
+            expandedBody: ClipRRect(
+              borderRadius: BorderRadius.circular(30),
+              child: ListView(
+                  padding:
+                      EdgeInsets.only(left: 16, right: 16, top: 20, bottom: 50),
+                  children: _previewStops(widget.tour.stops)),
+            ),
+            bottomAppBarBody: Container(
+              decoration: BoxDecoration(
+                color: Colors.pink,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+                border: Border.all(color: Colors.black, width: 1.5),
               ),
-              Spacer(flex: 2),
-              FlatButton(
-                onPressed: _currentItem == length - 1
-                    ? null
-                    : () => setState(() {
-                          _currentItem++;
-                          //_currentImage = 0;
-                        }),
-                child: Row(children: [
-                  Text("Weiter", style: TextStyle(color: Colors.white)),
-                  Icon(Icons.arrow_forward, color: Colors.white)
-                ]),
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                children: <Widget>[
+                  FlatButton(
+                    onPressed: _exitTour, //{Navigator.pop(context);},
+                    child: Row(children: [
+                      Icon(Icons.flag, color: Colors.white),
+                      Text(
+                        "Beenden",
+                        style: TextStyle(color: Colors.white),
+                      )
+                    ]),
+                  ),
+                  Spacer(flex: 2),
+                  FlatButton(
+                    onPressed: _currentItem == length - 1
+                        ? null
+                        : () => setState(() {
+                              _currentItem++;
+                              //_currentImage = 0;
+                            }),
+                    child: Row(children: [
+                      Text("Weiter", style: TextStyle(color: Colors.white)),
+                      Icon(Icons.arrow_forward, color: Colors.white)
+                    ]),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          backgroundColor: Colors.white,
+          body: Column(
+            children: [
+              _navigator(),
+              Container(
+                alignment: Alignment.topCenter,
+                padding: EdgeInsets.all(0),
+                height: verSize(83, 100),
+                child: ListView(
+                  padding: EdgeInsets.all(0),
+                  children: [
+                    TourWalkerContent(widget.tour.stops[_currentItem]),
+                    TourWalkerTasks(widget
+                        .tour.tasks[widget.tour.stops[_currentItem].name]),
+                    Container(
+                        height: bottomOff == 0 ? verSize(11, 7) : bottomOff),
+                    //_content(),
+                  ],
+                ),
               ),
             ],
           ),
         ),
-      ),
-      backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          _navigator(),
-          Container(
-            alignment: Alignment.topCenter,
-            padding: EdgeInsets.all(0),
-            height: verSize(83, 100),
-            child: ListView(
-              padding: EdgeInsets.all(0),
-              children: [
-                TourWalkerContent(widget.tour.stops[_currentItem]),
-                TourWalkerTasks(widget.tour.tasks[widget.tour.stops[_currentItem].name]),
-                Container(height: verSize(11, 7)),
-                //_content(),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

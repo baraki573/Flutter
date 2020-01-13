@@ -17,7 +17,6 @@ class TourList extends StatefulWidget {
 
   @override
   _TourListState createState() => _TourListState();
-
 }
 
 class _TourListState extends State<TourList> {
@@ -366,8 +365,8 @@ class _TourListState extends State<TourList> {
         .toList();
 
     return Column(
-      children: list
-+[
+      children: list +
+          [
             Container(
                 height: SizeConfig.safeBlockVertical *
                     (list.length < 2 ? size(11, 0) : 0))

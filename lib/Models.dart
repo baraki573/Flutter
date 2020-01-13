@@ -77,6 +77,7 @@ class Task {
   String descr;
   String task;
   SubmitMode mode;
+  final ctrl = TextEditingController();
 
   Task(this.task, this.mode, {this.descr = ""});
 }
@@ -193,36 +194,48 @@ User getUser() {
         }),
     tours: [
       Tour(
-        "Test Tour",
-        "Maria123_XD",
-        [
-          Stop(
-            "Einführung",
-            "Hier steht ein super spannender Einführungstext zur Tour, der mir bspw. inhaltlich schon Informationen vermittelt, um mich auf die Objekte vorzubereiten.\n"+
-                "Man könnte hier bspw. die Fragestellung näher erläutern, die nun mit den verschiedenen Objekten verfolgt wird. Ggfs. wird hier auch ein \"Rätsel\" aufgemacht, das es im Laufe der Tour zu lösen gilt ...",
-            [AssetImage('assets/images/haupthalle_hlm_blue.png')],
+          "Test Tour",
+          "Maria123_XD",
+          [
+                Stop(
+                  "Einführung",
+                  "Hier steht ein super spannender Einführungstext zur Tour, der mir bspw. inhaltlich schon Informationen vermittelt, um mich auf die Objekte vorzubereiten.\n" +
+                      "Man könnte hier bspw. die Fragestellung näher erläutern, die nun mit den verschiedenen Objekten verfolgt wird. Ggfs. wird hier auch ein \"Rätsel\" aufgemacht, das es im Laufe der Tour zu lösen gilt ...",
+                  [AssetImage('assets/images/haupthalle_hlm_blue.png')],
+                ),
+              ] +
+              List.generate(17, (index) {
+                String s = (index % 3 == 0 ? "" : "2");
+                return Exhibit(
+                  "Zoologisch $index",
+                  devisions[0],
+                  "Hier kann man sein gesamtes Herzblut reinstecken und dem User viele wertvolle Informationen präsentieren. Idealerweise wird hier jedoch nicht zu viel geschrieben. Es ist jedoch möglich, hier sehr lange und detailierte Beschreibungen einzugeben, die korrekt angezeigt werden können.",
+                  List.generate(
+                      (index % 3) + 1,
+                      (i) => AssetImage(
+                          'assets/images/profile_test' + s + '.png')),
+                  creator: "Who",
+                  year: "Im Jahre 500 vor DaVinci",
+                  material: "Feinstes Mahagoni",
+                  size: "4 Lichtjahre",
+                  artType: "Radierung",
+                  location: "Rom",
+                );
+              }),
+          rating: 4.6,
+          //author: u.username,
+          description: "Diese Beschreibung ist zum Glück nicht so lang.",
+          tasks: {
+            "Zoologisch 0": [
+              Task("Wer bin ich?", SubmitMode.TEXT),
+              Task("Wer bist du?", SubmitMode.TEXT,
+                  descr:
+                      "Ich kann hier sehr lange Beschreibungen einfügen. Die User wissen dann genauer, was in der Aufgabe von ihnen erwartet wird."),
+              Task("Stelle eine sehr lange Antwort ein, die möglicherweise noch sehr viel Länger als diese Aufgabe ist.", SubmitMode.TEXT),
+            ]
+          }
+          //img: AssetImage('assets/images/profile_test.png'),
           ),
-        ] + List.generate(17, (index) {
-          String s = (index % 3 == 0 ? "" : "2");
-          return Exhibit(
-            "Zoologisch $index",
-            devisions[0],
-            "Hier kann man sein gesamtes Herzblut reinstecken und dem User viele wertvolle Informationen präsentieren. Idealerweise wird hier jedoch nicht zu viel geschrieben. Es ist jedoch möglich, hier sehr lange und detailierte Beschreibungen einzugeben, die korrekt angezeigt werden können.",
-            List.generate((index % 3) + 1,
-                (i) => AssetImage('assets/images/profile_test' + s + '.png')),
-            creator: "Who",
-            year: "Im Jahre 500 vor DaVinci",
-            material: "Feinstes Mahagoni",
-            size: "4 Lichtjahre",
-            artType: "Radierung",
-            location: "Rom",
-          );
-        }),
-        rating: 4.6,
-        //author: u.username,
-        description: "Diese Beschreibung ist zum Glück nicht so lang.",
-        //img: AssetImage('assets/images/profile_test.png'),
-      ),
       Tour(
         "Meine erste Tour",
         "1412",
