@@ -1,16 +1,9 @@
-import 'dart:math';
-
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:expandable/expandable.dart';
-import 'package:expandable_bottom_bar/expandable_bottom_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:museum_app/Models.dart';
 import 'package:museum_app/SizeConfig.dart';
-import 'package:museum_app/map/map_page.dart';
-import 'package:photo_view/photo_view.dart';
 
 class TourWalkerTasks extends StatefulWidget {
   final List<Task> tasks;
@@ -96,7 +89,7 @@ class _TourWalkerTasksState extends State<TourWalkerTasks> {
   Widget build(BuildContext context) {
     if (widget.tasks == null || widget.tasks.length < 1) return Container();
     return Container(
-      padding: EdgeInsets.only(left: 16, right: horSize(17, 17)),
+      padding: EdgeInsets.only(left: 16, right: horSize(17, 10)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: widget.tasks

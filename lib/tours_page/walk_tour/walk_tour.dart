@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:expandable_bottom_bar/expandable_bottom_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -20,20 +18,14 @@ class TourWalker extends StatefulWidget {
 }
 
 class _TourWalkerState extends State<TourWalker>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   int _currentItem = 0;
   BottomBarController bbc;
-  final double dragLength = 420.0;
-
-  @override
-  void initState() {
-    super.initState();
-    bbc = BottomBarController(vsync: this, dragLength: dragLength);
-  }
+  //final double dragLength = verSize(60, 60); //420
 
   @override
   void dispose() {
-    bbc.dispose();
+    bbc?.dispose();
     super.dispose();
   }
 
@@ -42,7 +34,7 @@ class _TourWalkerState extends State<TourWalker>
     Color colorNav = Colors.white;
     return Container(
       padding: EdgeInsets.only(top: 30, left: 15, right: 15, bottom: 9),
-      height: verSize(17, 31),
+      height: verSize(17, 25),
       decoration: BoxDecoration(
         color: Colors.pink,
         border: Border(bottom: BorderSide(color: Colors.black, width: 1.5)),
@@ -54,7 +46,7 @@ class _TourWalkerState extends State<TourWalker>
           Container(
             //color: Colors.orange,
             alignment: Alignment.centerLeft,
-            width: horSize(17, 27),
+            width: horSize(17, 10),
             child: (widget.tour.stops[_currentItem] is Exhibit
                 ? Text(
                     "Station\n" + (_currentItem + 1).toString() + " / $length",
@@ -70,7 +62,7 @@ class _TourWalkerState extends State<TourWalker>
           Spacer(),
           Container(
             //color: Colors.red,
-            width: horSize(50, 30),
+            width: horSize(50, 65),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -98,10 +90,10 @@ class _TourWalkerState extends State<TourWalker>
           Container(
             //color: Colors.orange,
             alignment: Alignment.centerRight,
-            width: horSize(15, 27),
+            width: horSize(15, 10),
             child: FlatButton(
                 shape: CircleBorder(),
-                padding: EdgeInsets.all(12),
+                padding: EdgeInsets.all(size(12, 7)),
                 child: Icon(Icons.map, size: 30, color: colorNav),
                 onPressed: () => Navigator.push(context,
                     MaterialPageRoute(builder: (context) => MapPage()))),
@@ -194,6 +186,12 @@ class _TourWalkerState extends State<TourWalker>
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
+    double dragLength = verSize(68, 55);
+
+    bbc?.dispose();
+    bbc = BottomBarController(vsync: this, dragLength: dragLength);
+    bbc.close();
+
     int length = widget.tour.stops.length;
     var bottomOff = MediaQuery.of(context).viewInsets.bottom;
 
@@ -288,7 +286,7 @@ class _TourWalkerState extends State<TourWalker>
               Container(
                 alignment: Alignment.topCenter,
                 padding: EdgeInsets.all(0),
-                height: verSize(83, 100),
+                height: verSize(83, 76),
                 child: ListView(
                   padding: EdgeInsets.all(0),
                   children: [
@@ -296,7 +294,7 @@ class _TourWalkerState extends State<TourWalker>
                     TourWalkerTasks(widget
                         .tour.tasks[widget.tour.stops[_currentItem].name]),
                     Container(
-                        height: bottomOff == 0 ? verSize(11, 7) : bottomOff),
+                        height: bottomOff == 0 ? verSize(11, 21) : bottomOff),
                     //_content(),
                   ],
                 ),
