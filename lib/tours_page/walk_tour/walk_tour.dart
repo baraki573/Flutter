@@ -128,8 +128,8 @@ class _TourWalkerState extends State<TourWalker>
               mainAxisSize: MainAxisSize.max,
               children: [
                 Container(
-                  width: horSize(35, 20),
-                  height: verSize(18, 20),
+                  width: horSize(35, 30),
+                  height: verSize(17, 20),
                   decoration: BoxDecoration(
                     image: DecorationImage(
                         image: stops[index].imgs[0], fit: BoxFit.cover),
@@ -137,8 +137,9 @@ class _TourWalkerState extends State<TourWalker>
                   ),
                 ),
                 Container(
+                  color: Colors.yellow,
                   alignment: Alignment.center,
-                  width: horSize(45, 47),
+                  width: horSize(45, 59),
                   padding: EdgeInsets.symmetric(horizontal: 2),
                   child: Text(
                     (index + 1).toString() + " / $length\n" + stops[index].name,

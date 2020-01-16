@@ -2,14 +2,11 @@ import 'dart:math';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:expandable/expandable.dart';
-import 'package:expandable_bottom_bar/expandable_bottom_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:museum_app/Models.dart';
 import 'package:museum_app/SizeConfig.dart';
-import 'package:museum_app/map/map_page.dart';
-import 'package:museum_app/tours_page/walk_tour/walk_tour_tasks.dart';
 import 'package:photo_view/photo_view.dart';
 
 class TourWalkerContent extends StatefulWidget {
@@ -39,19 +36,34 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
           enableInfiniteScroll: false,
           items: widget.stop.imgs
               .map(
-                (img) => Stack(
-                  children: [
-                    Container(
-                      //margin: EdgeInsets.symmetric(horizontal: 16),
-                      //height: SizeConfig.safeBlockVertical * 40,
-                      //width: SizeConfig.safeBlockHorizontal * 100,
-                      decoration: BoxDecoration(
-                        //borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                        border: Border.all(color: Colors.black),
-                        image: DecorationImage(image: img, fit: BoxFit.cover),
-                      ),
+                (img) => GestureDetector(
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => _ImageDetail("A", img))),//_ImageDetail("A", img))),
+                  //onTap: () => _imagePopup(widget.stop.imgs[_currentImage]),
+                  child: Container(
+                    //color: Colors.green,
+                    //height: verSize(52, 68.5),
+                    //margin: EdgeInsets.symmetric(horizontal: 16),
+                    //height: SizeConfig.safeBlockVertical * 40,
+                    //width: SizeConfig.safeBlockHorizontal * 100,
+                    //decoration: BoxDecoration(
+                    //borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                    //border: Border.all(color: Colors.black),
+                    //image: DecorationImage(image: img, fit: BoxFit.cover),
+                    //),
+                    child: Hero(
+                      transitionOnUserGestures: true,
+                      child: Image(
+                          //height: verSize(57, 68.5),
+                          width: horSize(100, 100),
+                          image: img,
+                          fit: BoxFit.cover),
+                      tag: "A",
                     ),
-                    Positioned(
+                  ),
+                  /*Positioned(
                       top: 7,
                       right: 23,
                       height: SizeConfig.safeBlockVertical * 6,
@@ -66,9 +78,7 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
                         onPressed: () {
                           _imagePopup(widget.stop.imgs[_currentImage]);
                         },
-                      ),
-                    ),
-                  ],
+                      ),*/
                 ),
               )
               .toList(),
@@ -101,31 +111,44 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => Stack(
-          children: [
-            PhotoView(
-              imageProvider: img,
-              maxScale: 3.0,
-              minScale: PhotoViewComputedScale.contained,
-              backgroundDecoration: const BoxDecoration(
-                color: Colors.black,
+        builder: (context) => GestureDetector(
+          onVerticalDragEnd: (det) {
+            //if (det.primaryVelocity < 0) Navigator.pop(context);
+          },
+          //print(det.velocity.toString()),
+          onPanUpdate: (details) {
+            if (details.delta.dy > 0) {
+              // swiping in right direction
+              print("J");
+            }
+          },
+          child: Stack(
+            children: [
+              PhotoView(
+                heroAttributes: PhotoViewHeroAttributes(tag: _currentImage),
+                imageProvider: img,
+                maxScale: 3.0,
+                minScale: PhotoViewComputedScale.contained,
+                backgroundDecoration: const BoxDecoration(
+                  color: Colors.black,
+                ),
               ),
-            ),
-            Positioned(
-              top: 35,
-              left: 7,
-              height: SizeConfig.safeBlockVertical * 6,
-              width: SizeConfig.safeBlockVertical * 6,
-              child: FlatButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-                padding: EdgeInsets.all(0),
-                color: Colors.black.withOpacity(0.3),
-                child: Icon(Icons.arrow_back, color: Colors.white, size: 32),
-                onPressed: () => Navigator.pop(context),
+              Positioned(
+                top: 35,
+                left: 7,
+                height: SizeConfig.safeBlockVertical * 6,
+                width: SizeConfig.safeBlockVertical * 6,
+                child: FlatButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  padding: EdgeInsets.all(0),
+                  color: Colors.black.withOpacity(0.3),
+                  child: Icon(Icons.arrow_back, color: Colors.white, size: 32),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -221,3 +244,46 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
     );
   }
 }
+
+class _ImageDetail extends StatelessWidget {
+  ImageProvider _img;
+  var _tag;
+
+  _ImageDetail(this._tag, this._img);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(body: GestureDetector(
+      onTap: () => Navigator.pop(context),
+      //onVerticalDragEnd: (a)=>print(a.primaryVelocity),
+      child: Stack(
+        children: [
+          PhotoView(
+            heroAttributes: const PhotoViewHeroAttributes(tag: "A", transitionOnUserGestures: true),
+            imageProvider: _img,
+            maxScale: 3.0,
+            minScale: PhotoViewComputedScale.contained,
+            backgroundDecoration: const BoxDecoration(
+              color: Colors.black,
+            ),
+          ),
+          Positioned(
+            top: 35,
+            left: 7,
+            height: SizeConfig.safeBlockVertical * 6,
+            width: SizeConfig.safeBlockVertical * 6,
+            child: FlatButton(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+              padding: EdgeInsets.all(0),
+              color: Colors.black.withOpacity(0.3),
+              child: Icon(Icons.arrow_back, color: Colors.white, size: 32),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ],
+      ),),
+    );
+  }
+}
+

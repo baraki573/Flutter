@@ -213,7 +213,7 @@ User getUser() {
                   List.generate(
                       (index % 3) + 1,
                       (i) => AssetImage(
-                          'assets/images/profile_test' + s + '.png')),
+                          'assets/images/profile_test' + (i==0?"":s) + '.png')),
                   creator: "Who",
                   year: "Im Jahre 500 vor DaVinci",
                   material: "Feinstes Mahagoni",
