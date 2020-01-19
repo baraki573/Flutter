@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:museum_app/onboarding/onboarding.dart';
+import 'package:museum_app/onboarding/museum_page.dart';
 
 //void main() => runApp(MyApp());
 void main() => runApp(MyApp());
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.lightBlue,
       ),
       home: Onboarding(),
+      //home: museum_page(),
     );
   }
 }

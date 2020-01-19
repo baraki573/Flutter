@@ -86,43 +86,32 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         Container(
+                          margin: EdgeInsets.only(left: 16.0, right:16.0, top:10),
                           alignment: Alignment.center,
                           child: SafeArea(
                             bottom: false,
                             child: Image.asset(page.imageUrl, 
-                            width: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 80 : SizeConfig.safeBlockHorizontal * 80, 
-                            height: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockVertical * 45 : SizeConfig.safeBlockVertical * 40,)
+                            width: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 80 : SizeConfig.safeBlockHorizontal * 30, 
+                            height: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockVertical * 35 : SizeConfig.safeBlockVertical * 20,)
                           )
                         ),
                         Container(
                           margin: EdgeInsets.only(left: 16.0, right:16.0),
                           alignment: Alignment.center,
-                          height: SizeConfig.safeBlockVertical * 30,
+                          height: SizeConfig.safeBlockVertical * 10,
                           width: SizeConfig.safeBlockHorizontal * 100,
                           child: Stack(
                             children: <Widget>[
-                              // Opacity(
-                              //   opacity: .10,
-                              //   child: GradientText(
-                              //     page.title,
-                              //     gradient: LinearGradient(
-                              //         colors: pageList[index].titleGradient),
-                              //     style: TextStyle(
-                              //         fontSize: 30.0,
-                              //         fontFamily: "Montserrat-Black",
-                              //         letterSpacing: 1.0),
-                              //   ),
-                              // ),
                               Container(
                                 padding: EdgeInsets.all(1.0),
-                                margin: EdgeInsets.only(left:16.0, right:16.0, top:10.0, bottom:6.0),
+                                margin: EdgeInsets.only(left:16.0, right:16.0, top:5.0),
                                 alignment: Alignment.center,
                                 child: GradientText(
                                   page.title,
                                   gradient: LinearGradient(
                                     colors: pageList[index].titleGradient),
                                   style: TextStyle(
-                                    fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 11 : SizeConfig.safeBlockHorizontal * 7,
+                                    fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 8 : SizeConfig.safeBlockHorizontal * 4,
                                     fontFamily: "Nunito",
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -133,7 +122,7 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.only(left: 16.0, right:16.0, top:30),
                           alignment: Alignment.center,
                           child: Transform(
                             transform:
@@ -142,13 +131,280 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                               page.body,
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                              fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 8 : SizeConfig.safeBlockHorizontal * 5,
+                              fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 6 : SizeConfig.safeBlockHorizontal * 3,
                               fontFamily: "Nunito",
                               fontWeight: FontWeight.w300,
                               fontStyle: FontStyle.italic,
                               color: Color(0xFF1A1A1A)),
                               )                                                     
                           ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.only(left: 16.0, right:16.0, top:10),
+                          alignment: Alignment.center,
+                          child: (page.number==1)? Transform(
+                            transform:
+                                Matrix4.translationValues(0, 50.0 * (1 - y), 0),
+                              child: Text(
+                              "Teil des Projekts MINTplus²: Systematischer und vernetzter Kompetenzaufbau in der Lehrerbildung im Umgang mit Digitalisierung und Heterogenität",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                              fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 4 : SizeConfig.safeBlockHorizontal * 2,
+                              fontFamily: "Nunito",
+                              fontWeight: FontWeight.w300,
+                              fontStyle: FontStyle.italic,
+                              color: Color(0xFF1A1A1A)),
+                              )                                                     
+                          )
+                          :(page.number==2) ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Container(
+                                  margin: EdgeInsets.only(left: 16.0, right:5.0, top:10),
+                                  alignment: Alignment.center,
+                                  child: SafeArea(
+                                  bottom: false,
+                                  child: Icon(
+                                      Icons.check_box,
+                                      color: Colors.red,
+                                    ),
+                                    )
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(right:16.0, top:10),
+                                  alignment: Alignment.center,
+                                  child: SafeArea(
+                                  bottom: false,
+                                  child: Text(
+                                "Landesmuseum kennenlernen",
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 5 : SizeConfig.safeBlockHorizontal * 2,
+                                fontFamily: "Nunito",
+                                fontWeight: FontWeight.w300,
+                                fontStyle: FontStyle.italic,
+                                color: Color(0xFF1A1A1A)),
+                                )
+                                )
+                                )
+                            ]
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Container(
+                                  margin: EdgeInsets.only(left: 16.0, right:5.0),
+                                  alignment: Alignment.center,
+                                  child: SafeArea(
+                                  bottom: false,
+                                  child: Icon(
+                                      Icons.check_box,
+                                      color: Colors.red,
+                                    ),
+                                    )
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(right:16.0),
+                                  alignment: Alignment.center,
+                                  child: SafeArea(
+                                  bottom: false,
+                                  child: Text(
+                                "Rundgänge anlegen und gehen",
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 5 : SizeConfig.safeBlockHorizontal * 2,
+                                fontFamily: "Nunito",
+                                fontWeight: FontWeight.w300,
+                                fontStyle: FontStyle.italic,
+                                color: Color(0xFF1A1A1A)),
+                                )
+                                )
+                                )
+                            ]
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Container(
+                                  margin: EdgeInsets.only(left: 16.0, right:5.0),
+                                  alignment: Alignment.center,
+                                  child: SafeArea(
+                                  bottom: false,
+                                  child: Icon(
+                                      Icons.check_box,
+                                      color: Colors.red,
+                                    ),
+                                    )
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(right:16.0),
+                                  alignment: Alignment.center,
+                                  child: SafeArea(
+                                  bottom: false,
+                                  child: Text(
+                                "Museumsobjekte untersuchen",
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 5 : SizeConfig.safeBlockHorizontal * 2,
+                                fontFamily: "Nunito",
+                                fontWeight: FontWeight.w300,
+                                fontStyle: FontStyle.italic,
+                                color: Color(0xFF1A1A1A)),
+                                )
+                                )
+                                )
+                            ]
+                            ),
+                            ]
+                            ):
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Container(
+                                  margin: EdgeInsets.only(left: 16.0, right:5.0, top:10),
+                                  alignment: Alignment.center,
+                                  child: SafeArea(
+                                  bottom: false,
+                                  child: Icon(
+                                      Icons.check_box,
+                                      color: Colors.red,
+                                    ),
+                                    )
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(right:16.0, top:10),
+                                  alignment: Alignment.center,
+                                  child: SafeArea(
+                                  bottom: false,
+                                  child: Text(
+                                "Account verwalten",
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 5 : SizeConfig.safeBlockHorizontal * 2,
+                                fontFamily: "Nunito",
+                                fontWeight: FontWeight.w300,
+                                fontStyle: FontStyle.italic,
+                                color: Color(0xFF1A1A1A)),
+                                )
+                                )
+                                )
+                            ]
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Container(
+                                  margin: EdgeInsets.only(left: 16.0, right:5.0),
+                                  alignment: Alignment.center,
+                                  child: SafeArea(
+                                  bottom: false,
+                                  child: Icon(
+                                      Icons.check_box,
+                                      color: Colors.red,
+                                    ),
+                                    )
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(right:16.0),
+                                  alignment: Alignment.center,
+                                  child: SafeArea(
+                                  bottom: false,
+                                  child: Text(
+                                "Favoriten sammeln",
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 5 : SizeConfig.safeBlockHorizontal * 2,
+                                fontFamily: "Nunito",
+                                fontWeight: FontWeight.w300,
+                                fontStyle: FontStyle.italic,
+                                color: Color(0xFF1A1A1A)),
+                                )
+                                )
+                                )
+                            ]
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Container(
+                                  margin: EdgeInsets.only(left: 16.0, right:5.0),
+                                  alignment: Alignment.center,
+                                  child: SafeArea(
+                                  bottom: false,
+                                  child: Icon(
+                                      Icons.check_box,
+                                      color: Colors.red,
+                                    ),
+                                    )
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(right:16.0),
+                                  alignment: Alignment.center,
+                                  child: SafeArea(
+                                  bottom: false,
+                                  child: Text(
+                                "Statistiken abrufen",
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                fontSize: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 5 : SizeConfig.safeBlockHorizontal * 2,
+                                fontFamily: "Nunito",
+                                fontWeight: FontWeight.w300,
+                                fontStyle: FontStyle.italic,
+                                color: Color(0xFF1A1A1A)),
+                                )
+                                )
+                                )
+                            ]
+                            ),
+                            ]
+                            ),
+                        ),
+                        Container(
+                          child: (page.number==1)?
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[ 
+                          Container(
+                          margin: EdgeInsets.only(left: 16.0, right:16.0),
+                          alignment: Alignment.center,
+                            child: SafeArea(
+                            bottom: false,
+                              child: Image.asset('assets/images/photo_2020-01-19.jpeg',
+                              width: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 22 : SizeConfig.safeBlockHorizontal * 30, 
+                              height: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockVertical * 15 : SizeConfig.safeBlockVertical * 10),
+                            )
+                          ),
+                          Container(
+                          margin: EdgeInsets.only(left: 16.0, right:16.0),
+                          alignment: Alignment.center,
+                            child: SafeArea(
+                            bottom: false,
+                              child: Image.asset('assets/images/Logo_MINTplus_182x0.jpg',
+                              width: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 22 : SizeConfig.safeBlockHorizontal * 30, 
+                              height: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockVertical * 15 : SizeConfig.safeBlockVertical * 20),
+                            )
+                          ),
+                          Container(
+                          margin: EdgeInsets.only(left: 16.0, right:16.0),
+                          alignment: Alignment.center,
+                            child: SafeArea(
+                            bottom: false,
+                              child: Image.asset('assets/images/serveimage.png',
+                              width: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockHorizontal * 22 : SizeConfig.safeBlockHorizontal * 30, 
+                              height: SizeConfig.orientationDevice == Orientation.portrait ? SizeConfig.safeBlockVertical * 15 : SizeConfig.safeBlockVertical * 20),
+                            )
+                          ),
+                        ],
+                        ):
+                        Container(),
                         )
                       ],
                     );
