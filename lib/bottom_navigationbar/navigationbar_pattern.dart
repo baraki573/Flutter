@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:museum_app/bottom_navigationbar/animated_navigationbar.dart';
 import 'package:museum_app/profile_page/profile_page.dart';
 import 'package:museum_app/tours_page/tours_page.dart';
+import 'package:museum_app/home_page/home_page.dart';
 
 class BottomBarNavigationPatternExample extends StatefulWidget {
+  // final int barIndex;
+  // BottomBarNavigationPatternExample({Key key, @required this.barIndex}): super(key: key);
+  
   final List<BarItem> barItems = [
     BarItem(
       text: "Home",
@@ -34,10 +38,11 @@ class BottomBarNavigationPatternExample extends StatefulWidget {
 
 class _BottomBarNavigationPatternExampleState
     extends State<BottomBarNavigationPatternExample> {
+  
   int selectedBarIndex = 0;
-
+  
   List<Widget> arr = [
-    Container(),
+    Home(),
     Tours(),
     Container(),
     Profile(),

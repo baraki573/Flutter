@@ -75,6 +75,9 @@ flutter:
         - asset: fonts/Nunito-Italic.ttf
           weight: 400
           style: italic
+    - family: Chiller
+      fonts:
+        - asset: fonts/Chiller-Regular.ttf   
   #   - family: Trajan Pro
   #     fonts:
   #       - asset: fonts/TrajanPro.ttf

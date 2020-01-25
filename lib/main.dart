@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:museum_app/onboarding/onboarding.dart';
-import 'package:museum_app/onboarding/museum_page.dart';
+import 'package:museum_app/route_generator.dart';
 
 //void main() => runApp(MyApp());
 void main() => runApp(MyApp());
@@ -17,8 +16,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.lightBlue,
       ),
-      home: Onboarding(),
-      //home: museum_page(),
+      //home: Onboarding(),
+      //home: Home(),
+      initialRoute: '/',
+      onGenerateRoute: RouteGenerator.generateRoute,
     );
   }
 }
