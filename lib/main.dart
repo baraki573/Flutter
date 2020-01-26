@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:museum_app/route_generator.dart';
 
-//void main() => runApp(MyApp());
 void main() => runApp(MyApp());
 
 

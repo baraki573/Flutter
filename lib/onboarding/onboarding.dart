@@ -100,11 +100,10 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                           alignment: Alignment.center,
                           height: SizeConfig.safeBlockVertical * 10,
                           width: SizeConfig.safeBlockHorizontal * 100,
-                          child: Stack(
-                            children: <Widget>[
+                          child: 
                               Container(
-                                padding: EdgeInsets.all(1.0),
-                                margin: EdgeInsets.only(left:16.0, right:16.0, top:5.0),
+                                //padding: EdgeInsets.all(1.0),
+                                //margin: EdgeInsets.only(left:16.0, right:16.0, top:5.0),
                                 alignment: Alignment.center,
                                 child: GradientText(
                                   page.title,
@@ -118,8 +117,6 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                                   textAlign: TextAlign.center,
                                 ),
                               ),
-                            ],
-                          ),
                         ),
                         Container(
                           padding: const EdgeInsets.only(left: 16.0, right:16.0, top:30),
