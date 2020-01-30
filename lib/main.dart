@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:moor/moor.dart';
+import 'package:museum_app/database/database.dart';
+import 'package:museum_app/onboarding/onboarding.dart';
+import 'package:provider/provider.dart';
 import 'package:museum_app/route_generator.dart';
 
 void main() => runApp(MyApp());
@@ -11,8 +15,10 @@ class MyApp extends StatelessWidget {
     precacheImage(AssetImage("assets/images/orientierungsplan_high.png"), context);
     return MaterialApp(
       debugShowCheckedModeBanner: true,
+      locale: Locale('de'),
       title: 'Museum App',
       theme: ThemeData(
+        buttonTheme:ButtonThemeData(minWidth: 5),
         primarySwatch: Colors.lightBlue,
       ),
       //home: Onboarding(),

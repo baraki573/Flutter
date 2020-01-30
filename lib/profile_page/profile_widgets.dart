@@ -1,10 +1,9 @@
 import 'dart:math';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_circular_chart/flutter_circular_chart.dart';
-import 'package:museum_app/Models.dart';
 import 'package:museum_app/SizeConfig.dart';
+import 'package:museum_app/database/database.dart';
 
 class FavWidget extends StatefulWidget {
   FavWidget({Key key}) : super(key: key);
@@ -14,85 +13,66 @@ class FavWidget extends StatefulWidget {
 }
 
 class _FavWidgetState extends State<FavWidget> {
-  Widget _buildAbteilung(Devision d, List<Item> list) {
+  Widget _buildAbteilung(Devision d, List<Stop> list) {
+    if (list.isEmpty) return Container();
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        // Headline
-        Container(
-          padding: EdgeInsets.only(left: 20),
-          child: Text(
-            d.name,
-            style: TextStyle(
-              color: d.color,
-              fontWeight: FontWeight.bold,
-              fontSize: 17,
-            ),
-          ),
-        ),
-        // Horizontal Scrollable
-        Container(
-          padding: EdgeInsets.only(bottom: 20.0, top: 2.0),
-          height: verSize(21, 40),
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: list.length,
-            itemBuilder: (context, index) {
-              // One "bubble"
-              return Container(
-                margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 5.0),
-                child: Container(
-                  //alignment: Alignment.center,
-                  height: horSize(27, 16),
-                  width: horSize(27, 16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: d.color, width: 3),
-                    //color: Colors.white,
-                    shape: BoxShape.circle,
-                    image: DecorationImage(
-                      image: list[index].imgs[0],
-                      fit: BoxFit.fill,
-                    ),
-                    /*boxShadow: [
-                        BoxShadow(
-                          color: color.withOpacity(0.5),
-                          spreadRadius: 1,
-                          blurRadius: 1,
-                          offset: Offset.fromDirection(pi / 4, 4.0),
-                        ),
-                      ],*/
-                  ),
-                  child: FlatButton(
-                    splashColor: d.color.withOpacity(.1),
-                    highlightColor: d.color.withOpacity(.05),
-                    //padding: EdgeInsets.symmetric(vertical: 0.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(80.0),
-                    ),
-                    onPressed: () => dialog(list[index]),
-                    child: null,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          // Headline
+          Container(
+              padding: EdgeInsets.only(left: 20),
+              child: Text(d.name,
+                  style: TextStyle(
+                    color: d.color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                  ))),
+          // Horizontal Scrollable
+          Container(
+              padding: EdgeInsets.only(bottom: 20.0, top: 2.0),
+              height: verSize(21, 40),
+              child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: list.length,
+                  itemBuilder: (context, index) {
+                    // One "bubble"
+                    return Container(
+                        margin: EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 5.0),
+                        height: horSize(27, 16),
+                        width: horSize(27, 16),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: d.color, width: 3),
+                            shape: BoxShape.circle,
+                            image: DecorationImage(
+                              image: AssetImage(list[index].images[0]),
+                              fit: BoxFit.fill,
+                            )),
+                        child: FlatButton(
+                          splashColor: d.color.withOpacity(.1),
+                          highlightColor: d.color.withOpacity(.05),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(80.0),
+                          ),
+                          onPressed: () => dialog(list[index]),
+                          child: null,
+                        ));
+                  }))
+        ]);
   }
 
-  void dialog(Item i) {
+  void dialog(Stop s) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         contentPadding: const EdgeInsets.fromLTRB(16, 5, 16, 10),
-        title: Text(i.name),
+        title: Text(s.name),
         content: Container(
           width: SizeConfig.safeBlockHorizontal * 70,
           height: SizeConfig.safeBlockHorizontal * 70,
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: i.imgs[0],
+              image: AssetImage(s.images[0]),
               fit: BoxFit.fill,
             ),
           ),
@@ -103,39 +83,26 @@ class _FavWidgetState extends State<FavWidget> {
 
   @override
   Widget build(BuildContext context) {
-    User u = getUser();
-    return Column(
-      children: List.generate(devisions.length, (index) {
-        return _buildAbteilung(devisions[index],
-            u.fav.where((e) => e.dev == devisions[index]).toList());
-      }),
-      /*[
-        _getAbteilung("Zoologisch", Colors.red, [
-          AssetImage('assets/images/profile_test.png'),
-          AssetImage('assets/images/profile_test2.png'),
-          AssetImage('assets/images/profile_test2.png'),
-          AssetImage('assets/images/profile_test.png')
-        ]),
-        _getAbteilung("Skulpturen", Colors.blue, [
-          AssetImage('assets/images/profile_test.png'),
-          AssetImage('assets/images/profile_test.png')
-        ]),
-        _getAbteilung("Bilder", Colors.amber, [
-          AssetImage('assets/images/profile_test.png'),
-          AssetImage('assets/images/profile_test2.png'),
-          AssetImage('assets/images/profile_test.png'),
-          AssetImage('assets/images/profile_test.png'),
-          AssetImage('assets/images/profile_test2.png'),
-          AssetImage('assets/images/profile_test.png'),
-          AssetImage('assets/images/profile_test.png'),
-          AssetImage('assets/images/profile_test2.png'),
-          AssetImage('assets/images/profile_test.png'),
-          AssetImage('assets/images/profile_test2.png')
-        ]),
-        _getAbteilung("Bonus", Colors.deepPurple,
-            [AssetImage('assets/images/haupthalle_hlm_blue.png')])
-      ],*/
-    );
+    return StreamBuilder(
+        stream: MuseumDatabase.get().getDevisions(),
+        builder: (context, snapDev) {
+          var devisions = snapDev.data ?? List<Devision>();
+          //print(devisions);
+          return StreamBuilder(
+              stream: MuseumDatabase.get().getStops(),
+              builder: (context, snapStop) {
+                var stops = snapStop.data ?? List<Stop>();
+                return Column(
+                  children: List.generate(devisions.length, (index) {
+                    return _buildAbteilung(
+                        devisions[index],
+                        stops
+                            .where((e) => e.devision == devisions[index].name)
+                            .toList());
+                  }),
+                );
+              });
+        });
   }
 }
 
@@ -148,17 +115,16 @@ class BadgeWidget extends StatefulWidget {
 
 class _BadgeWidgetState extends State<BadgeWidget> {
   final _perLine;
-  var context;
 
   _BadgeWidgetState(this._perLine);
 
-  Widget _getGrid(int perLine, List<Widget> content) {
-    int rowC = (content.length / perLine).ceil();
+  Widget _getGrid(List<Widget> content) {
+    int rowC = (content.length / _perLine).ceil();
     List<Widget> rows = List<Widget>(rowC);
     for (int i = 0; i < rowC; i++) {
       var sub = content.sublist(
-          i * perLine, min(i * perLine + perLine, content.length));
-      while (sub.length < perLine) sub.add(Expanded(child: Container()));
+          i * _perLine, min(i * _perLine + _perLine, content.length));
+      while (sub.length < _perLine) sub.add(Expanded(child: Container()));
       rows[i] = Row(children: sub);
     }
     return Column(children: rows);
@@ -194,14 +160,15 @@ class _BadgeWidgetState extends State<BadgeWidget> {
   }
 
   Widget _getBadge(Badge b, popUp) {
-    SizeConfig().init(context);
+    final key = GlobalKey<AnimatedCircularChartState>();
+    final key2 = GlobalKey<AnimatedCircularChartState>();
     var perc = max(min(b.current / b.toGet * 100, 100), 0);
     return Stack(
       alignment: Alignment.center,
       children: [
         // Progress circle
         AnimatedCircularChart(
-          key: popUp ? b.key2 : b.key,
+          key: popUp ? key2 : key,
           size: Size.square(verSize(54, 135) * (popUp ? 1.3 : 1) / _perLine),
           initialChartData: [
             CircularStackEntry(
@@ -220,7 +187,7 @@ class _BadgeWidgetState extends State<BadgeWidget> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             image: DecorationImage(
-              image: b.img,
+              image: AssetImage(b.imgPath),
               fit: BoxFit.fill,
             ),
           ),
@@ -240,13 +207,17 @@ class _BadgeWidgetState extends State<BadgeWidget> {
 
   @override
   Widget build(BuildContext context) {
-    this.context = context;
-    User u = getUser();
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
-      alignment: Alignment.center,
-      child: _getGrid(_perLine, u.badges.map((b) => _buildBadge(b)).toList()),
-    );
+    //UserClass u = getUser();
+    return StreamBuilder(
+        stream: MuseumDatabase.get().getBadges(),
+        builder: (context, snapBad) {
+          List<Badge> badges = snapBad.data ?? List<Badge>();
+          return Container(
+            margin: EdgeInsets.symmetric(horizontal: 16),
+            alignment: Alignment.center,
+            child: _getGrid(badges.map((b) => _buildBadge(b)).toList()),
+          );
+        });
   }
 }
 
@@ -258,7 +229,7 @@ class StatWidget extends StatelessWidget {
       children: <Widget>[
         Text(
           "Not yet implemented",
-          style: TextStyle(fontSize: 20),
+          style: TextStyle(fontSize: 25),
         ),
       ],
     );
