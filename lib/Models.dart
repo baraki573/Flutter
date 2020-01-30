@@ -49,7 +49,7 @@ class Badge {
   Badge(this.name, this.toGet, this.color, this.img, {this.current = 0});
 }
 
-class User {
+class UserClass {
   //TODO limit username length
   String username;
   ImageProvider img;
@@ -57,7 +57,7 @@ class User {
   List<Exhibit> fav = [];
   List<Tour> tours = [];
 
-  User(this.username,
+  UserClass(this.username,
       {this.img = const AssetImage('assets/images/profile_test.png'),
       this.badges,
       this.fav,
@@ -141,8 +141,8 @@ List<Devision> devisions = [
   Devision("Bonus", Colors.deepPurple)
 ];
 
-User getUser() {
-  var u = User(
+UserClass getUser() {
+  var u = UserClass(
     "Maria123_XD",
     badges: List.generate(16, (index) {
       return Badge(

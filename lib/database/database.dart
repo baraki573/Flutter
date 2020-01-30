@@ -13,32 +13,15 @@ import 'package:flutter/material.dart' as m;
 
 // assuming that your file is called filename.dart. This will give an error at first,
 // but it's needed for moor to know about the generated code
-part 'modelling.g.dart';
-
-/*// this will generate a table called "todos" for us. The rows of that table will
-// be represented by a class called "Todo".
-class Todos extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get title => text().withLength(min: 6, max: 32)();
-  TextColumn get content => text().named('body')();
-  IntColumn get category => integer().nullable()();
-}
-
-// This will make moor generate a class called "Category" to represent a row in this table.
-// By default, "Categorie" would have been used because it only strips away the trailing "s"
-// in the table name.
-@DataClassName("Category")
-class Categories extends Table {
-
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get description => text()();
-}*/
+part 'database.g.dart';
 
 class Users extends Table {
   TextColumn get username =>
       text().withLength(min: MIN_USERNAME, max: MAX_USERNAME)();
 
   TextColumn get imgPath => text()();
+
+  BoolColumn get onboardEnd => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {username};
@@ -87,28 +70,68 @@ class Stops extends Table {
   //IMAGES
   TextColumn get images => text().map(StringListConverter())();
 
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
-class Exhibits extends Stops {
   TextColumn get time => text().withLength(min: 1, max: 15).nullable()();
 
   TextColumn get creator => text().withLength(min: 1, max: 15).nullable()();
 
-  TextColumn get devision => text().customConstraint("REFERENCES devisions(name)")();
+  TextColumn get devision =>
+      text().customConstraint("REFERENCES devisions(name)").nullable()();
+
+  TextColumn get artType => text().nullable()();
+
+  TextColumn get material => text().nullable()();
+
+  TextColumn get size => text().nullable()();
+
+  TextColumn get location => text().nullable()();
+
+  TextColumn get interContext => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+class TourStops extends Table {
+  IntColumn get id_tour => integer().customConstraint("REFERENCES tours(id)")();
+
+  IntColumn get id_stop => integer().customConstraint("REFERENCES stops(id)")();
+}
+
+class TourWithStops {
+  final Tour tour;
+  final List<Stop> stops;
+
+  TourWithStops(this.tour, this.stops);
 }
 
 class Devisions extends Table {
   TextColumn get name => text()();
 
-  IntColumn get color => integer().map(ColorConverter())();
+  IntColumn get color =>
+      integer().withDefault(const Constant(0xFFFFFFFF)).map(ColorConverter())();
 
   @override
   Set<Column> get primaryKey => {name};
 }
 
+class Tasks extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  IntColumn get id_tour => integer().customConstraint("REFERENCES tours(id)")();
+
+  IntColumn get id_stop => integer().customConstraint("REFERENCES stops(id)")();
+
+  TextColumn get desc => text().withDefault(const Constant(""))();
+
+  TextColumn get task => text()();
+
+  @override
+  Set<Column> get primaryKey => {id, id_tour, id_stop};
+}
+
 class ColorConverter extends TypeConverter<Color, int> {
+  const ColorConverter();
+
   @override
   Color mapToDart(int fromDb) {
     return Color(fromDb);
@@ -128,7 +151,7 @@ class StringListConverter extends TypeConverter<List<String>, String> {
 
   @override
   String mapToSql(List<String> value) {
-    return value.fold("", (p, e) => p + e + ";");
+    return value.join(";");
   }
 }
 
@@ -145,7 +168,7 @@ LazyDatabase _openConnection() {
 
 // this annotation tells moor to prepare a database class that uses both of the
 // tables we just defined. We'll see how to use that database class in a moment.
-@UseMoor(tables: [Users, Badges, Stops, Exhibits, Devisions, Tours])
+@UseMoor(tables: [Users, Badges, Stops, Devisions, Tours, TourStops, Tasks])
 class MuseumDatabase extends _$MuseumDatabase {
   static MuseumDatabase _db;
 
@@ -157,9 +180,9 @@ class MuseumDatabase extends _$MuseumDatabase {
   MuseumDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 4;
 
-  Stream<List<User>> getUser() => select(users).watch();
+  Stream<User> getUser() => select(users).watchSingle();
 
   Future setUser(UsersCompanion uc) {
     customStatement("DELETE FROM users");
@@ -176,6 +199,11 @@ class MuseumDatabase extends _$MuseumDatabase {
 
   void clear() {
     customStatement("DELETE FROM users");
+    //customStatement("DELETE FROM tourStops");
+    customStatement("DELETE FROM stops");
+    customStatement("DELETE FROM tours");
+    customStatement("DELETE FROM badges");
+    customStatement("DELETE FROM devisions");
   }
 
   Stream<List<Badge>> getBadges() => select(badges).watch();
@@ -186,7 +214,70 @@ class MuseumDatabase extends _$MuseumDatabase {
 
   Stream<List<Devision>> getDevisions() => select(devisions).watch();
 
-  Stream<List<Exhibit>> getExhibits() => select(exhibits).watch();
+  Stream<List<Tour>> getTours() => select(tours).watch();
+
+  Stream<List<Stop>> getStops() => select(stops).watch();
+
+  Stream<List<Task>> getTasksId(int id_tour, int id_stop) {
+    final contentQuery = select(tasks)
+        //.join([innerJoin(stops, stops.id.equalsExp(tourStops.id_stop))])
+      ..where((t) => t.id_tour.equals(id_tour))
+      ..where((t) => t.id_stop.equals(id_stop));
+
+    return contentQuery.watch();
+  }
+
+  Future<int> addTask(TasksCompanion tc) {
+    return into(tasks).insert(tc);
+  }
+
+  Stream<List<Stop>> getStopsId(int id) {
+    //final tourQuery = select(tours)..where((t) => t.id.equals(id));
+
+    final contentQuery = select(tourStops)
+        .join([innerJoin(stops, stops.id.equalsExp(tourStops.id_stop))])
+          ..where(tourStops.id_tour.equals(id));
+
+    //final tourStream = tourQuery.watchSingle();
+    final contentStream = contentQuery
+        .watch()
+        .map((rows) => rows.map((row) => row.readTable(stops)).toList());
+
+    return contentStream;
+
+    /*var t = (select(tours)..where((t) => t.name.equals(name)));
+    var t2 = t.join([
+      leftOuterJoin(tourStops, tours.id.equalsExp(tourStops.id_tour)),
+      leftOuterJoin(stops, tourStops.id_stop.equalsExp(stops.id))
+    ]);
+    return t2.watch().map((rows) => rows.map((row) => row.readTable(stops)));
+    //return (select(tours)..where((t) => t.name.equals(name))).join(
+    //  [leftOuterJoin(stops, tours.id.equalsExp(stops.tour_id))]);
+    //customStatement(
+    //  "SELECT * FROM tours t, stops s, tourStops ts WHERE t.name=? AND t.id=ts.id_tour AND s.id=ts.id_stop");
+  */
+  }
+
+  Future<void> writeTourStops(TourWithStops entry) {
+    return transaction(() async {
+      final tour = entry.tour.createCompanion(true);
+
+      var id = await into(tours).insert(tour, orReplace: true);
+
+      await //INSERT STOPSjolk
+
+          await (delete(tourStops)..where((e) => e.id_tour.equals(id))).go();
+
+      await batch((batch) {
+        batch.insertAll(
+            tourStops,
+            entry.stops
+                .map((s) => TourStop(id_tour: id, id_stop: s.id))
+                .toList(),
+            mode: InsertMode.insertOrReplace);
+      });
+    });
+  }
 
   Future demoUser() {
     customStatement("DELETE FROM users");
@@ -195,63 +286,77 @@ class MuseumDatabase extends _$MuseumDatabase {
   }
 
   Future<void> demoDevisions() async {
-    customStatement("DELETE FROM devisions");
+    //customStatement("DELETE FROM devisions");
     await batch((batch) {
       batch.insertAll(
           devisions,
           [
             DevisionsCompanion.insert(
-                name: "Zoologisch", color: Color(0xFFFF0000)),
+                name: "Zoologisch", color: Value(Color(0xFFFF0000))),
             DevisionsCompanion.insert(
-                name: "Skulpturen", color: Color(0xFF0000FF)),
-            DevisionsCompanion.insert(name: "Bilder", color: Color(0xFFFFEB3B)),
-            DevisionsCompanion.insert(name: "Bonus", color: Color(0xFF673AB7)),
+                name: "Skulpturen", color: Value(Color(0xFF0000FF))),
+            DevisionsCompanion.insert(
+                name: "Bilder", color: Value(Color(0xFFFFEB3B))),
+            DevisionsCompanion.insert(
+                name: "Bonus", color: Value(Color(0xFF673AB7))),
           ],
           mode: InsertMode.insertOrReplace);
     });
   }
 
-  Future<void> demoExhibits() async {
-    customStatement("DELETE FROM exhibits");
+  Future<void> demoStops() async {
+    //customStatement("DELETE FROM stops");
     await batch((batch) {
       batch.insertAll(
-          exhibits,
+          stops,
           List.generate(4, (i) {
                 String s = (i % 3 == 0 ? "" : "2");
-                return ExhibitsCompanion.insert(
+                return StopsCompanion.insert(
                   name: "Zoologisch $i",
-                  devision: "Zoologisch",
+                  devision: Value("Zoologisch"),
                   descr: "Description foo",
-                  images: ['assets/images/profile_test' + s + '.png'],
+                  images: [
+                    'assets/images/profile_test' + s + '.png',
+                    'assets/images/profile_test.png'
+                  ],
                   creator: Value("Me"),
+                  material: Value("Holz"),
+                  size: Value("32m x 45m"),
+                  interContext: Value("Wurde von Napoleon besucht"),
+                  location: Value("Zuhause"),
                 );
               }) +
               List.generate(2, (i) {
                 String s = (i % 2 == 0 ? "" : "2");
-                return ExhibitsCompanion.insert(
+                return StopsCompanion.insert(
                   name: "Skulpturen $i",
                   descr: "More descr",
                   images: ['assets/images/profile_test' + s + '.png'],
-                  devision: "Skulpturen",
+                  devision: Value("Skulpturen"),
                   creator: Value("DaVinci"),
                 );
               }) +
               List.generate(10, (i) {
                 String s = (i % 3 == 0 ? "" : "2");
-                return ExhibitsCompanion.insert(
+                return StopsCompanion.insert(
                   name: "Bilder $i",
-                  devision: "Bilder",
+                  devision: Value("Bilder"),
                   descr: "Interessante Details",
-                  images: ['assets/images/profile_test' + s + '.png'],
+                  images: [
+                    'assets/images/profile_test' + s + '.png',
+                    'assets/images/profile_test' + s + '.png',
+                    'assets/images/profile_test2.png'
+                  ],
                   creator: Value("Artist"),
                 );
               }) +
               List.generate(1, (i) {
-                return ExhibitsCompanion.insert(
+                return StopsCompanion.insert(
                     name: "Bonus $i",
-                    descr: "To be written",
+                    descr:
+                        "Mit dieser Tour werden Sie interessante neue Fakten kennenlernen. Sie werden das Museum so erkunden, wie es bis heute noch kein Mensch getan hat. Nebenbei werden Sie spannende Aufgaben lösen.",
                     images: ['assets/images/haupthalle_hlm_blue.png'],
-                    devision: "Bonus",
+                    devision: Value("Bonus"),
                     creator: Value("VanGogh"));
               }),
           mode: InsertMode.insertOrReplace);
@@ -259,7 +364,7 @@ class MuseumDatabase extends _$MuseumDatabase {
   }
 
   Future<void> demoBadges() async {
-    customStatement("DELETE FROM badges");
+    //customStatement("DELETE FROM badges");
     await batch((batch) {
       batch.insertAll(
         badges,
@@ -273,6 +378,60 @@ class MuseumDatabase extends _$MuseumDatabase {
             current: Value(i.roundToDouble()),
           ),
         ),
+        mode: InsertMode.insertOrReplace,
+      );
+    });
+  }
+
+  Future<void> demoTourStops() async {
+    //customStatement("DELETE FROM tourStops");
+    await batch((batch) {
+      batch.insertAll(
+        tourStops,
+        List.generate(
+              8,
+              (i) => TourStopsCompanion.insert(id_tour: 1, id_stop: i + 1),
+            ) +
+            List.generate(
+              5,
+              (i) => TourStopsCompanion.insert(id_tour: 2, id_stop: i + 2),
+            ) +
+            List.generate(
+              3,
+              (i) => TourStopsCompanion.insert(id_tour: 3, id_stop: i + 3),
+            ),
+        mode: InsertMode.insertOrReplace,
+      );
+    });
+  }
+
+  Future<void> demoTours() async {
+    //customStatement("DELETE FROM tours");
+    await batch((batch) {
+      batch.insertAll(
+        tours,
+        [
+          ToursCompanion.insert(
+              name: "Test Tour",
+              author: "Maria123_XD",
+              rating: 4.6,
+              creationTime: DateTime.now(),
+              desc: "Diese Beschreibung ist zum Glück nicht so lang."),
+          ToursCompanion.insert(
+              name: "Meine erste Tour",
+              author: "1412",
+              rating: 1.2,
+              creationTime: DateTime.parse("2020-02-05"),
+              desc:
+                  "Einen Roman schreiben die User hier bestimmt nicht hin. Und wenn doch, muss ich mir dafür etwas einfallen lassen."),
+          ToursCompanion.insert(
+              name: "Zoologische Tour mit int",
+              author: "MyBestUser",
+              rating: 2.6,
+              creationTime: DateTime.parse("1983-05-14"),
+              desc: "Diese Tour ist sehr lehrreich."),
+        ],
+        mode: InsertMode.insertOrReplace,
       );
     });
   }
@@ -280,10 +439,13 @@ class MuseumDatabase extends _$MuseumDatabase {
 
 void demo() {
   var db = MuseumDatabase.get();
+  //db.clear();
   db.demoUser();
-  db.demoExhibits().catchError((_) {});
-  db.demoDevisions().catchError((_) {});
-  db.demoBadges().catchError((_) {});
+  db.demoDevisions().catchError((_) => print("devisionError"));
+  db.demoStops().catchError((_) => print("stopError"));
+  db.demoBadges().catchError((_) => print("badgeError"));
+  //db.demoTours().catchError((_) => print("tourError"));
+  //db.demoTourStops().catchError((_) => print("tourStopsError"));
 }
 
 void init() {

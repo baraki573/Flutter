@@ -10,16 +10,23 @@ part of 'database.dart';
 class User extends DataClass implements Insertable<User> {
   final String username;
   final String imgPath;
-  User({@required this.username, @required this.imgPath});
+  final bool onboardEnd;
+  User(
+      {@required this.username,
+      @required this.imgPath,
+      @required this.onboardEnd});
   factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
     final stringType = db.typeSystem.forDartType<String>();
+    final boolType = db.typeSystem.forDartType<bool>();
     return User(
       username: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}username']),
       imgPath: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}img_path']),
+      onboardEnd: boolType
+          .mapFromDatabaseResponse(data['${effectivePrefix}onboard_end']),
     );
   }
   factory User.fromJson(Map<String, dynamic> json,
@@ -28,6 +35,7 @@ class User extends DataClass implements Insertable<User> {
     return User(
       username: serializer.fromJson<String>(json['username']),
       imgPath: serializer.fromJson<String>(json['imgPath']),
+      onboardEnd: serializer.fromJson<bool>(json['onboardEnd']),
     );
   }
   @override
@@ -36,6 +44,7 @@ class User extends DataClass implements Insertable<User> {
     return <String, dynamic>{
       'username': serializer.toJson<String>(username),
       'imgPath': serializer.toJson<String>(imgPath),
+      'onboardEnd': serializer.toJson<bool>(onboardEnd),
     };
   }
 
@@ -48,48 +57,60 @@ class User extends DataClass implements Insertable<User> {
       imgPath: imgPath == null && nullToAbsent
           ? const Value.absent()
           : Value(imgPath),
+      onboardEnd: onboardEnd == null && nullToAbsent
+          ? const Value.absent()
+          : Value(onboardEnd),
     );
   }
 
-  User copyWith({String username, String imgPath}) => User(
+  User copyWith({String username, String imgPath, bool onboardEnd}) => User(
         username: username ?? this.username,
         imgPath: imgPath ?? this.imgPath,
+        onboardEnd: onboardEnd ?? this.onboardEnd,
       );
   @override
   String toString() {
     return (StringBuffer('User(')
           ..write('username: $username, ')
-          ..write('imgPath: $imgPath')
+          ..write('imgPath: $imgPath, ')
+          ..write('onboardEnd: $onboardEnd')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(username.hashCode, imgPath.hashCode));
+  int get hashCode => $mrjf(
+      $mrjc(username.hashCode, $mrjc(imgPath.hashCode, onboardEnd.hashCode)));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is User &&
           other.username == this.username &&
-          other.imgPath == this.imgPath);
+          other.imgPath == this.imgPath &&
+          other.onboardEnd == this.onboardEnd);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
   final Value<String> username;
   final Value<String> imgPath;
+  final Value<bool> onboardEnd;
   const UsersCompanion({
     this.username = const Value.absent(),
     this.imgPath = const Value.absent(),
+    this.onboardEnd = const Value.absent(),
   });
   UsersCompanion.insert({
     @required String username,
     @required String imgPath,
+    this.onboardEnd = const Value.absent(),
   })  : username = Value(username),
         imgPath = Value(imgPath);
-  UsersCompanion copyWith({Value<String> username, Value<String> imgPath}) {
+  UsersCompanion copyWith(
+      {Value<String> username, Value<String> imgPath, Value<bool> onboardEnd}) {
     return UsersCompanion(
       username: username ?? this.username,
       imgPath: imgPath ?? this.imgPath,
+      onboardEnd: onboardEnd ?? this.onboardEnd,
     );
   }
 }
@@ -122,8 +143,17 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     );
   }
 
+  final VerificationMeta _onboardEndMeta = const VerificationMeta('onboardEnd');
+  GeneratedBoolColumn _onboardEnd;
   @override
-  List<GeneratedColumn> get $columns => [username, imgPath];
+  GeneratedBoolColumn get onboardEnd => _onboardEnd ??= _constructOnboardEnd();
+  GeneratedBoolColumn _constructOnboardEnd() {
+    return GeneratedBoolColumn('onboard_end', $tableName, false,
+        defaultValue: const Constant(false));
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [username, imgPath, onboardEnd];
   @override
   $UsersTable get asDslTable => this;
   @override
@@ -146,6 +176,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     } else if (isInserting) {
       context.missing(_imgPathMeta);
     }
+    if (d.onboardEnd.present) {
+      context.handle(_onboardEndMeta,
+          onboardEnd.isAcceptableValue(d.onboardEnd.value, _onboardEndMeta));
+    }
     return context;
   }
 
@@ -165,6 +199,9 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     }
     if (d.imgPath.present) {
       map['img_path'] = Variable<String, StringType>(d.imgPath.value);
+    }
+    if (d.onboardEnd.present) {
+      map['onboard_end'] = Variable<bool, BoolType>(d.onboardEnd.value);
     }
     return map;
   }
@@ -463,6 +500,11 @@ class Stop extends DataClass implements Insertable<Stop> {
   final String time;
   final String creator;
   final String devision;
+  final String artType;
+  final String material;
+  final String size;
+  final String location;
+  final String interContext;
   Stop(
       {@required this.id,
       @required this.name,
@@ -470,7 +512,12 @@ class Stop extends DataClass implements Insertable<Stop> {
       @required this.images,
       this.time,
       this.creator,
-      this.devision});
+      this.devision,
+      this.artType,
+      this.material,
+      this.size,
+      this.location,
+      this.interContext});
   factory Stop.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -488,6 +535,15 @@ class Stop extends DataClass implements Insertable<Stop> {
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}creator']),
       devision: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}devision']),
+      artType: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}art_type']),
+      material: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}material']),
+      size: stringType.mapFromDatabaseResponse(data['${effectivePrefix}size']),
+      location: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}location']),
+      interContext: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}inter_context']),
     );
   }
   factory Stop.fromJson(Map<String, dynamic> json,
@@ -501,6 +557,11 @@ class Stop extends DataClass implements Insertable<Stop> {
       time: serializer.fromJson<String>(json['time']),
       creator: serializer.fromJson<String>(json['creator']),
       devision: serializer.fromJson<String>(json['devision']),
+      artType: serializer.fromJson<String>(json['artType']),
+      material: serializer.fromJson<String>(json['material']),
+      size: serializer.fromJson<String>(json['size']),
+      location: serializer.fromJson<String>(json['location']),
+      interContext: serializer.fromJson<String>(json['interContext']),
     );
   }
   @override
@@ -514,6 +575,11 @@ class Stop extends DataClass implements Insertable<Stop> {
       'time': serializer.toJson<String>(time),
       'creator': serializer.toJson<String>(creator),
       'devision': serializer.toJson<String>(devision),
+      'artType': serializer.toJson<String>(artType),
+      'material': serializer.toJson<String>(material),
+      'size': serializer.toJson<String>(size),
+      'location': serializer.toJson<String>(location),
+      'interContext': serializer.toJson<String>(interContext),
     };
   }
 
@@ -533,6 +599,19 @@ class Stop extends DataClass implements Insertable<Stop> {
       devision: devision == null && nullToAbsent
           ? const Value.absent()
           : Value(devision),
+      artType: artType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(artType),
+      material: material == null && nullToAbsent
+          ? const Value.absent()
+          : Value(material),
+      size: size == null && nullToAbsent ? const Value.absent() : Value(size),
+      location: location == null && nullToAbsent
+          ? const Value.absent()
+          : Value(location),
+      interContext: interContext == null && nullToAbsent
+          ? const Value.absent()
+          : Value(interContext),
     );
   }
 
@@ -543,7 +622,12 @@ class Stop extends DataClass implements Insertable<Stop> {
           List<String> images,
           String time,
           String creator,
-          String devision}) =>
+          String devision,
+          String artType,
+          String material,
+          String size,
+          String location,
+          String interContext}) =>
       Stop(
         id: id ?? this.id,
         name: name ?? this.name,
@@ -552,6 +636,11 @@ class Stop extends DataClass implements Insertable<Stop> {
         time: time ?? this.time,
         creator: creator ?? this.creator,
         devision: devision ?? this.devision,
+        artType: artType ?? this.artType,
+        material: material ?? this.material,
+        size: size ?? this.size,
+        location: location ?? this.location,
+        interContext: interContext ?? this.interContext,
       );
   @override
   String toString() {
@@ -562,7 +651,12 @@ class Stop extends DataClass implements Insertable<Stop> {
           ..write('images: $images, ')
           ..write('time: $time, ')
           ..write('creator: $creator, ')
-          ..write('devision: $devision')
+          ..write('devision: $devision, ')
+          ..write('artType: $artType, ')
+          ..write('material: $material, ')
+          ..write('size: $size, ')
+          ..write('location: $location, ')
+          ..write('interContext: $interContext')
           ..write(')'))
         .toString();
   }
@@ -576,8 +670,20 @@ class Stop extends DataClass implements Insertable<Stop> {
               descr.hashCode,
               $mrjc(
                   images.hashCode,
-                  $mrjc(time.hashCode,
-                      $mrjc(creator.hashCode, devision.hashCode)))))));
+                  $mrjc(
+                      time.hashCode,
+                      $mrjc(
+                          creator.hashCode,
+                          $mrjc(
+                              devision.hashCode,
+                              $mrjc(
+                                  artType.hashCode,
+                                  $mrjc(
+                                      material.hashCode,
+                                      $mrjc(
+                                          size.hashCode,
+                                          $mrjc(location.hashCode,
+                                              interContext.hashCode))))))))))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -588,7 +694,12 @@ class Stop extends DataClass implements Insertable<Stop> {
           other.images == this.images &&
           other.time == this.time &&
           other.creator == this.creator &&
-          other.devision == this.devision);
+          other.devision == this.devision &&
+          other.artType == this.artType &&
+          other.material == this.material &&
+          other.size == this.size &&
+          other.location == this.location &&
+          other.interContext == this.interContext);
 }
 
 class StopsCompanion extends UpdateCompanion<Stop> {
@@ -599,6 +710,11 @@ class StopsCompanion extends UpdateCompanion<Stop> {
   final Value<String> time;
   final Value<String> creator;
   final Value<String> devision;
+  final Value<String> artType;
+  final Value<String> material;
+  final Value<String> size;
+  final Value<String> location;
+  final Value<String> interContext;
   const StopsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -607,6 +723,11 @@ class StopsCompanion extends UpdateCompanion<Stop> {
     this.time = const Value.absent(),
     this.creator = const Value.absent(),
     this.devision = const Value.absent(),
+    this.artType = const Value.absent(),
+    this.material = const Value.absent(),
+    this.size = const Value.absent(),
+    this.location = const Value.absent(),
+    this.interContext = const Value.absent(),
   });
   StopsCompanion.insert({
     this.id = const Value.absent(),
@@ -616,6 +737,11 @@ class StopsCompanion extends UpdateCompanion<Stop> {
     this.time = const Value.absent(),
     this.creator = const Value.absent(),
     this.devision = const Value.absent(),
+    this.artType = const Value.absent(),
+    this.material = const Value.absent(),
+    this.size = const Value.absent(),
+    this.location = const Value.absent(),
+    this.interContext = const Value.absent(),
   })  : name = Value(name),
         descr = Value(descr),
         images = Value(images);
@@ -626,7 +752,12 @@ class StopsCompanion extends UpdateCompanion<Stop> {
       Value<List<String>> images,
       Value<String> time,
       Value<String> creator,
-      Value<String> devision}) {
+      Value<String> devision,
+      Value<String> artType,
+      Value<String> material,
+      Value<String> size,
+      Value<String> location,
+      Value<String> interContext}) {
     return StopsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -635,6 +766,11 @@ class StopsCompanion extends UpdateCompanion<Stop> {
       time: time ?? this.time,
       creator: creator ?? this.creator,
       devision: devision ?? this.devision,
+      artType: artType ?? this.artType,
+      material: material ?? this.material,
+      size: size ?? this.size,
+      location: location ?? this.location,
+      interContext: interContext ?? this.interContext,
     );
   }
 }
@@ -708,16 +844,87 @@ class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
   @override
   GeneratedTextColumn get devision => _devision ??= _constructDevision();
   GeneratedTextColumn _constructDevision() {
+    return GeneratedTextColumn('devision', $tableName, true,
+        $customConstraints: 'REFERENCES devisions(name)');
+  }
+
+  final VerificationMeta _artTypeMeta = const VerificationMeta('artType');
+  GeneratedTextColumn _artType;
+  @override
+  GeneratedTextColumn get artType => _artType ??= _constructArtType();
+  GeneratedTextColumn _constructArtType() {
     return GeneratedTextColumn(
-      'devision',
+      'art_type',
+      $tableName,
+      true,
+    );
+  }
+
+  final VerificationMeta _materialMeta = const VerificationMeta('material');
+  GeneratedTextColumn _material;
+  @override
+  GeneratedTextColumn get material => _material ??= _constructMaterial();
+  GeneratedTextColumn _constructMaterial() {
+    return GeneratedTextColumn(
+      'material',
+      $tableName,
+      true,
+    );
+  }
+
+  final VerificationMeta _sizeMeta = const VerificationMeta('size');
+  GeneratedTextColumn _size;
+  @override
+  GeneratedTextColumn get size => _size ??= _constructSize();
+  GeneratedTextColumn _constructSize() {
+    return GeneratedTextColumn(
+      'size',
+      $tableName,
+      true,
+    );
+  }
+
+  final VerificationMeta _locationMeta = const VerificationMeta('location');
+  GeneratedTextColumn _location;
+  @override
+  GeneratedTextColumn get location => _location ??= _constructLocation();
+  GeneratedTextColumn _constructLocation() {
+    return GeneratedTextColumn(
+      'location',
+      $tableName,
+      true,
+    );
+  }
+
+  final VerificationMeta _interContextMeta =
+      const VerificationMeta('interContext');
+  GeneratedTextColumn _interContext;
+  @override
+  GeneratedTextColumn get interContext =>
+      _interContext ??= _constructInterContext();
+  GeneratedTextColumn _constructInterContext() {
+    return GeneratedTextColumn(
+      'inter_context',
       $tableName,
       true,
     );
   }
 
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, name, descr, images, time, creator, devision];
+  List<GeneratedColumn> get $columns => [
+        id,
+        name,
+        descr,
+        images,
+        time,
+        creator,
+        devision,
+        artType,
+        material,
+        size,
+        location,
+        interContext
+      ];
   @override
   $StopsTable get asDslTable => this;
   @override
@@ -756,6 +963,28 @@ class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
       context.handle(_devisionMeta,
           devision.isAcceptableValue(d.devision.value, _devisionMeta));
     }
+    if (d.artType.present) {
+      context.handle(_artTypeMeta,
+          artType.isAcceptableValue(d.artType.value, _artTypeMeta));
+    }
+    if (d.material.present) {
+      context.handle(_materialMeta,
+          material.isAcceptableValue(d.material.value, _materialMeta));
+    }
+    if (d.size.present) {
+      context.handle(
+          _sizeMeta, size.isAcceptableValue(d.size.value, _sizeMeta));
+    }
+    if (d.location.present) {
+      context.handle(_locationMeta,
+          location.isAcceptableValue(d.location.value, _locationMeta));
+    }
+    if (d.interContext.present) {
+      context.handle(
+          _interContextMeta,
+          interContext.isAcceptableValue(
+              d.interContext.value, _interContextMeta));
+    }
     return context;
   }
 
@@ -792,6 +1021,21 @@ class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
     }
     if (d.devision.present) {
       map['devision'] = Variable<String, StringType>(d.devision.value);
+    }
+    if (d.artType.present) {
+      map['art_type'] = Variable<String, StringType>(d.artType.value);
+    }
+    if (d.material.present) {
+      map['material'] = Variable<String, StringType>(d.material.value);
+    }
+    if (d.size.present) {
+      map['size'] = Variable<String, StringType>(d.size.value);
+    }
+    if (d.location.present) {
+      map['location'] = Variable<String, StringType>(d.location.value);
+    }
+    if (d.interContext.present) {
+      map['inter_context'] = Variable<String, StringType>(d.interContext.value);
     }
     return map;
   }
@@ -1454,6 +1698,272 @@ class $TourStopsTable extends TourStops
   }
 }
 
+class Task extends DataClass implements Insertable<Task> {
+  final int id;
+  final int id_tour;
+  final int id_stop;
+  final String desc;
+  final String task;
+  Task(
+      {@required this.id,
+      @required this.id_tour,
+      @required this.id_stop,
+      @required this.desc,
+      @required this.task});
+  factory Task.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
+    final intType = db.typeSystem.forDartType<int>();
+    final stringType = db.typeSystem.forDartType<String>();
+    return Task(
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      id_tour:
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}id_tour']),
+      id_stop:
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}id_stop']),
+      desc: stringType.mapFromDatabaseResponse(data['${effectivePrefix}desc']),
+      task: stringType.mapFromDatabaseResponse(data['${effectivePrefix}task']),
+    );
+  }
+  factory Task.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return Task(
+      id: serializer.fromJson<int>(json['id']),
+      id_tour: serializer.fromJson<int>(json['id_tour']),
+      id_stop: serializer.fromJson<int>(json['id_stop']),
+      desc: serializer.fromJson<String>(json['desc']),
+      task: serializer.fromJson<String>(json['task']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'id_tour': serializer.toJson<int>(id_tour),
+      'id_stop': serializer.toJson<int>(id_stop),
+      'desc': serializer.toJson<String>(desc),
+      'task': serializer.toJson<String>(task),
+    };
+  }
+
+  @override
+  TasksCompanion createCompanion(bool nullToAbsent) {
+    return TasksCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      id_tour: id_tour == null && nullToAbsent
+          ? const Value.absent()
+          : Value(id_tour),
+      id_stop: id_stop == null && nullToAbsent
+          ? const Value.absent()
+          : Value(id_stop),
+      desc: desc == null && nullToAbsent ? const Value.absent() : Value(desc),
+      task: task == null && nullToAbsent ? const Value.absent() : Value(task),
+    );
+  }
+
+  Task copyWith({int id, int id_tour, int id_stop, String desc, String task}) =>
+      Task(
+        id: id ?? this.id,
+        id_tour: id_tour ?? this.id_tour,
+        id_stop: id_stop ?? this.id_stop,
+        desc: desc ?? this.desc,
+        task: task ?? this.task,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('Task(')
+          ..write('id: $id, ')
+          ..write('id_tour: $id_tour, ')
+          ..write('id_stop: $id_stop, ')
+          ..write('desc: $desc, ')
+          ..write('task: $task')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => $mrjf($mrjc(
+      id.hashCode,
+      $mrjc(id_tour.hashCode,
+          $mrjc(id_stop.hashCode, $mrjc(desc.hashCode, task.hashCode)))));
+  @override
+  bool operator ==(dynamic other) =>
+      identical(this, other) ||
+      (other is Task &&
+          other.id == this.id &&
+          other.id_tour == this.id_tour &&
+          other.id_stop == this.id_stop &&
+          other.desc == this.desc &&
+          other.task == this.task);
+}
+
+class TasksCompanion extends UpdateCompanion<Task> {
+  final Value<int> id;
+  final Value<int> id_tour;
+  final Value<int> id_stop;
+  final Value<String> desc;
+  final Value<String> task;
+  const TasksCompanion({
+    this.id = const Value.absent(),
+    this.id_tour = const Value.absent(),
+    this.id_stop = const Value.absent(),
+    this.desc = const Value.absent(),
+    this.task = const Value.absent(),
+  });
+  TasksCompanion.insert({
+    this.id = const Value.absent(),
+    @required int id_tour,
+    @required int id_stop,
+    this.desc = const Value.absent(),
+    @required String task,
+  })  : id_tour = Value(id_tour),
+        id_stop = Value(id_stop),
+        task = Value(task);
+  TasksCompanion copyWith(
+      {Value<int> id,
+      Value<int> id_tour,
+      Value<int> id_stop,
+      Value<String> desc,
+      Value<String> task}) {
+    return TasksCompanion(
+      id: id ?? this.id,
+      id_tour: id_tour ?? this.id_tour,
+      id_stop: id_stop ?? this.id_stop,
+      desc: desc ?? this.desc,
+      task: task ?? this.task,
+    );
+  }
+}
+
+class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
+  final GeneratedDatabase _db;
+  final String _alias;
+  $TasksTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
+  GeneratedIntColumn _id;
+  @override
+  GeneratedIntColumn get id => _id ??= _constructId();
+  GeneratedIntColumn _constructId() {
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
+  }
+
+  final VerificationMeta _id_tourMeta = const VerificationMeta('id_tour');
+  GeneratedIntColumn _id_tour;
+  @override
+  GeneratedIntColumn get id_tour => _id_tour ??= _constructIdTour();
+  GeneratedIntColumn _constructIdTour() {
+    return GeneratedIntColumn('id_tour', $tableName, false,
+        $customConstraints: 'REFERENCES tours(id)');
+  }
+
+  final VerificationMeta _id_stopMeta = const VerificationMeta('id_stop');
+  GeneratedIntColumn _id_stop;
+  @override
+  GeneratedIntColumn get id_stop => _id_stop ??= _constructIdStop();
+  GeneratedIntColumn _constructIdStop() {
+    return GeneratedIntColumn('id_stop', $tableName, false,
+        $customConstraints: 'REFERENCES stops(id)');
+  }
+
+  final VerificationMeta _descMeta = const VerificationMeta('desc');
+  GeneratedTextColumn _desc;
+  @override
+  GeneratedTextColumn get desc => _desc ??= _constructDesc();
+  GeneratedTextColumn _constructDesc() {
+    return GeneratedTextColumn('desc', $tableName, false,
+        defaultValue: const Constant(""));
+  }
+
+  final VerificationMeta _taskMeta = const VerificationMeta('task');
+  GeneratedTextColumn _task;
+  @override
+  GeneratedTextColumn get task => _task ??= _constructTask();
+  GeneratedTextColumn _constructTask() {
+    return GeneratedTextColumn(
+      'task',
+      $tableName,
+      false,
+    );
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [id, id_tour, id_stop, desc, task];
+  @override
+  $TasksTable get asDslTable => this;
+  @override
+  String get $tableName => _alias ?? 'tasks';
+  @override
+  final String actualTableName = 'tasks';
+  @override
+  VerificationContext validateIntegrity(TasksCompanion d,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    if (d.id.present) {
+      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    }
+    if (d.id_tour.present) {
+      context.handle(_id_tourMeta,
+          id_tour.isAcceptableValue(d.id_tour.value, _id_tourMeta));
+    } else if (isInserting) {
+      context.missing(_id_tourMeta);
+    }
+    if (d.id_stop.present) {
+      context.handle(_id_stopMeta,
+          id_stop.isAcceptableValue(d.id_stop.value, _id_stopMeta));
+    } else if (isInserting) {
+      context.missing(_id_stopMeta);
+    }
+    if (d.desc.present) {
+      context.handle(
+          _descMeta, desc.isAcceptableValue(d.desc.value, _descMeta));
+    }
+    if (d.task.present) {
+      context.handle(
+          _taskMeta, task.isAcceptableValue(d.task.value, _taskMeta));
+    } else if (isInserting) {
+      context.missing(_taskMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id, id_tour, id_stop};
+  @override
+  Task map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return Task.fromData(data, _db, prefix: effectivePrefix);
+  }
+
+  @override
+  Map<String, Variable> entityToSql(TasksCompanion d) {
+    final map = <String, Variable>{};
+    if (d.id.present) {
+      map['id'] = Variable<int, IntType>(d.id.value);
+    }
+    if (d.id_tour.present) {
+      map['id_tour'] = Variable<int, IntType>(d.id_tour.value);
+    }
+    if (d.id_stop.present) {
+      map['id_stop'] = Variable<int, IntType>(d.id_stop.value);
+    }
+    if (d.desc.present) {
+      map['desc'] = Variable<String, StringType>(d.desc.value);
+    }
+    if (d.task.present) {
+      map['task'] = Variable<String, StringType>(d.task.value);
+    }
+    return map;
+  }
+
+  @override
+  $TasksTable createAlias(String alias) {
+    return $TasksTable(_db, alias);
+  }
+}
+
 abstract class _$MuseumDatabase extends GeneratedDatabase {
   _$MuseumDatabase(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   $UsersTable _users;
@@ -1468,9 +1978,11 @@ abstract class _$MuseumDatabase extends GeneratedDatabase {
   $ToursTable get tours => _tours ??= $ToursTable(this);
   $TourStopsTable _tourStops;
   $TourStopsTable get tourStops => _tourStops ??= $TourStopsTable(this);
+  $TasksTable _tasks;
+  $TasksTable get tasks => _tasks ??= $TasksTable(this);
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [users, badges, stops, devisions, tours, tourStops];
+      [users, badges, stops, devisions, tours, tourStops, tasks];
 }

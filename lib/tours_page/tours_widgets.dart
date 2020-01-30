@@ -5,15 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
-import 'package:museum_app/Models.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/tours_page/tours_page.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour.dart';
 
-class TourList extends StatefulWidget {
-  final TourType tt;
+//import 'package:museum_app/Models.dart';
+import 'package:museum_app/database/database.dart';
 
-  TourList({Key key, this.tt}) : super(key: key);
+class TourList extends StatefulWidget {
+  final List<Tour> tours;
+
+  TourList(this.tours, {Key key}) : super(key: key);
 
   @override
   _TourListState createState() => _TourListState();
@@ -21,16 +23,29 @@ class TourList extends StatefulWidget {
 
 class _TourListState extends State<TourList> {
   Widget _pictureLeft(Tour t, Size s, {margin = const EdgeInsets.all(0)}) =>
-      Container(
-        margin: margin,
-        width: SizeConfig.safeBlockHorizontal * s.width,
-        height: SizeConfig.safeBlockVertical * s.height,
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.black),
-          borderRadius: BorderRadius.all(Radius.circular(10.0)),
-          image: DecorationImage(image: t.stops[0].imgs[0], fit: BoxFit.cover),
-        ),
-      );
+      StreamBuilder(
+          stream: MuseumDatabase.get().getStopsId(t.id),
+          builder: (context, snap) {
+            var stops = snap.data ??
+                [
+                  Stop(
+                      name: "",
+                      descr: "",
+                      images: ["assets/images/profile_test.png"],
+                      id: -1)
+                ];
+            return Container(
+              margin: margin,
+              width: SizeConfig.safeBlockHorizontal * s.width,
+              height: SizeConfig.safeBlockVertical * s.height,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black),
+                borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                image: DecorationImage(
+                    image: AssetImage(stops[0].images[0]), fit: BoxFit.cover),
+              ),
+            );
+          });
 
   Widget _infoRight(Tour t) => Container(
         width: horSize(51, 55),
@@ -58,7 +73,7 @@ class _TourListState extends State<TourList> {
               height: verSize(4, 5),
               child: Row(
                 children: [
-                  t.getRating(
+                  getRating(t,
                       color: Colors.pink,
                       color2: Colors.grey,
                       size: horSize(4.5, 3.5)),
@@ -68,7 +83,7 @@ class _TourListState extends State<TourList> {
               ),
             ),
             _textBox(
-              t.description,
+              t.desc,
               Size(size(50, 80), size(7, 18)),
               textAlign: TextAlign.justify,
               fontSize: size(13, 15),
@@ -139,16 +154,6 @@ class _TourListState extends State<TourList> {
             child: Text("Anzeigen", style: TextStyle(fontSize: size(14, 17))),
             onPressed: () => _showTour(t),
           ),
-          (t.author == getUser().username
-              ? FlatButton(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0)),
-                  color: Colors.pinkAccent,
-                  child: Text("Bearbeiten",
-                      style: TextStyle(fontSize: size(14, 17))),
-                  onPressed: () {},
-                )
-              : Container()),
         ],
       );
 
@@ -208,6 +213,7 @@ class _TourListState extends State<TourList> {
         (d != 0
             ? d.toString() + (d > 1 ? " Tage" : "Tag")
             : h.toString() + (h > 1 ? " Stunden" : " Stunde"));*/
+    //TODO used package is not MIT
     String s = DateFormat('dd.MM.yyyy').format(time);
     return Row(
       //crossAxisAlignment: CrossAxisAlignment.center,
@@ -233,7 +239,7 @@ class _TourListState extends State<TourList> {
 
   //TODO schöner machen -> soll animiert sein
   void _showTour(Tour t) {
-    SizeConfig().init(context);
+    //SizeConfig().init(context);
     showGeneralDialog(
       barrierColor: Colors.grey.withOpacity(0.7),
       barrierDismissible: true,
@@ -280,7 +286,7 @@ class _TourListState extends State<TourList> {
               Container(
                   margin: EdgeInsets.symmetric(vertical: 3.5),
                   child: Row(children: [
-                    t.getRating(
+                    getRating(t,
                         color: Colors.white,
                         color2: Colors.pink,
                         size: horSize(7, 3.5)),
@@ -291,7 +297,7 @@ class _TourListState extends State<TourList> {
 
               // Description
               Text(
-                t.description,
+                t.desc,
                 textAlign: TextAlign.justify,
                 maxLines: 5,
                 overflow: TextOverflow.ellipsis,
@@ -352,25 +358,29 @@ class _TourListState extends State<TourList> {
     );
   }
 
+  Widget getRating(Tour t,
+          {color = Colors.black, color2 = Colors.white, size = 40.0}) =>
+      RatingBarIndicator(
+        rating: min(max(t.rating, 0), 5),
+        itemSize: size,
+        itemBuilder: (BuildContext context, int index) => Icon(
+          Icons.star,
+          color: color,
+        ),
+        unratedColor: color2.withOpacity(.5),
+      );
+
   @override
   Widget build(BuildContext context) {
-    User u = getUser();
-    var list = u.tours
-        // Filter Tours according to set TourType
-        .where((t) => (widget.tt == TourType.my
-            ? t.author == u.username
-            : (widget.tt == TourType.fav ? t.author != u.username : true)))
-        // Build every Tour-Widget
-        .map(_buildTour)
-        .toList();
-
+    /*StreamBuilder(
+      stream: MuseumDatabase.get().getTours(),
+    builder: (context, snap) {
+        var tours = snap.data ?? List<Tour>();
+    },*/
+    //UserClass u = getUser();
+    var list = widget.tours.map(_buildTour).toList();
     return Column(
-      children: list +
-          [
-            Container(
-                height: SizeConfig.safeBlockVertical *
-                    (list.length < 2 ? size(11, 0) : 0))
-          ],
+      children: list,
     );
   }
 }

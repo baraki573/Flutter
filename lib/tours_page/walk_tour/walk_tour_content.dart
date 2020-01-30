@@ -5,14 +5,17 @@ import 'package:expandable/expandable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:museum_app/Models.dart';
+
 import 'package:museum_app/SizeConfig.dart';
+import 'package:museum_app/database/database.dart';
+import 'package:museum_app/tours_page/walk_tour/walk_tour_tasks.dart';
 import 'package:photo_view/photo_view.dart';
 
 class TourWalkerContent extends StatefulWidget {
+  final int tour_id;
   final Stop stop;
 
-  TourWalkerContent(this.stop, {Key key}) : super(key: key);
+  TourWalkerContent(this.stop, this.tour_id, {Key key}) : super(key: key);
 
   @override
   _TourWalkerContentState createState() => _TourWalkerContentState();
@@ -34,13 +37,14 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
           viewportFraction: 1.0,
           height: verSize(52, 68.5),
           enableInfiniteScroll: false,
-          items: widget.stop.imgs
+          items: widget.stop.images
               .map(
                 (img) => GestureDetector(
                   onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) => _ImageDetail("A", img))),//_ImageDetail("A", img))),
+                          builder: (_) => _ImageDetail("A", AssetImage(img)))),
+                  //_ImageDetail("A", img))),
                   //onTap: () => _imagePopup(widget.stop.imgs[_currentImage]),
                   child: Container(
                     //color: Colors.green,
@@ -58,7 +62,7 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
                       child: Image(
                           //height: verSize(57, 68.5),
                           width: horSize(100, 100),
-                          image: img,
+                          image: AssetImage(img),
                           fit: BoxFit.cover),
                       tag: "A",
                     ),
@@ -87,7 +91,7 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(
-            widget.stop.imgs.length,
+            widget.stop.images.length,
             (index) => Container(
               width: 8.0,
               height: 8.0,
@@ -154,6 +158,24 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
     );
   }
 
+  Widget _expButton(String text) => ExpandableButton(
+        child: Container(
+          //color: Colors.red,
+          height: verSize(6, 10),
+          width: horSize(37, 30),
+          child: Center(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+        ),
+      );
+
   Widget _information() {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16),
@@ -168,27 +190,64 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
               color: Colors.pink,
             ),
           ),
-          ExpandablePanel(
-            collapsed: Text(widget.stop.descr,
-                maxLines: 5,
-                textAlign: TextAlign.justify,
-                style: TextStyle(fontSize: 18),
-                overflow: TextOverflow.ellipsis),
-            expanded: Text(
-              widget.stop.descr,
-              textAlign: TextAlign.justify,
-              style: TextStyle(fontSize: 18),
+          ExpandableNotifier(
+            child: Expandable(
+              theme: ExpandableThemeData(
+                tapBodyToCollapse: true,
+                tapBodyToExpand: true,
+              ),
+              collapsed: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.stop.descr,
+                    maxLines: 5,
+                    textAlign: TextAlign.justify,
+                    style: TextStyle(fontSize: 18),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  _expButton("Mehr anzeigen"),
+                ],
+              ),
+              expanded: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.stop.descr,
+                    textAlign: TextAlign.justify,
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  _expButton("Weniger anzeigen"),
+                ],
+              ),
             ),
           ),
           _informationTable(widget.stop),
+          //TourWalkerTasks(widget.tour_id, widget.stop.id),
         ],
       ),
     );
   }
 
-  Widget _informationTable(item) {
-    if (!(item is Exhibit)) return Container();
-    var info = item.getInformation();
+  Map<String, String> getInformation(Stop s) {
+    Map<String, String> map = {
+      "Abteilung": s.devision,
+      "Kategorie": s.artType,
+      "Ersteller": s.creator,
+      "Zeitraum": s.time,
+      "Material": s.material,
+      "Größe": s.size,
+      "Ort": s.location,
+      "Kontext": s.interContext
+    };
+    map.removeWhere((key, val) => val == null);
+
+    return map;
+  }
+
+  Widget _informationTable(Stop s) {
+    //if (!(item is Exhibit)) return Container();
+    var info = getInformation(s);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -200,7 +259,7 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
           ),
         ),
         Container(
-          margin: EdgeInsets.only(right: 23),
+          //margin: EdgeInsets.only(right: 23),
           decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -208,8 +267,8 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
               boxShadow: [BoxShadow(offset: Offset.fromDirection(pi / 4))]),
           child: Table(
             columnWidths: {
-              0: FixedColumnWidth(horSize(30, 25)),
-              1: FixedColumnWidth(horSize(47, 62))
+              0: FixedColumnWidth(horSize(33, 25)),
+              //1: FixedColumnWidth(horSize(58, 62))
             },
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             border:
@@ -228,9 +287,9 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
                     ),
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                     child: Text(
-                      info.putIfAbsent(info.keys.elementAt(index), null),
+                      info[info.keys.elementAt(index)],
                       style:
                           TextStyle(fontSize: 18, fontStyle: FontStyle.italic),
                     ),
@@ -253,37 +312,39 @@ class _ImageDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: GestureDetector(
-      onTap: () => Navigator.pop(context),
-      //onVerticalDragEnd: (a)=>print(a.primaryVelocity),
-      child: Stack(
-        children: [
-          PhotoView(
-            heroAttributes: const PhotoViewHeroAttributes(tag: "A", transitionOnUserGestures: true),
-            imageProvider: _img,
-            maxScale: 3.0,
-            minScale: PhotoViewComputedScale.contained,
-            backgroundDecoration: const BoxDecoration(
-              color: Colors.black,
+    return Scaffold(
+      body: GestureDetector(
+        onTap: () => Navigator.pop(context),
+        //onVerticalDragEnd: (a)=>print(a.primaryVelocity),
+        child: Stack(
+          children: [
+            PhotoView(
+              heroAttributes: const PhotoViewHeroAttributes(
+                  tag: "A", transitionOnUserGestures: true),
+              imageProvider: _img,
+              maxScale: 3.0,
+              minScale: PhotoViewComputedScale.contained,
+              backgroundDecoration: const BoxDecoration(
+                color: Colors.black,
+              ),
             ),
-          ),
-          Positioned(
-            top: 35,
-            left: 7,
-            height: SizeConfig.safeBlockVertical * 6,
-            width: SizeConfig.safeBlockVertical * 6,
-            child: FlatButton(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-              padding: EdgeInsets.all(0),
-              color: Colors.black.withOpacity(0.3),
-              child: Icon(Icons.arrow_back, color: Colors.white, size: 32),
-              onPressed: () => Navigator.pop(context),
+            Positioned(
+              top: 35,
+              left: 7,
+              height: SizeConfig.safeBlockVertical * 6,
+              width: SizeConfig.safeBlockVertical * 6,
+              child: FlatButton(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+                padding: EdgeInsets.all(0),
+                color: Colors.black.withOpacity(0.3),
+                child: Icon(Icons.arrow_back, color: Colors.white, size: 32),
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
-          ),
-        ],
-      ),),
+          ],
+        ),
+      ),
     );
   }
 }
-
