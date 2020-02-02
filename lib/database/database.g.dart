@@ -1212,14 +1212,14 @@ class Tour extends DataClass implements Insertable<Tour> {
   final int id;
   final String name;
   final String author;
-  final double rating;
+  final double difficulty;
   final DateTime creationTime;
   final String desc;
   Tour(
       {@required this.id,
       @required this.name,
       @required this.author,
-      @required this.rating,
+      @required this.difficulty,
       @required this.creationTime,
       @required this.desc});
   factory Tour.fromData(Map<String, dynamic> data, GeneratedDatabase db,
@@ -1234,8 +1234,8 @@ class Tour extends DataClass implements Insertable<Tour> {
       name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
       author:
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}author']),
-      rating:
-          doubleType.mapFromDatabaseResponse(data['${effectivePrefix}rating']),
+      difficulty: doubleType
+          .mapFromDatabaseResponse(data['${effectivePrefix}difficulty']),
       creationTime: dateTimeType
           .mapFromDatabaseResponse(data['${effectivePrefix}creation_time']),
       desc: stringType.mapFromDatabaseResponse(data['${effectivePrefix}desc']),
@@ -1248,7 +1248,7 @@ class Tour extends DataClass implements Insertable<Tour> {
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       author: serializer.fromJson<String>(json['author']),
-      rating: serializer.fromJson<double>(json['rating']),
+      difficulty: serializer.fromJson<double>(json['difficulty']),
       creationTime: serializer.fromJson<DateTime>(json['creationTime']),
       desc: serializer.fromJson<String>(json['desc']),
     );
@@ -1260,7 +1260,7 @@ class Tour extends DataClass implements Insertable<Tour> {
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'author': serializer.toJson<String>(author),
-      'rating': serializer.toJson<double>(rating),
+      'difficulty': serializer.toJson<double>(difficulty),
       'creationTime': serializer.toJson<DateTime>(creationTime),
       'desc': serializer.toJson<String>(desc),
     };
@@ -1273,8 +1273,9 @@ class Tour extends DataClass implements Insertable<Tour> {
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
       author:
           author == null && nullToAbsent ? const Value.absent() : Value(author),
-      rating:
-          rating == null && nullToAbsent ? const Value.absent() : Value(rating),
+      difficulty: difficulty == null && nullToAbsent
+          ? const Value.absent()
+          : Value(difficulty),
       creationTime: creationTime == null && nullToAbsent
           ? const Value.absent()
           : Value(creationTime),
@@ -1286,14 +1287,14 @@ class Tour extends DataClass implements Insertable<Tour> {
           {int id,
           String name,
           String author,
-          double rating,
+          double difficulty,
           DateTime creationTime,
           String desc}) =>
       Tour(
         id: id ?? this.id,
         name: name ?? this.name,
         author: author ?? this.author,
-        rating: rating ?? this.rating,
+        difficulty: difficulty ?? this.difficulty,
         creationTime: creationTime ?? this.creationTime,
         desc: desc ?? this.desc,
       );
@@ -1303,7 +1304,7 @@ class Tour extends DataClass implements Insertable<Tour> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('author: $author, ')
-          ..write('rating: $rating, ')
+          ..write('difficulty: $difficulty, ')
           ..write('creationTime: $creationTime, ')
           ..write('desc: $desc')
           ..write(')'))
@@ -1317,7 +1318,7 @@ class Tour extends DataClass implements Insertable<Tour> {
           name.hashCode,
           $mrjc(
               author.hashCode,
-              $mrjc(rating.hashCode,
+              $mrjc(difficulty.hashCode,
                   $mrjc(creationTime.hashCode, desc.hashCode))))));
   @override
   bool operator ==(dynamic other) =>
@@ -1326,7 +1327,7 @@ class Tour extends DataClass implements Insertable<Tour> {
           other.id == this.id &&
           other.name == this.name &&
           other.author == this.author &&
-          other.rating == this.rating &&
+          other.difficulty == this.difficulty &&
           other.creationTime == this.creationTime &&
           other.desc == this.desc);
 }
@@ -1335,14 +1336,14 @@ class ToursCompanion extends UpdateCompanion<Tour> {
   final Value<int> id;
   final Value<String> name;
   final Value<String> author;
-  final Value<double> rating;
+  final Value<double> difficulty;
   final Value<DateTime> creationTime;
   final Value<String> desc;
   const ToursCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.author = const Value.absent(),
-    this.rating = const Value.absent(),
+    this.difficulty = const Value.absent(),
     this.creationTime = const Value.absent(),
     this.desc = const Value.absent(),
   });
@@ -1350,26 +1351,25 @@ class ToursCompanion extends UpdateCompanion<Tour> {
     this.id = const Value.absent(),
     @required String name,
     @required String author,
-    @required double rating,
+    this.difficulty = const Value.absent(),
     @required DateTime creationTime,
     @required String desc,
   })  : name = Value(name),
         author = Value(author),
-        rating = Value(rating),
         creationTime = Value(creationTime),
         desc = Value(desc);
   ToursCompanion copyWith(
       {Value<int> id,
       Value<String> name,
       Value<String> author,
-      Value<double> rating,
+      Value<double> difficulty,
       Value<DateTime> creationTime,
       Value<String> desc}) {
     return ToursCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       author: author ?? this.author,
-      rating: rating ?? this.rating,
+      difficulty: difficulty ?? this.difficulty,
       creationTime: creationTime ?? this.creationTime,
       desc: desc ?? this.desc,
     );
@@ -1407,16 +1407,13 @@ class $ToursTable extends Tours with TableInfo<$ToursTable, Tour> {
         minTextLength: 3, maxTextLength: 20);
   }
 
-  final VerificationMeta _ratingMeta = const VerificationMeta('rating');
-  GeneratedRealColumn _rating;
+  final VerificationMeta _difficultyMeta = const VerificationMeta('difficulty');
+  GeneratedRealColumn _difficulty;
   @override
-  GeneratedRealColumn get rating => _rating ??= _constructRating();
-  GeneratedRealColumn _constructRating() {
-    return GeneratedRealColumn(
-      'rating',
-      $tableName,
-      false,
-    );
+  GeneratedRealColumn get difficulty => _difficulty ??= _constructDifficulty();
+  GeneratedRealColumn _constructDifficulty() {
+    return GeneratedRealColumn('difficulty', $tableName, false,
+        defaultValue: const Constant(0.0));
   }
 
   final VerificationMeta _creationTimeMeta =
@@ -1447,7 +1444,7 @@ class $ToursTable extends Tours with TableInfo<$ToursTable, Tour> {
 
   @override
   List<GeneratedColumn> get $columns =>
-      [id, name, author, rating, creationTime, desc];
+      [id, name, author, difficulty, creationTime, desc];
   @override
   $ToursTable get asDslTable => this;
   @override
@@ -1473,11 +1470,9 @@ class $ToursTable extends Tours with TableInfo<$ToursTable, Tour> {
     } else if (isInserting) {
       context.missing(_authorMeta);
     }
-    if (d.rating.present) {
-      context.handle(
-          _ratingMeta, rating.isAcceptableValue(d.rating.value, _ratingMeta));
-    } else if (isInserting) {
-      context.missing(_ratingMeta);
+    if (d.difficulty.present) {
+      context.handle(_difficultyMeta,
+          difficulty.isAcceptableValue(d.difficulty.value, _difficultyMeta));
     }
     if (d.creationTime.present) {
       context.handle(
@@ -1516,8 +1511,8 @@ class $ToursTable extends Tours with TableInfo<$ToursTable, Tour> {
     if (d.author.present) {
       map['author'] = Variable<String, StringType>(d.author.value);
     }
-    if (d.rating.present) {
-      map['rating'] = Variable<double, RealType>(d.rating.value);
+    if (d.difficulty.present) {
+      map['difficulty'] = Variable<double, RealType>(d.difficulty.value);
     }
     if (d.creationTime.present) {
       map['creation_time'] =

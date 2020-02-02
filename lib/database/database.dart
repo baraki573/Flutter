@@ -2,18 +2,14 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:flutter/material.dart' as m;
 import 'package:moor/moor.dart';
-
-//import 'package:flutter/cupertino.dart';
 import 'package:moor_ffi/moor_ffi.dart';
 import 'package:museum_app/constants.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:flutter/material.dart' as m;
+import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 
-// assuming that your file is called filename.dart. This will give an error at first,
-// but it's needed for moor to know about the generated code
 part 'database.g.dart';
 
 class Users extends Table {
@@ -51,8 +47,7 @@ class Tours extends Table {
 
   TextColumn get author => text().withLength(min: 3, max: 20)();
 
-  //TODO convert to difficulty
-  RealColumn get rating => real()();
+  RealColumn get difficulty => real().withDefault(const Constant(0.0))();
 
   DateTimeColumn get creationTime => dateTime()();
 
@@ -705,20 +700,20 @@ class MuseumDatabase extends _$MuseumDatabase {
           ToursCompanion.insert(
               name: "Test Tour",
               author: "Maria123_XD",
-              rating: 4.6,
+              difficulty: Value(4.6),
               creationTime: DateTime.now(),
               desc: "Diese Beschreibung ist zum Glück nicht so lang."),
           ToursCompanion.insert(
               name: "Meine erste Tour",
               author: "1412",
-              rating: 1.2,
+              difficulty: Value(1.2),
               creationTime: DateTime.parse("2020-02-05"),
               desc:
                   "Einen Roman schreiben die User hier bestimmt nicht hin. Und wenn doch, muss ich mir dafür etwas einfallen lassen."),
           ToursCompanion.insert(
               name: "Zoologische Tour mit int",
               author: "MyBestUser",
-              rating: 2.6,
+              difficulty: Value(2.6),
               creationTime: DateTime.parse("1983-05-14"),
               desc: "Diese Tour ist sehr lehrreich."),
         ],

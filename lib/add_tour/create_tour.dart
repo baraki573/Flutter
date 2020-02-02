@@ -29,8 +29,6 @@ class _CreateTourState extends State<CreateTour> {
 
   Widget _draggable() {
     var horPad = horSize(27.5, 32.5);
-
-    print("KIJHB");
     return ReorderableWrap(
       //alignment: WrapAlignment.center,
       //crossAxisAlignment: WrapCrossAlignment.center,
@@ -65,7 +63,7 @@ class _CreateTourState extends State<CreateTour> {
                 id: null,
                 name: ctrl.text,
                 author: "Maria35",
-                rating: 2.5,
+                difficulty: 2.5,
                 creationTime: DateTime.now(),
                 desc: "Gefunden auf Otto.de",
               );

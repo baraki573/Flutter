@@ -60,10 +60,11 @@ class _TourListState extends State<TourList> {
               height: verSize(4, 5),
               child: Row(
                 children: [
-                  getRating(t.tour,
-                      color: Colors.pink,
-                      color2: Colors.grey,
-                      size: horSize(4.5, 3.5)),
+                  getDifficulty(
+                    t.tour,
+                    color: Colors.pink,
+                    size: horSize(4.5, 3.5),
+                  ),
                   Container(width: horSize(2, 3)),
                   _buildTime(t.tour.creationTime),
                 ],
@@ -111,20 +112,6 @@ class _TourListState extends State<TourList> {
             fontStyle: fontStyle,
           ),
           overflow: TextOverflow.fade,
-        ),
-      );
-
-  // TODO move these to the tour class
-  Widget _tourRating(Tour t) => Container(
-        margin: EdgeInsets.only(top: 3.5, bottom: 3.5, right: 8),
-        child: RatingBarIndicator(
-          rating: min(max(t.rating, 0), 5),
-          itemSize: horSize(4.5, 3.5),
-          itemBuilder: (BuildContext context, int index) => Icon(
-            Icons.star,
-            color: Colors.pinkAccent,
-          ),
-          unratedColor: Colors.grey.withAlpha(50),
         ),
       );
 
@@ -228,6 +215,7 @@ class _TourListState extends State<TourList> {
   void _showTour(TourWithStops t) {
     //SizeConfig().init(context);
     showGeneralDialog(
+      pageBuilder: (a,b,c){},
       barrierColor: Colors.grey.withOpacity(0.7),
       barrierDismissible: true,
       barrierLabel: '',
@@ -271,16 +259,21 @@ class _TourListState extends State<TourList> {
               ),
               // Stars
               Container(
-                  margin: EdgeInsets.symmetric(vertical: 3.5),
-                  child: Row(children: [
-                    getRating(t.tour,
-                        color: Colors.white,
-                        color2: Colors.pink,
-                        size: horSize(7, 3.5)),
+                margin: EdgeInsets.symmetric(vertical: 3.5),
+                child: Row(
+                  children: [
+                    getDifficulty(
+                      t.tour,
+                      color: Colors.white,
+                      color2: Colors.pinkAccent,
+                      size: horSize(7, 3.5),
+                    ),
                     Container(width: 8),
                     _buildTime(t.tour.creationTime,
                         color: Colors.white, color2: Colors.white, scale: 1.2),
-                  ])),
+                  ],
+                ),
+              ),
 
               // Description
               Text(
@@ -341,21 +334,21 @@ class _TourListState extends State<TourList> {
           ),
         ),
       ),
-      pageBuilder: (context, animation1, animation2) {},
     );
   }
 
-  Widget getRating(Tour t,
-          {color = Colors.black, color2 = Colors.white, size = 40.0}) =>
-      RatingBarIndicator(
-        rating: min(max(t.rating, 0), 5),
-        itemSize: size,
-        itemBuilder: (BuildContext context, int index) => Icon(
-          Icons.star,
-          color: color,
-        ),
-        unratedColor: color2.withOpacity(.5),
-      );
+  Widget getDifficulty(Tour t,
+      {color = Colors.black, color2 = Colors.white, size = 40.0}) {
+    return RatingBarIndicator(
+      rating: min(max(t.difficulty, 0), 5),
+      itemSize: size,
+      itemBuilder: (BuildContext context, int index) => Icon(
+        Icons.local_pizza,
+        color: color,
+      ),
+      unratedColor: color2,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

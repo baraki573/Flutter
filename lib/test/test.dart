@@ -80,7 +80,7 @@ class _State extends State<TestWidget> {
     var t = Tour(
         name: ctrl.text,
         author: user,
-        rating: 2.7,
+        difficulty: 2.7,
         creationTime: DateTime.now(),
         desc: "NULL",
         id: null);
