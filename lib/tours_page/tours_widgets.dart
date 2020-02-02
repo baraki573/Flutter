@@ -5,16 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
-import 'package:moor/moor.dart' as moor;
 import 'package:museum_app/SizeConfig.dart';
-import 'package:museum_app/tours_page/tours_page.dart';
+import 'package:museum_app/database/database.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour.dart';
 
-//import 'package:museum_app/Models.dart';
-import 'package:museum_app/database/database.dart';
-
 class TourList extends StatefulWidget {
-  final List<Tour> tours;
+  final List<TourWithStops> tours;
 
   TourList(this.tours, {Key key}) : super(key: key);
 
@@ -23,32 +19,28 @@ class TourList extends StatefulWidget {
 }
 
 class _TourListState extends State<TourList> {
-  Widget _pictureLeft(Tour t, Size s, {margin = const EdgeInsets.all(0)}) =>
-      StreamBuilder(
-          stream: MuseumDatabase.get().getStopsId(t.id),
-          builder: (context, snap) {
-            var stops = snap.data ??
-                [Stop(images: ["assets/images/profile_test.png"])];
-            return Container(
-              margin: margin,
-              width: SizeConfig.safeBlockHorizontal * s.width,
-              height: SizeConfig.safeBlockVertical * s.height,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black),
-                borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                image: DecorationImage(
-                    image: AssetImage(stops[0].images[0]), fit: BoxFit.cover),
-              ),
-            );
-          });
+  Widget _pictureLeft(ActualStop stop, Size s,
+      {margin = const EdgeInsets.all(0)}) {
+    return Container(
+      margin: margin,
+      width: SizeConfig.safeBlockHorizontal * s.width,
+      height: SizeConfig.safeBlockVertical * s.height,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.black),
+        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+        image: DecorationImage(
+            image: AssetImage(stop.stop.images[0]), fit: BoxFit.cover),
+      ),
+    );
+  }
 
-  Widget _infoRight(Tour t) => Container(
+  Widget _infoRight(TourWithStops t) => Container(
         width: horSize(51, 55),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _textBox(
-              t.name,
+              t.tour.name,
               Size(size(50, 80), size(6, 11)),
               margin: EdgeInsets.only(bottom: 3),
               fontSize: 22.0,
@@ -56,7 +48,7 @@ class _TourListState extends State<TourList> {
             ),
             //_tourName(t),
             Text(
-              "von " + t.author,
+              "von " + t.tour.author,
               maxLines: 1,
               style: TextStyle(
                 fontStyle: FontStyle.italic,
@@ -68,17 +60,17 @@ class _TourListState extends State<TourList> {
               height: verSize(4, 5),
               child: Row(
                 children: [
-                  getRating(t,
+                  getRating(t.tour,
                       color: Colors.pink,
                       color2: Colors.grey,
                       size: horSize(4.5, 3.5)),
                   Container(width: horSize(2, 3)),
-                  _buildTime(t.creationTime),
+                  _buildTime(t.tour.creationTime),
                 ],
               ),
             ),
             _textBox(
-              t.desc,
+              t.tour.desc,
               Size(size(50, 80), size(7, 18)),
               textAlign: TextAlign.justify,
               fontSize: size(13, 15),
@@ -136,7 +128,7 @@ class _TourListState extends State<TourList> {
         ),
       );
 
-  Widget _tourButtons(Tour t) => ButtonBar(
+  Widget _tourButtons(TourWithStops t) => ButtonBar(
         buttonPadding: EdgeInsets.symmetric(horizontal: size(5, 9)),
         alignment: MainAxisAlignment.start,
         buttonMinWidth: horSize(22, 19),
@@ -152,7 +144,7 @@ class _TourListState extends State<TourList> {
         ],
       );
 
-  Widget _buildTour(Tour t) => Container(
+  Widget _buildTour(TourWithStops t) => Container(
         margin: EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -168,7 +160,7 @@ class _TourListState extends State<TourList> {
         ),
         child: Row(
           children: [
-            _pictureLeft(t, Size(31, size(28, 63)),
+            _pictureLeft(t.stops[0], Size(31, size(28, 63)),
                 margin:
                     EdgeInsets.only(left: 10, right: 10, top: 15, bottom: 15)),
             _infoRight(t),
@@ -233,7 +225,7 @@ class _TourListState extends State<TourList> {
   }
 
   //TODO schöner machen -> soll animiert sein
-  void _showTour(Tour t) {
+  void _showTour(TourWithStops t) {
     //SizeConfig().init(context);
     showGeneralDialog(
       barrierColor: Colors.grey.withOpacity(0.7),
@@ -253,13 +245,13 @@ class _TourListState extends State<TourList> {
             children: [
               // Picture
               _pictureLeft(
-                t,
+                t.stops[0],
                 Size(85, size(30, 55)),
                 margin: EdgeInsets.only(bottom: 16),
               ),
               // Titel
               Text(
-                t.name,
+                t.tour.name,
                 maxLines: 2,
                 style: TextStyle(
                   color: Colors.white,
@@ -269,7 +261,7 @@ class _TourListState extends State<TourList> {
               ),
               // Autor
               Text(
-                "von " + t.author,
+                "von " + t.tour.author,
                 maxLines: 1,
                 style: TextStyle(
                   color: Colors.white,
@@ -281,18 +273,18 @@ class _TourListState extends State<TourList> {
               Container(
                   margin: EdgeInsets.symmetric(vertical: 3.5),
                   child: Row(children: [
-                    getRating(t,
+                    getRating(t.tour,
                         color: Colors.white,
                         color2: Colors.pink,
                         size: horSize(7, 3.5)),
                     Container(width: 8),
-                    _buildTime(t.creationTime,
+                    _buildTime(t.tour.creationTime,
                         color: Colors.white, color2: Colors.white, scale: 1.2),
                   ])),
 
               // Description
               Text(
-                t.desc,
+                t.tour.desc,
                 textAlign: TextAlign.justify,
                 maxLines: 5,
                 overflow: TextOverflow.ellipsis,

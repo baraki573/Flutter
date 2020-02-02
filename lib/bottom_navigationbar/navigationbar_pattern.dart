@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:museum_app/add_tour/add_tour.dart';
 import 'package:museum_app/bottom_navigationbar/animated_navigationbar.dart';
-import 'package:museum_app/profile_page/profile_page.dart';
-import 'package:museum_app/test/test.dart';
-import 'package:museum_app/tours_page/tours_page.dart';
 import 'package:museum_app/home_page/home_page.dart';
+import 'package:museum_app/profile_page/profile_page.dart';
+import 'package:museum_app/tours_page/tours_page.dart';
 
 class BottomBarNavigationPatternExample extends StatefulWidget {
   // final int barIndex;
@@ -45,7 +45,7 @@ class _BottomBarNavigationPatternExampleState
   List<Widget> arr = [
     Home(),
     Tours(),
-    TestWidget(),
+    AddTour(),
     Profile(),
   ];
 

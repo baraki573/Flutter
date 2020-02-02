@@ -128,7 +128,7 @@ class _ProfileState extends State<Profile> {
         demo();
         break;
       case OptionType.editPp:
-        MuseumDatabase.get().clear();
+        setState(()=>MuseumDatabase.get().clear());
         //showDialog(context: context, builder: _editPp);
         break;
     }
@@ -173,9 +173,9 @@ class _ProfileState extends State<Profile> {
   Widget build(BuildContext context) {
     return MuseumTabs(
       _topInfo(),
-      ["Favoriten", "Erfolge", "Statistik"],
       [FavWidget(), BadgeWidget(), StatWidget()],
-      Colors.green,
+      names: ["Favoriten", "Erfolge", "Statistik"],
+      color: Colors.green,
     );
   }
 }

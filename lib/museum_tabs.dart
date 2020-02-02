@@ -11,7 +11,7 @@ class MuseumTabs extends StatefulWidget {
   final List<String> names;
   final List<Widget> tabs;
 
-  MuseumTabs(this.top, this.names, this.tabs, this.color, {Key key})
+  MuseumTabs(this.top, this.tabs, {this.names=const [], this.color, Key key})
       : super(key: key);
 
   @override
@@ -25,7 +25,9 @@ class _MuseumTabsState extends State<MuseumTabs> {
   @override
   void initState() {
     super.initState();
-    minLength = min(widget.names.length, widget.tabs.length);
+    if (widget.names==null || widget.tabs==null)
+      minLength = 0;
+    else minLength = min(widget.names.length, widget.tabs.length);
   }
 
   List<Widget> _customButtons() {
@@ -48,6 +50,7 @@ class _MuseumTabsState extends State<MuseumTabs> {
 
   Widget _bottomInfo() {
     //TODO extra view for empty list
+    print(minLength);
     return Container(
       //height: SizeConfig.safeBlockVertical * 100,
       decoration: BoxDecoration(
@@ -58,11 +61,11 @@ class _MuseumTabsState extends State<MuseumTabs> {
       ),
       child: Column(
         children: <Widget>[
-          ButtonBar(
+          widget.names.length>0 ? ButtonBar(
             buttonMinWidth: 100,
             alignment: MainAxisAlignment.center,
             children: _customButtons(),
-          ),
+          ) : Container(),
           widget.tabs[_currentTab],
         ],
       ),

@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/database/database.dart';
 import 'package:museum_app/map/map_page.dart';
 import 'package:museum_app/museum_tabs.dart';
@@ -57,9 +56,9 @@ class _ToursState extends State<Tours> {
           var username =
               (snapU.data ?? User(username: "", imgPath: "")).username;
           return StreamBuilder(
-              stream: MuseumDatabase.get().getTours(),
+              stream: MuseumDatabase.get().getTourStops(),
               builder: (context, snapTs) {
-                var tours = snapTs.data ?? List<Tour>();
+                var tours = snapTs.data ?? List<TourWithStops>();
                 tours = tours.where(funct(username)).toList();
                 return TourList(tours);
               });
@@ -70,16 +69,16 @@ class _ToursState extends State<Tours> {
   Widget build(BuildContext context) {
     return MuseumTabs(
         _topInfo(),
-        ["Alle", "Eigene", "Favoriten"],
         [
           // All tours
           _bottomInfo((_) => (tour) => true),
           // Only the created ones
-          _bottomInfo((username) => (tour) => tour.author == username),
+          _bottomInfo((username) => (tour) => tour.tour.author == username),
           // The rest
-          _bottomInfo((username) => (tour) => tour.author != username),
+          _bottomInfo((username) => (tour) => tour.tour.author != username),
         ],
-        Colors.pink,
+        names: ["Alle", "Eigene", "Favoriten"],
+        color: Colors.pink,
     );
   }
 }

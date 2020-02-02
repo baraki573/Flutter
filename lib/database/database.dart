@@ -10,6 +10,7 @@ import 'package:museum_app/constants.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart' as m;
+import 'package:rxdart/rxdart.dart';
 
 // assuming that your file is called filename.dart. This will give an error at first,
 // but it's needed for moor to know about the generated code
@@ -50,6 +51,7 @@ class Tours extends Table {
 
   TextColumn get author => text().withLength(min: 3, max: 20)();
 
+  //TODO convert to difficulty
   RealColumn get rating => real()();
 
   DateTimeColumn get creationTime => dateTime()();
@@ -63,12 +65,14 @@ class Tours extends Table {
 class Stops extends Table {
   IntColumn get id => integer().autoIncrement()();
 
+  //IMAGES
+  TextColumn get images => text().map(StringListConverter())();
+
   TextColumn get name => text().withLength(min: 3, max: 20)();
 
   TextColumn get descr => text()();
 
-  //IMAGES
-  TextColumn get images => text().map(StringListConverter())();
+  //TODO add Map<String, String>-Converter
 
   TextColumn get time => text().withLength(min: 1, max: 15).nullable()();
 
@@ -98,10 +102,42 @@ class TourStops extends Table {
 }
 
 class TourWithStops {
-  final Tour tour;
-  final List<Stop> stops;
+  Tour tour;
+  List<ActualStop> stops;
 
   TourWithStops(this.tour, this.stops);
+}
+
+class ActualStop {
+  Stop stop;
+  StopFeature features;
+  List<ActualTask> tasks;
+
+  ActualStop(this.stop, this.features, this.tasks);
+}
+
+enum TaskType { TEXT, MULTI_ONE, MULTI }
+
+class ActualTask {
+  final String descr;
+  final m.TextEditingController task = m.TextEditingController();
+  final TaskType type;
+  Map<String, m.TextEditingController> ctrl;
+  Set<int> selected;
+  final List<String> answers;
+
+  ActualTask(task, this.type,
+      {this.descr = "", this.answers = const ["ignore"]}) {
+    this.task.text = task;
+    switch (type) {
+      case TaskType.TEXT:
+        ctrl = Map<String, m.TextEditingController>();
+        for (String s in answers) ctrl[s] = m.TextEditingController();
+        break;
+      default:
+        selected = Set<int>();
+    }
+  }
 }
 
 class Devisions extends Table {
@@ -125,8 +161,24 @@ class Tasks extends Table {
 
   TextColumn get task => text()();
 
+  IntColumn get type => integer().map(TaskTypeConverter())();
+
+  TextColumn get answerOpt => text().map(StringListConverter())();
+
   @override
   Set<Column> get primaryKey => {id, id_tour, id_stop};
+}
+
+class StopFeatures extends Table {
+  IntColumn get id_tour => integer().customConstraint("REFERENCES tours(id)")();
+
+  IntColumn get id_stop => integer().customConstraint("REFERENCES stops(id)")();
+
+  BoolColumn get showImages => boolean().withDefault(const Constant(true))();
+
+  BoolColumn get showText => boolean().withDefault(const Constant(true))();
+
+  BoolColumn get showDetails => boolean().withDefault(const Constant(true))();
 }
 
 class ColorConverter extends TypeConverter<Color, int> {
@@ -144,6 +196,8 @@ class ColorConverter extends TypeConverter<Color, int> {
 }
 
 class StringListConverter extends TypeConverter<List<String>, String> {
+  const StringListConverter();
+
   @override
   List<String> mapToDart(String fromDb) {
     return fromDb.split(";");
@@ -152,6 +206,34 @@ class StringListConverter extends TypeConverter<List<String>, String> {
   @override
   String mapToSql(List<String> value) {
     return value.join(";");
+  }
+}
+
+class TaskTypeConverter extends TypeConverter<TaskType, int> {
+  const TaskTypeConverter();
+
+  @override
+  TaskType mapToDart(int fromDb) {
+    switch (fromDb) {
+      case 0:
+        return TaskType.MULTI;
+      case 1:
+        return TaskType.MULTI_ONE;
+      default:
+        return TaskType.TEXT;
+    }
+  }
+
+  @override
+  int mapToSql(TaskType value) {
+    switch (value) {
+      case TaskType.MULTI:
+        return 0;
+      case TaskType.MULTI_ONE:
+        return 1;
+      default:
+        return 2;
+    }
   }
 }
 
@@ -168,7 +250,16 @@ LazyDatabase _openConnection() {
 
 // this annotation tells moor to prepare a database class that uses both of the
 // tables we just defined. We'll see how to use that database class in a moment.
-@UseMoor(tables: [Users, Badges, Stops, Devisions, Tours, TourStops, Tasks])
+@UseMoor(tables: [
+  Users,
+  Badges,
+  Stops,
+  Devisions,
+  Tours,
+  TourStops,
+  Tasks,
+  StopFeatures
+])
 class MuseumDatabase extends _$MuseumDatabase {
   static MuseumDatabase _db;
 
@@ -180,7 +271,7 @@ class MuseumDatabase extends _$MuseumDatabase {
   MuseumDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   Stream<User> getUser() => select(users).watchSingle();
 
@@ -193,7 +284,7 @@ class MuseumDatabase extends _$MuseumDatabase {
     return update(users).write(UsersCompanion(username: Value(name)));
   }
 
-  Future updateOnboard(bool b){
+  Future updateOnboard(bool b) {
     return update(users).write(UsersCompanion(onboardEnd: Value(b)));
   }
 
@@ -210,6 +301,55 @@ class MuseumDatabase extends _$MuseumDatabase {
     customStatement("DELETE FROM devisions");
   }
 
+  Stream<StopFeature> getStopFeatures(int stop_id, int tour_id) {
+    final query = select(stopFeatures)
+      ..where((f) => f.id_stop.equals(stop_id))
+      ..where((f) => f.id_tour.equals(tour_id));
+
+    return query.watchSingle();
+  }
+
+  Future updateStopFeatures(int stop_id, int tour_id, {images, text, details}) {
+    update(stopFeatures).replace(
+      StopFeature(
+        id_stop: stop_id,
+        id_tour: tour_id,
+        showImages: images,
+        showText: text,
+        showDetails: details,
+      ).createCompanion(true),
+    );
+  }
+
+  Future addTask(ActualTask t, int tour_id, int stop_id) {
+    return into(tasks).insert(
+        TasksCompanion.insert(
+            id_tour: tour_id,
+            id_stop: stop_id,
+            desc: Value(t.descr),
+            task: t.task.text,
+            type: t.type,
+            answerOpt: t.answers),
+        mode: InsertMode.insertOrReplace);
+  }
+
+  Stream<List<ActualTask>> getTasks(int tour_id, int stop_id) {
+    final query = select(tasks)
+      ..where((t) => t.id_tour.equals(tour_id))
+      ..where((t) => t.id_stop.equals(stop_id));
+
+    return query.watch().map((rows) => rows
+        .map(
+          (t) => ActualTask(
+            t.task,
+            t.type,
+            descr: t.desc,
+            answers: t.answerOpt,
+          ),
+        )
+        .toList());
+  }
+
   Stream<List<Badge>> getBadges() => select(badges).watch();
 
   Future<int> addBadge(BadgesCompanion bc) {
@@ -220,19 +360,158 @@ class MuseumDatabase extends _$MuseumDatabase {
 
   Stream<List<Tour>> getTours() => select(tours).watch();
 
+  /*Stream<List<TourWithStops>> getTourWithStops() {
+    final streamTours = select(tours).watch();
+
+    return CombineLatestStream.combine2(streamTours, getActualStops(),
+            (List<Tour> tours, List<List<ActualStop>> astops) {
+          return [
+            for (int i = 0; i < tours.length; i++)
+              TourWithStops(
+                  tours[i],
+                  astops
+                      .where((list) =>
+                  list
+                      .where((elem) => elem.features.id_tour == tours[i].id)
+                      .isNotEmpty)
+                      .toList()[0])
+          ];
+        });
+  }*/
+
+  Stream<TourWithStops> getTourWithStops(int tour_id) {
+    var tour = select(tours)..where((t) => t.id.equals(tour_id));
+
+    var stopsT = (select(tourStops)
+            .join([innerJoin(stops, tourStops.id_stop.equalsExp(stops.id))])
+              ..where(tourStops.id_tour.equals(tour_id)))
+        .map((res) => res.readTable(stops));
+  }
+
+  /*
+  Stream<List<List<ActualStop>>> getActualStops() {
+    final streamStops = select(stops).watch();
+    final streamFeatures = select(stopFeatures).watch();
+    final streamTasks = select(tasks).watch();
+
+    final query = select(stops).join([
+      innerJoin(stopFeatures, stops.id.equalsExp(stopFeatures.id_stop)),
+      innerJoin(tasks, stops.id.equalsExp(tasks.id_stop)),
+    ]).watch();
+
+    final streamTours = select(tours).watch();
+
+
+    streamTours.map((list) {
+      Set<int> tour_ids = {for (var t in list) t.id};
+      return [ for (int id in tour_ids) query.where((l2)=>)];
+    });
+
+    CombineLatestStream.combine2(
+      streamTours, query,
+        (List<Tour> tours, List<TypedResult> results) {
+        tours.map((tour){
+
+        }).toList();
+        }
+    );
+
+    return CombineLatestStream.combine3(
+        streamStops,
+        streamFeatures,
+        streamTasks,
+            (List<Stop> stops, List<StopFeature> features, List<Task> tasks) {
+          Set<int> tour_ids = {for (var t in tasks) t.id_tour};
+
+
+          return [ for (int id in tour_ids) []];
+        });
+  }*/
+
+  Stream<List<TourWithStops>> getTourStops() {
+    final tour_ids = select(tours, distinct: true).map((t) => t.id).watch();
+
+    var t = tour_ids.map((list) => list.map((id) => getTour(id)).toList());
+
+    return SwitchLatestStream(t.map((list) => CombineLatestStream.list(list)));
+  }
+
+  Stream<TourWithStops> getTour(int tour_id) {
+    final tour = select(tours)..where((t) => t.id.equals(tour_id));
+
+    final stop_ids = (select(tourStops, distinct: true)
+          ..where((ts) => ts.id_tour.equals(tour_id)))
+        .map((t) => t.id_stop)
+        .watch();
+
+    //var l = SwitchLatestStream(stop_ids.map((id) => _help(tour_id, id)));
+
+    var l2 = stop_ids
+        .map((list) => list.map((i) => getActualStop(tour_id, i)).toList());
+
+    var res = CombineLatestStream.combine2(tour.watchSingle(), l2,
+        (Tour t, List<Stream<ActualStop>> a) {
+      Stream<List<ActualStop>> s = CombineLatestStream.list(a);
+      return s.map((list) => TourWithStops(t, list));
+    });
+
+    return SwitchLatestStream(res);
+  }
+
+  Stream<List<ActualStop>> _help(int id, List<int> list) {
+    return CombineLatestStream.list([for (int i in list) getActualStop(id, i)]);
+  }
+
+  Stream<ActualStop> getActualStop(int tour_id, int stop_id) {
+    final stop = select(stops)..where((s) => s.id.equals(stop_id));
+
+    final feature = select(stopFeatures)
+      ..where((f) => f.id_stop.equals(stop_id))
+      ..where((f) => f.id_tour.equals(tour_id));
+
+    final query = select(tasks)
+      ..where((t) => t.id_tour.equals(tour_id))
+      ..where((t) => t.id_stop.equals(stop_id));
+
+    var atasks = query.watch().map((rows) => rows
+        .map(
+          (t) => ActualTask(
+            t.task,
+            t.type,
+            descr: t.desc,
+            answers: t.answerOpt,
+          ),
+        )
+        .toList());
+
+    return CombineLatestStream.combine3(
+        stop.watchSingle(),
+        feature.watchSingle(),
+        atasks,
+        (Stop s, StopFeature f, List<ActualTask> l) => ActualStop(s, f, l));
+
+    /*final queryStops = select(stops);
+
+    final res = queryStops.join([
+      innerJoin(stopFeatures, stops.id.equalsExp(stopFeatures.id_stop)),
+      innerJoin(tasks, stops.id.equalsExp(tasks.id_stop)),
+    ])
+      ..where(stops.id.equals(id));
+
+    return res.watch().map((rows) => rows.map((row) =>).toList());*/
+
+    //customSelectQuery("SELECT * FROM stops, stop_Features, tasks WHERE ")
+  }
+
   Stream<List<Stop>> getStops() => select(stops).watch();
 
   Stream<List<Task>> getTasksId(int id_tour, int id_stop) {
     final contentQuery = select(tasks)
-        //.join([innerJoin(stops, stops.id.equalsExp(tourStops.id_stop))])
+      //.join([innerJoin(stops, stops.id.equalsExp(tourStops.id_stop))])
       ..where((t) => t.id_tour.equals(id_tour))
       ..where((t) => t.id_stop.equals(id_stop));
 
     return contentQuery.watch();
-  }
-
-  Future<int> addTask(TasksCompanion tc) {
-    return into(tasks).insert(tc);
   }
 
   Stream<List<Stop>> getStopsId(int id) {
@@ -268,18 +547,26 @@ class MuseumDatabase extends _$MuseumDatabase {
 
       var id = await into(tours).insert(tour, orReplace: true);
 
-      await //INSERT STOPSjolk
+      //TODO INSERT STOPS
 
-          await (delete(tourStops)..where((e) => e.id_tour.equals(id))).go();
+      await (delete(tourStops)..where((e) => e.id_tour.equals(id))).go();
 
       await batch((batch) {
         batch.insertAll(
             tourStops,
             entry.stops
-                .map((s) => TourStop(id_tour: id, id_stop: s.id))
+                .map((s) => TourStop(id_tour: id, id_stop: s.stop.id))
                 .toList(),
             mode: InsertMode.insertOrReplace);
+        batch.insertAll(
+            stopFeatures, entry.stops.map((s) => s.features.copyWith(id_tour: id)).toList(),
+            mode: InsertMode.insertOrReplace);
       });
+
+      for (var stop in entry.stops){
+        for (var task in stop.tasks)
+          addTask(task, id, stop.stop.id);
+      }
     });
   }
 

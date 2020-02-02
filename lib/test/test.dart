@@ -22,7 +22,7 @@ class _State extends State<TestWidget> {
         stream: MuseumDatabase.get().getStops(),
         builder: (context, snap) {
           List<Stop> stops = snap.data ?? List<Stop>();
-          return ListView(
+          return Column(
             children: [
               Column(
                   children: stops
@@ -58,10 +58,10 @@ class _State extends State<TestWidget> {
               TextFormField(
                 controller: ctrl,
               ),
-              Checkbox(onChanged: (bool value) {setState(() {
-                user = value ? "Maria123_XD" : "MeA";
-              });}, value: user=="Maria123_XD",
-
+              Checkbox(
+                onChanged: (bool value) =>
+                    setState(() => ctrl2.text = value ? "Maria123_XD" : "Mea"),//user = value ? "Maria123_XD" : "MeA"),
+                value: ctrl2.text == "Maria123_XD",
               ),
               FlatButton(
                 onPressed: _makeIt,
@@ -72,6 +72,8 @@ class _State extends State<TestWidget> {
         });
   }
 
+  TextEditingController ctrl2 = TextEditingController();
+
   var user = "MeA";
 
   void _makeIt() {
@@ -80,8 +82,9 @@ class _State extends State<TestWidget> {
         author: user,
         rating: 2.7,
         creationTime: DateTime.now(),
-        desc: "NULL", id: null);
-    var tws = TourWithStops(t, selected);
+        desc: "NULL",
+        id: null);
+    var tws = TourWithStops(t, selected.map((s)=>ActualStop(s, null, [])).toList());
     MuseumDatabase.get().writeTourStops(tws);
   }
 }
