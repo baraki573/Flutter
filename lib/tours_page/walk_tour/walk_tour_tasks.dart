@@ -20,13 +20,21 @@ Widget taskWidget(int i, ActualTask t, {bool edit = false}) {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Container(
-        margin: EdgeInsets.only(top: t.descr == "" ? 0 : 15),
+        margin: EdgeInsets.only(top: t.descr.text == "" ? 0 : 15),
         //color: Colors.red,
-        child: Text(
-          t.descr,
-          textAlign: TextAlign.justify,
-          style: TextStyle(fontSize: 18),
-        ),
+        child: edit
+            ? TextFormField(
+          decoration: InputDecoration(labelText: "Zusätzliche Informationen"),
+                controller: t.descr,
+                minLines: 1,
+                maxLines: 10,
+                style: TextStyle(fontSize: 18),
+              )
+            : Text(
+                t.descr.text,
+                textAlign: TextAlign.justify,
+                style: TextStyle(fontSize: 18),
+              ),
       ),
       Container(
         margin: EdgeInsets.symmetric(vertical: 16),
@@ -44,15 +52,17 @@ Widget taskWidget(int i, ActualTask t, {bool edit = false}) {
             ),*/
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Aufgabe $i:",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20.0,
-                ),),
+            Text(
+              "Aufgabe $i:",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20.0,
+              ),
+            ),
             edit
                 ? TextFormField(
                     controller: t.task,
-                    minLines: 2,
+                    minLines: 1,
                     maxLines: 10,
                     style: TextStyle(fontSize: 20.0),
                   )
@@ -60,27 +70,55 @@ Widget taskWidget(int i, ActualTask t, {bool edit = false}) {
           ],
         ),
       ),
-      Container(
-        padding: EdgeInsets.only(left: 7, right: 4),
-        decoration: BoxDecoration(border: Border.all(color: Colors.black)),
-        child: TextField(
-          //focusNode: node,
-          //onTap: () => FocusScope.of(context).requestFocus(node),
-          //onEditingComplete: () {if (FocusScope.of(context)==node) node.unfocus();},
-          //textInputAction: TextInputAction.done,
-          controller: t.ctrl["ignore"],
-          minLines: 1,
-          maxLines: 10,
-          decoration: InputDecoration(
-            border: InputBorder.none,
-            icon: Icon(Icons.create),
-            //labelText: "....",
-            hintText: "....",
-          ),
-        ),
-      ),
+      _makeAnswers(t),
     ],
   );
+}
+
+Widget _makeAnswers(ActualTask t) {
+  switch (t.type) {
+    case TaskType.TEXT:
+      return Container(
+          width: horSize(80, 100),
+          //padding: EdgeInsets.only(left: 7, right: 4),
+          decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+          child: Table(
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            columnWidths: {0:FixedColumnWidth(90)},
+            border: TableBorder.all(color: Colors.black),
+            children:  t.answers.entries
+                  .map(
+                    (e) =>  TableRow(
+                        //fit: FlexFit.loose,
+                        children: [
+                            Container(
+                              alignment: Alignment.center,
+                              //decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+                              //padding: EdgeInsets.only(right: 5),
+                              child: Text(e.key),
+                            ),
+                            TextField(
+                                //focusNode: node,
+                                //onTap: () => FocusScope.of(context).requestFocus(node),
+                                //onEditingComplete: () {if (FocusScope.of(context)==node) node.unfocus();},
+                                //textInputAction: TextInputAction.done,
+                                controller: e.value,
+                                minLines: 1,
+                                maxLines: 10,
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  icon: Icon(Icons.create),
+                                  //labelText: "....",
+                                  hintText: "....",
+                                ),
+                              ),
+
+                          ],
+                        ))
+                  .toList()));
+    default:
+      return Container();
+  }
 }
 
 class _TourWalkerTasksState extends State<TourWalkerTasks> {

@@ -30,7 +30,6 @@ class _CreateTourState extends State<CreateTour> {
   Widget _draggable() {
     var horPad = horSize(27.5, 32.5);
 
-    print("KIJHB");
     return ReorderableWrap(
       //alignment: WrapAlignment.center,
       //crossAxisAlignment: WrapCrossAlignment.center,
@@ -69,6 +68,11 @@ class _CreateTourState extends State<CreateTour> {
                 creationTime: DateTime.now(),
                 desc: "Gefunden auf Otto.de",
               );
+              for (var s in stops)
+                for (var t in s.tasks){
+                  t.descr.text = t.descr.text.trim();
+                  t.task.text = t.task.text.trim();
+                }
               MuseumDatabase.get().writeTourStops(TourWithStops(t, this.stops));
             },
             child: Text("SUBMIT"),
@@ -166,7 +170,6 @@ class _EditStop extends StatefulWidget {
 }
 
 class _EditStopState extends State<_EditStop> {
-
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
@@ -257,11 +260,9 @@ class _EditStopState extends State<_EditStop> {
                     padding: EdgeInsets.all(0),
                   ),
                   IconButton(
-                    onPressed: () {
-                      setState(() => widget.stop.tasks.add(ActualTask(
-                          "HALLO " + DateTime.now().toIso8601String(),
-                          TaskType.TEXT)));
-                    },
+                    onPressed: () => setState(() => widget.stop.tasks.add(
+                        ActualTask("HALLO " + DateTime.now().toIso8601String(),
+                            TaskType.TEXT, answerNames: ["", "TEST", "", "ABBA"]))),
                     icon: Icon(Icons.text_fields),
                   ),
                 ],

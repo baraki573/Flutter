@@ -2,18 +2,14 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:flutter/material.dart' as m;
 import 'package:moor/moor.dart';
-
-//import 'package:flutter/cupertino.dart';
 import 'package:moor_ffi/moor_ffi.dart';
 import 'package:museum_app/constants.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:flutter/material.dart' as m;
+import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 
-// assuming that your file is called filename.dart. This will give an error at first,
-// but it's needed for moor to know about the generated code
 part 'database.g.dart';
 
 class Users extends Table {
@@ -119,20 +115,20 @@ class ActualStop {
 enum TaskType { TEXT, MULTI_ONE, MULTI }
 
 class ActualTask {
-  final String descr;
+  final m.TextEditingController descr = m.TextEditingController();
   final m.TextEditingController task = m.TextEditingController();
   final TaskType type;
-  Map<String, m.TextEditingController> ctrl;
+  Map<String, m.TextEditingController> answers;
   Set<int> selected;
-  final List<String> answers;
+  //final List<String> answers;
 
-  ActualTask(task, this.type,
-      {this.descr = "", this.answers = const ["ignore"]}) {
+  ActualTask(task, this.type, {descr = "", answerNames = const [""]}) {
     this.task.text = task;
+    this.descr.text = descr;
     switch (type) {
       case TaskType.TEXT:
-        ctrl = Map<String, m.TextEditingController>();
-        for (String s in answers) ctrl[s] = m.TextEditingController();
+        answers = Map<String, m.TextEditingController>();
+        for (String s in answerNames) answers[s] = m.TextEditingController();
         break;
       default:
         selected = Set<int>();
@@ -326,10 +322,10 @@ class MuseumDatabase extends _$MuseumDatabase {
         TasksCompanion.insert(
             id_tour: tour_id,
             id_stop: stop_id,
-            desc: Value(t.descr),
+            desc: Value(t.descr.text),
             task: t.task.text,
             type: t.type,
-            answerOpt: t.answers),
+            answerOpt: t.answers.keys.toList()),
         mode: InsertMode.insertOrReplace);
   }
 
@@ -344,7 +340,7 @@ class MuseumDatabase extends _$MuseumDatabase {
             t.task,
             t.type,
             descr: t.desc,
-            answers: t.answerOpt,
+            answerNames: t.answerOpt,
           ),
         )
         .toList());
@@ -359,74 +355,6 @@ class MuseumDatabase extends _$MuseumDatabase {
   Stream<List<Devision>> getDevisions() => select(devisions).watch();
 
   Stream<List<Tour>> getTours() => select(tours).watch();
-
-  /*Stream<List<TourWithStops>> getTourWithStops() {
-    final streamTours = select(tours).watch();
-
-    return CombineLatestStream.combine2(streamTours, getActualStops(),
-            (List<Tour> tours, List<List<ActualStop>> astops) {
-          return [
-            for (int i = 0; i < tours.length; i++)
-              TourWithStops(
-                  tours[i],
-                  astops
-                      .where((list) =>
-                  list
-                      .where((elem) => elem.features.id_tour == tours[i].id)
-                      .isNotEmpty)
-                      .toList()[0])
-          ];
-        });
-  }*/
-
-  Stream<TourWithStops> getTourWithStops(int tour_id) {
-    var tour = select(tours)..where((t) => t.id.equals(tour_id));
-
-    var stopsT = (select(tourStops)
-            .join([innerJoin(stops, tourStops.id_stop.equalsExp(stops.id))])
-              ..where(tourStops.id_tour.equals(tour_id)))
-        .map((res) => res.readTable(stops));
-  }
-
-  /*
-  Stream<List<List<ActualStop>>> getActualStops() {
-    final streamStops = select(stops).watch();
-    final streamFeatures = select(stopFeatures).watch();
-    final streamTasks = select(tasks).watch();
-
-    final query = select(stops).join([
-      innerJoin(stopFeatures, stops.id.equalsExp(stopFeatures.id_stop)),
-      innerJoin(tasks, stops.id.equalsExp(tasks.id_stop)),
-    ]).watch();
-
-    final streamTours = select(tours).watch();
-
-
-    streamTours.map((list) {
-      Set<int> tour_ids = {for (var t in list) t.id};
-      return [ for (int id in tour_ids) query.where((l2)=>)];
-    });
-
-    CombineLatestStream.combine2(
-      streamTours, query,
-        (List<Tour> tours, List<TypedResult> results) {
-        tours.map((tour){
-
-        }).toList();
-        }
-    );
-
-    return CombineLatestStream.combine3(
-        streamStops,
-        streamFeatures,
-        streamTasks,
-            (List<Stop> stops, List<StopFeature> features, List<Task> tasks) {
-          Set<int> tour_ids = {for (var t in tasks) t.id_tour};
-
-
-          return [ for (int id in tour_ids) []];
-        });
-  }*/
 
   Stream<List<TourWithStops>> getTourStops() {
     final tour_ids = select(tours, distinct: true).map((t) => t.id).watch();
@@ -444,8 +372,6 @@ class MuseumDatabase extends _$MuseumDatabase {
         .map((t) => t.id_stop)
         .watch();
 
-    //var l = SwitchLatestStream(stop_ids.map((id) => _help(tour_id, id)));
-
     var l2 = stop_ids
         .map((list) => list.map((i) => getActualStop(tour_id, i)).toList());
 
@@ -456,10 +382,6 @@ class MuseumDatabase extends _$MuseumDatabase {
     });
 
     return SwitchLatestStream(res);
-  }
-
-  Stream<List<ActualStop>> _help(int id, List<int> list) {
-    return CombineLatestStream.list([for (int i in list) getActualStop(id, i)]);
   }
 
   Stream<ActualStop> getActualStop(int tour_id, int stop_id) {
@@ -479,7 +401,7 @@ class MuseumDatabase extends _$MuseumDatabase {
             t.task,
             t.type,
             descr: t.desc,
-            answers: t.answerOpt,
+            answerNames: t.answerOpt,
           ),
         )
         .toList());
@@ -489,18 +411,6 @@ class MuseumDatabase extends _$MuseumDatabase {
         feature.watchSingle(),
         atasks,
         (Stop s, StopFeature f, List<ActualTask> l) => ActualStop(s, f, l));
-
-    /*final queryStops = select(stops);
-
-    final res = queryStops.join([
-      innerJoin(stopFeatures, stops.id.equalsExp(stopFeatures.id_stop)),
-      innerJoin(tasks, stops.id.equalsExp(tasks.id_stop)),
-    ])
-      ..where(stops.id.equals(id));
-
-    return res.watch().map((rows) => rows.map((row) =>).toList());*/
-
-    //customSelectQuery("SELECT * FROM stops, stop_Features, tasks WHERE ")
   }
 
   Stream<List<Stop>> getStops() => select(stops).watch();
@@ -515,8 +425,6 @@ class MuseumDatabase extends _$MuseumDatabase {
   }
 
   Stream<List<Stop>> getStopsId(int id) {
-    //final tourQuery = select(tours)..where((t) => t.id.equals(id));
-
     final contentQuery = select(tourStops)
         .join([innerJoin(stops, stops.id.equalsExp(tourStops.id_stop))])
           ..where(tourStops.id_tour.equals(id));
@@ -527,18 +435,6 @@ class MuseumDatabase extends _$MuseumDatabase {
         .map((rows) => rows.map((row) => row.readTable(stops)).toList());
 
     return contentStream;
-
-    /*var t = (select(tours)..where((t) => t.name.equals(name)));
-    var t2 = t.join([
-      leftOuterJoin(tourStops, tours.id.equalsExp(tourStops.id_tour)),
-      leftOuterJoin(stops, tourStops.id_stop.equalsExp(stops.id))
-    ]);
-    return t2.watch().map((rows) => rows.map((row) => row.readTable(stops)));
-    //return (select(tours)..where((t) => t.name.equals(name))).join(
-    //  [leftOuterJoin(stops, tours.id.equalsExp(stops.tour_id))]);
-    //customStatement(
-    //  "SELECT * FROM tours t, stops s, tourStops ts WHERE t.name=? AND t.id=ts.id_tour AND s.id=ts.id_stop");
-  */
   }
 
   Future<void> writeTourStops(TourWithStops entry) {
@@ -558,14 +454,13 @@ class MuseumDatabase extends _$MuseumDatabase {
                 .map((s) => TourStop(id_tour: id, id_stop: s.stop.id))
                 .toList(),
             mode: InsertMode.insertOrReplace);
-        batch.insertAll(
-            stopFeatures, entry.stops.map((s) => s.features.copyWith(id_tour: id)).toList(),
+        batch.insertAll(stopFeatures,
+            entry.stops.map((s) => s.features.copyWith(id_tour: id)).toList(),
             mode: InsertMode.insertOrReplace);
       });
 
-      for (var stop in entry.stops){
-        for (var task in stop.tasks)
-          addTask(task, id, stop.stop.id);
+      for (var stop in entry.stops) {
+        for (var task in stop.tasks) addTask(task, id, stop.stop.id);
       }
     });
   }
@@ -577,7 +472,6 @@ class MuseumDatabase extends _$MuseumDatabase {
   }
 
   Future<void> demoDevisions() async {
-    //customStatement("DELETE FROM devisions");
     await batch((batch) {
       batch.insertAll(
           devisions,
@@ -674,58 +568,6 @@ class MuseumDatabase extends _$MuseumDatabase {
     });
   }
 
-  Future<void> demoTourStops() async {
-    //customStatement("DELETE FROM tourStops");
-    await batch((batch) {
-      batch.insertAll(
-        tourStops,
-        List.generate(
-              8,
-              (i) => TourStopsCompanion.insert(id_tour: 1, id_stop: i + 1),
-            ) +
-            List.generate(
-              5,
-              (i) => TourStopsCompanion.insert(id_tour: 2, id_stop: i + 2),
-            ) +
-            List.generate(
-              3,
-              (i) => TourStopsCompanion.insert(id_tour: 3, id_stop: i + 3),
-            ),
-        mode: InsertMode.insertOrReplace,
-      );
-    });
-  }
-
-  Future<void> demoTours() async {
-    //customStatement("DELETE FROM tours");
-    await batch((batch) {
-      batch.insertAll(
-        tours,
-        [
-          ToursCompanion.insert(
-              name: "Test Tour",
-              author: "Maria123_XD",
-              rating: 4.6,
-              creationTime: DateTime.now(),
-              desc: "Diese Beschreibung ist zum Glück nicht so lang."),
-          ToursCompanion.insert(
-              name: "Meine erste Tour",
-              author: "1412",
-              rating: 1.2,
-              creationTime: DateTime.parse("2020-02-05"),
-              desc:
-                  "Einen Roman schreiben die User hier bestimmt nicht hin. Und wenn doch, muss ich mir dafür etwas einfallen lassen."),
-          ToursCompanion.insert(
-              name: "Zoologische Tour mit int",
-              author: "MyBestUser",
-              rating: 2.6,
-              creationTime: DateTime.parse("1983-05-14"),
-              desc: "Diese Tour ist sehr lehrreich."),
-        ],
-        mode: InsertMode.insertOrReplace,
-      );
-    });
-  }
 }
 
 void demo() {
