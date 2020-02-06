@@ -184,11 +184,14 @@ class _EditStopState extends State<_EditStop> {
               height: verSize(100, 100),
               child: ListView(
                 children: [
+                  Container(height: verSize(5, 5)),
                   StreamBuilder(
                     stream: MuseumDatabase.get().getStops(),
                     builder: (context, snap) {
                       List<Stop> list = snap.data ?? List<Stop>();
                       return DropdownButton(
+                        isExpanded: true,
+                        hint: Text("  "+(widget.stop.stop?.name) ?? "Auswählen"),
                         items: list
                             .map((stop) => DropdownMenuItem(
                                 child: Text(stop.name), value: stop))
