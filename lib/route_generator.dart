@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:museum_app/onboarding/onboarding.dart';
-import 'package:museum_app/home_page/tutorials.dart';
-import 'package:museum_app/profile_page/profile_page.dart';
+import 'package:museum_app/add_tour/add_tour.dart';
 import 'package:museum_app/bottom_navigationbar/navigationbar_pattern.dart';
+import 'package:museum_app/home_page/tutorials.dart';
+import 'package:museum_app/onboarding/onboarding.dart';
 
 
 
@@ -18,6 +18,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample());
       case '/tutorials':
         return MaterialPageRoute(builder: (_) => Tutorials());
+      case '/addTour':
+        return MaterialPageRoute(builder: (_) => AddTour());
       // case '/second':
       //   // Validation of correct data type
       //   if (args is String) {

@@ -33,8 +33,8 @@ dependencies:
   intl: ^0.16.1
   expandable_bottom_bar: ^0.1.1
   keyboard_visibility: ^0.5.6
-  moor: ^2.3.0
-  moor_ffi: ^0.3.2
+  moor: ^2.4.0
+  moor_ffi: ^0.4.0
   path_provider: ^1.5.1
   path: ^1.6.4
   provider: ^4.0.2
@@ -44,7 +44,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  moor_generator: ^2.3.1 # use the latest version
+  moor_generator: ^2.4.0 # use the latest version
   build_runner: ^1.7.3
 
 

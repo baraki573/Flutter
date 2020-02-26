@@ -1,16 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class JoinTour extends StatefulWidget {
+class EditTour extends StatefulWidget {
   final void Function() f;
 
-  JoinTour(this.f, {Key key}) : super(key: key);
+  EditTour(this.f, {Key key}) : super(key: key);
 
   @override
-  _JoinTourState createState() => _JoinTourState();
+  _EditTourState createState() => _EditTourState();
 }
 
-class _JoinTourState extends State<JoinTour> {
+class _EditTourState extends State<EditTour> {
   @override
   Widget build(BuildContext context) {
     return Padding(

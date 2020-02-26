@@ -29,7 +29,7 @@ class _TourListState extends State<TourList> {
         border: Border.all(color: Colors.black),
         borderRadius: BorderRadius.all(Radius.circular(10.0)),
         image: DecorationImage(
-            image: AssetImage(stop.stop.images[0]), fit: BoxFit.cover),
+            image: AssetImage(stop.stop.images.isNotEmpty ? stop.stop.images[0] : "assets/images/profile_test.png"), fit: BoxFit.cover),
       ),
     );
   }
@@ -40,7 +40,7 @@ class _TourListState extends State<TourList> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _textBox(
-              t.tour.name,
+              t.name.text,
               Size(size(50, 80), size(6, 11)),
               margin: EdgeInsets.only(bottom: 3),
               fontSize: 22.0,
@@ -48,7 +48,7 @@ class _TourListState extends State<TourList> {
             ),
             //_tourName(t),
             Text(
-              "von " + t.tour.author,
+              "von " + t.author,
               maxLines: 1,
               style: TextStyle(
                 fontStyle: FontStyle.italic,
@@ -60,17 +60,17 @@ class _TourListState extends State<TourList> {
               height: verSize(4, 5),
               child: Row(
                 children: [
-                  getRating(t.tour,
+                  getRating(t.difficulty,
                       color: Colors.pink,
                       color2: Colors.grey,
                       size: horSize(4.5, 3.5)),
                   Container(width: horSize(2, 3)),
-                  _buildTime(t.tour.creationTime),
+                  _buildTime(t.creationTime),
                 ],
               ),
             ),
             _textBox(
-              t.tour.desc,
+              t.descr.text,
               Size(size(50, 80), size(7, 18)),
               textAlign: TextAlign.justify,
               fontSize: size(13, 15),
@@ -251,7 +251,7 @@ class _TourListState extends State<TourList> {
               ),
               // Titel
               Text(
-                t.tour.name,
+                t.name.text,
                 maxLines: 2,
                 style: TextStyle(
                   color: Colors.white,
@@ -261,7 +261,7 @@ class _TourListState extends State<TourList> {
               ),
               // Autor
               Text(
-                "von " + t.tour.author,
+                "von " + t.author,
                 maxLines: 1,
                 style: TextStyle(
                   color: Colors.white,
@@ -273,18 +273,18 @@ class _TourListState extends State<TourList> {
               Container(
                   margin: EdgeInsets.symmetric(vertical: 3.5),
                   child: Row(children: [
-                    getRating(t.tour,
+                    getRating(t.difficulty,
                         color: Colors.white,
                         color2: Colors.pink,
                         size: horSize(7, 3.5)),
                     Container(width: 8),
-                    _buildTime(t.tour.creationTime,
+                    _buildTime(t.creationTime,
                         color: Colors.white, color2: Colors.white, scale: 1.2),
                   ])),
 
               // Description
               Text(
-                t.tour.desc,
+                t.descr.text,
                 textAlign: TextAlign.justify,
                 maxLines: 5,
                 overflow: TextOverflow.ellipsis,
@@ -345,10 +345,10 @@ class _TourListState extends State<TourList> {
     );
   }
 
-  Widget getRating(Tour t,
+  Widget getRating(double rating,
           {color = Colors.black, color2 = Colors.white, size = 40.0}) =>
       RatingBarIndicator(
-        rating: min(max(t.rating, 0), 5),
+        rating: min(max(rating, 0), 5),
         itemSize: size,
         itemBuilder: (BuildContext context, int index) => Icon(
           Icons.star,

@@ -49,7 +49,6 @@ class _MuseumTabsState extends State<MuseumTabs> {
   }
 
   Widget _bottomInfo() {
-    //TODO extra view for empty list
     print(minLength);
     return Container(
       //height: SizeConfig.safeBlockVertical * 100,
@@ -77,7 +76,7 @@ class _MuseumTabsState extends State<MuseumTabs> {
     SizeConfig().init(context);
     return Stack(children: [
         Positioned(
-        bottom: 0,
+          top: verSize(45, 47),
         child: Container(
           color: Colors.white,
           width: horSize(100, 100),

@@ -1,31 +1,38 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:museum_app/database/database.dart';
+import 'package:museum_app/museum_tabs.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_content.dart';
-import 'package:museum_app/tours_page/walk_tour/walk_tour_tasks.dart';
+import 'package:museum_app/tours_page/walk_tour/walk_tour_extras.dart';
 import 'package:reorderables/reorderables.dart';
 
 import '../SizeConfig.dart';
 
 class CreateTour extends StatefulWidget {
   final void Function() goBack;
+  final TourWithStops tour;
 
-  CreateTour(this.goBack, {Key key}) : super(key: key);
+  CreateTour(this.goBack, this.tour, {Key key}) : super(key: key);
 
   @override
   _CreateTourState createState() => _CreateTourState();
 }
-
-enum CreateType { GENERAL, STOP }
 
 class _CreateTourState extends State<CreateTour> {
   //List<MyString> list = [MyString("Stop 0")];
   int index = 0;
   CreateType _type = CreateType.GENERAL;
 
-  final List<ActualStop> stops = [ActualStop(null, null, [])];
+  //final List<ActualStop> stops = [ActualStop.custom()];
 
-  final ctrl = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    KeyboardVisibilityNotification().addNewListener(
+        onHide: () => FocusScope.of(context).requestFocus(FocusNode()));
+  }
 
   Widget _draggable() {
     var horPad = horSize(27.5, 32.5);
@@ -38,52 +45,19 @@ class _CreateTourState extends State<CreateTour> {
       //spacing: 50.0,
       maxMainAxisCount: 1,
       onReorder: (int oldIndex, int newIndex) => setState(() {
-        var old = stops[oldIndex];
+        var old = widget.tour.stops[oldIndex];
 
         oldIndex += newIndex < oldIndex ? 1 : 0;
         newIndex += newIndex > oldIndex ? 1 : 0;
 
-        stops.insert(newIndex, old);
-        stops.removeAt(oldIndex);
+        widget.tour.stops.insert(newIndex, old);
+        widget.tour.stops.removeAt(oldIndex);
       }),
-      footer: Column(
-        children: [
-          TextFormField(
-            controller: ctrl,
-            decoration: InputDecoration(
-              icon: Icon(Icons.person),
-              labelText: "Name",
-              border: InputBorder.none,
-            ),
-          ),
-          Text("OTHER OPTIONS..."),
-          FlatButton(
-            color: Colors.red,
-            onPressed: () {
-              Tour t = Tour(
-                id: null,
-                name: ctrl.text,
-                author: "Maria35",
-                rating: 2.5,
-                creationTime: DateTime.now(),
-                desc: "Gefunden auf Otto.de",
-              );
-              for (var s in stops)
-                for (var t in s.tasks){
-                  t.descr.text = t.descr.text.trim();
-                  t.task.text = t.task.text.trim();
-                }
-              MuseumDatabase.get().writeTourStops(TourWithStops(t, this.stops));
-            },
-            child: Text("SUBMIT"),
-          ),
-        ],
-      ),
-      children: stops
+      children: widget.tour.stops
           .map((elem) => GestureDetector(
                 onTap: () => setState(() {
-                  index = stops.indexOf(elem);
-                  _type = CreateType.STOP;
+                  index = widget.tour.stops.indexOf(elem);
+                  _type = CreateType.SINGLE_STOP;
                 }),
                 child: Container(
                   color: Colors.white,
@@ -113,16 +87,19 @@ class _CreateTourState extends State<CreateTour> {
                             FlatButton(
                                 color: Colors.green,
                                 onPressed: () => setState(() {
-                                      var index = stops.indexOf(elem);
-                                      stops.insert(index + 1,
-                                          ActualStop(null, null, []));
+                                      var index =
+                                          widget.tour.stops.indexOf(elem);
+                                      widget.tour.stops.insert(
+                                          index + 1, ActualStop.custom());
                                     }),
                                 child: Icon(Icons.add_circle)),
                             FlatButton(
                                 color: Colors.red,
                                 onPressed: () => setState(() {
-                                      if (stops.length > 1) stops.remove(elem);
-                                      if (index >= stops.length) index--;
+                                      if (widget.tour.stops.length > 1)
+                                        widget.tour.stops.remove(elem);
+                                      if (index >= widget.tour.stops.length)
+                                        index--;
                                     }),
                                 child: Icon(Icons.remove_circle)),
                           ],
@@ -136,40 +113,142 @@ class _CreateTourState extends State<CreateTour> {
     );
   }
 
+  Widget _foo() {
+    return MuseumTabs(Center(child: Text("JAJAJ")), [
+      Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+          border: Border.all(color: Colors.orange),
+        ),
+        margin: EdgeInsets.only(left: 16, right: 16, top: 20),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextFormField(
+              controller: widget.tour.name,
+              decoration: InputDecoration(
+                suffixIcon: Icon(Icons.border_color),
+                labelText: "Tourname festlegen",
+                border: InputBorder.none,
+              ),
+            ),
+            Text("Schwierigkeitsgrad:"),
+            RatingBar(
+              initialRating: widget.tour.difficulty,
+              minRating: 1,
+              allowHalfRating: true,
+              onRatingUpdate: (r) => widget.tour.difficulty = r,
+              itemBuilder: (context, _) => Icon(Icons.school),
+              tapOnlyMode: true,
+              itemSize: 33,
+            ),
+            Text("Eine kurze Beschreibung:"),
+            Container(
+              margin: EdgeInsets.only(top: 5),
+              height: verSize(18, 10),
+              decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+              padding: EdgeInsets.symmetric(horizontal: 13),
+              child: TextFormField(
+                expands: true,
+                minLines: null,
+                maxLines: null,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                ),
+                controller: widget.tour.descr,
+              ),
+            ),
+            ButtonBar(
+              alignment: MainAxisAlignment.center,
+              buttonHeight: verSize(6.5, 6.5),
+              buttonMinWidth: horSize(35, 38),
+              children: [
+                FlatButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  textColor: Colors.white,
+                  color: Colors.orange,
+                  onPressed: () {
+                    // TODO make input variable
+                    widget.tour.author = "Mariaa";
+                    widget.tour.creationTime = DateTime.now();
+                    for (var s in widget.tour.stops)
+                      for (var e in s.extras)
+                        if (e is ActualTask) {
+                          //e.descr.text = e.descr.text.trim();
+                          e.textInfo.text = e.textInfo.text.trim();
+                        }
+                    MuseumDatabase.get().writeTourStops(widget.tour);
+                    showDialog(
+                        context: context,
+                        builder: (context) =>
+                            AlertDialog(title: Text("Finish")));
+                  },
+                  child: Text("Erstellen"),
+                ),
+                FlatButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    textColor: Colors.white,
+                    color: Colors.orange,
+                    onPressed: () =>
+                        setState(() => _type = CreateType.MULTI_STOP),
+                    child: Text("Stationen wählen"))
+              ],
+            )
+          ],
+        ),
+      ),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-    return Container(
-      height: SizeConfig.safeBlockVertical * 100,
-      child: Stack(
-        children: [
-          _type == CreateType.GENERAL ? _draggable() : _EditStop(stops[index]),
-          Positioned(
-            top: 23,
-            child: IconButton(
-              onPressed: _type == CreateType.GENERAL
-                  ? widget.goBack
-                  : () => setState(() => _type = CreateType.GENERAL),
-              icon: Icon(Icons.arrow_back),
-              iconSize: 30,
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
+      child: Container(
+        height: SizeConfig.safeBlockVertical * 100,
+        child: Stack(
+          children: [
+            _type == CreateType.GENERAL
+                ? _foo()
+                : (_type == CreateType.MULTI_STOP
+                    ? _draggable()
+                    : _EditSingleStop(widget.tour.stops[index])),
+            Positioned(
+              top: 23,
+              child: IconButton(
+                onPressed: _type == CreateType.GENERAL
+                    ? widget.goBack
+                    : () => setState(() => _type =
+                        (_type == CreateType.MULTI_STOP
+                            ? CreateType.GENERAL
+                            : CreateType.MULTI_STOP)),
+                icon: Icon(Icons.arrow_back),
+                iconSize: 30,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class _EditStop extends StatefulWidget {
+enum CreateType { GENERAL, MULTI_STOP, SINGLE_STOP }
+
+class _EditSingleStop extends StatefulWidget {
   final ActualStop stop;
 
-  _EditStop(this.stop, {Key key}) : super(key: key);
+  _EditSingleStop(this.stop, {Key key}) : super(key: key);
 
   @override
-  _EditStopState createState() => _EditStopState();
+  _EditSingleStopState createState() => _EditSingleStopState();
 }
 
-class _EditStopState extends State<_EditStop> {
+class _EditSingleStopState extends State<_EditSingleStop> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
@@ -177,6 +256,7 @@ class _EditStopState extends State<_EditStop> {
         onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
         child: Row(
           children: [
+            // orange main area
             Container(
               //color: Colors.orange,
               alignment: Alignment.center,
@@ -189,9 +269,20 @@ class _EditStopState extends State<_EditStop> {
                     stream: MuseumDatabase.get().getStops(),
                     builder: (context, snap) {
                       List<Stop> list = snap.data ?? List<Stop>();
+                      if (widget.stop.stop == null && list.isNotEmpty) {
+                        widget.stop.stop = list[0];
+                        widget.stop.features = StopFeature(
+                          id_tour: null,
+                          id_stop: list[0].id,
+                          showImages: true,
+                          showText: true,
+                          showDetails: true,
+                        );
+                      }
                       return DropdownButton(
                         isExpanded: true,
-                        hint: Text("  "+(widget.stop.stop?.name) ?? "Auswählen"),
+                        hint: Text(
+                            "  " + (widget.stop.stop?.name) ?? "Auswählen"),
                         items: list
                             .map((stop) => DropdownMenuItem(
                                 child: Text(stop.name), value: stop))
@@ -213,6 +304,7 @@ class _EditStopState extends State<_EditStop> {
                 ],
               ),
             ),
+            // blue sidebar
             Container(
               color: Colors.blue,
               width: horSize(17, 20),
@@ -224,49 +316,66 @@ class _EditStopState extends State<_EditStop> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   FlatButton(
-                    color: (widget.stop.features?.showImages) ?? false
-                        ? Colors.red
-                        : Colors.green,
-                    onPressed: () => setState(() {
-                      if (widget.stop.features == null) return;
-                      var showImgs = widget.stop.features.showImages;
-                      widget.stop.features =
-                          widget.stop.features.copyWith(showImages: !showImgs);
-                    }),
+                    color: widget.stop.features.showImages
+                        ? Colors.green
+                        : Colors.red,
+                    disabledColor: Colors.grey,
+                    onPressed: widget.stop.isCustom()
+                        ? null
+                        : () => setState(() {
+                              if (widget.stop.features == null) return;
+                              var showImgs = widget.stop.features.showImages;
+                              widget.stop.features = widget.stop.features
+                                  .copyWith(showImages: !showImgs);
+                            }),
                     child: Text("Bilder"),
                     padding: EdgeInsets.all(0),
                   ),
                   FlatButton(
-                    color: (widget.stop.features?.showText) ?? false
-                        ? Colors.red
-                        : Colors.green,
-                    onPressed: () => setState(() {
-                      if (widget.stop.features == null) return;
-                      var showText = widget.stop.features.showText;
-                      widget.stop.features =
-                          widget.stop.features.copyWith(showText: !showText);
-                    }),
+                    color: widget.stop.features.showText
+                        ? Colors.green
+                        : Colors.red,
+                    disabledColor: Colors.grey,
+                    onPressed: widget.stop.isCustom()
+                        ? null
+                        : () => setState(() {
+                              if (widget.stop.features == null) return;
+                              var showText = widget.stop.features.showText;
+                              widget.stop.features = widget.stop.features
+                                  .copyWith(showText: !showText);
+                            }),
                     child: Text("Text"),
                     padding: EdgeInsets.all(0),
                   ),
                   FlatButton(
-                    color: (widget.stop.features?.showDetails) ?? false
-                        ? Colors.red
-                        : Colors.green,
-                    onPressed: () => setState(() {
-                      if (widget.stop.features == null) return;
-                      var showDetails = widget.stop.features.showDetails;
-                      widget.stop.features = widget.stop.features
-                          .copyWith(showDetails: !showDetails);
-                    }),
+                    color: widget.stop.features.showDetails
+                        ? Colors.green
+                        : Colors.red,
+                    disabledColor: Colors.grey,
+                    onPressed: widget.stop.isCustom()
+                        ? null
+                        : () => setState(() {
+                              if (widget.stop.features == null) return;
+                              var showDetails =
+                                  widget.stop.features.showDetails;
+                              widget.stop.features = widget.stop.features
+                                  .copyWith(showDetails: !showDetails);
+                            }),
                     child: Text("Details"),
                     padding: EdgeInsets.all(0),
                   ),
                   IconButton(
-                    onPressed: () => setState(() => widget.stop.tasks.add(
-                        ActualTask("HALLO " + DateTime.now().toIso8601String(),
-                            TaskType.TEXT, answerNames: ["", "TEST", "", "ABBA"]))),
+                    onPressed: () => setState(() => widget.stop.extras.add(
+                        ActualExtra.realTask(
+                            "HALLO " + DateTime.now().toIso8601String(),
+                            TaskType.TEXT,
+                            ["", "TEST", "", "ABBA"]))),
                     icon: Icon(Icons.text_fields),
+                  ),
+                  IconButton(
+                    onPressed: () => setState(() => widget.stop.extras
+                        .add(ActualExtra.onlyText("ICH füge hier Sachen ein"))),
+                    icon: Icon(Icons.textsms),
                   ),
                 ],
               ),
@@ -281,30 +390,30 @@ class _EditStopState extends State<_EditStop> {
       header: TourWalkerContent(
         widget.stop,
         color: Colors.black,
-        showTasks: false,
+        showExtras: false,
       ),
       onReorder: (int oldIndex, int newIndex) => setState(() {
-        var old = widget.stop.tasks[oldIndex];
+        var old = widget.stop.extras[oldIndex];
 
         oldIndex += newIndex < oldIndex ? 1 : 0;
         newIndex += newIndex > oldIndex ? 1 : 0;
 
-        widget.stop.tasks.insert(newIndex, old);
-        widget.stop.tasks.removeAt(oldIndex);
+        widget.stop.extras.insert(newIndex, old);
+        widget.stop.extras.removeAt(oldIndex);
       }),
-      children: widget.stop.tasks
+      children: widget.stop.extras
           .map(
             (t) => Row(
               children: [
                 Expanded(
-                    child: taskWidget(widget.stop.tasks.indexOf(t) + 1, t,
+                    child: extraWidget(widget.stop.extras.indexOf(t) + 1, t,
                         edit: true)),
                 Column(
                   children: [
                     Icon(Icons.drag_handle),
                     IconButton(
                         onPressed: () =>
-                            setState(() => widget.stop.tasks.remove(t)),
+                            setState(() => widget.stop.extras.remove(t)),
                         icon: Icon(Icons.remove_circle)),
                   ],
                 )

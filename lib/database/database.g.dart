@@ -1698,50 +1698,47 @@ class $TourStopsTable extends TourStops
   }
 }
 
-class Task extends DataClass implements Insertable<Task> {
+class Extra extends DataClass implements Insertable<Extra> {
   final int id;
   final int id_tour;
   final int id_stop;
-  final String desc;
-  final String task;
+  final String textInfo;
   final TaskType type;
   final List<String> answerOpt;
-  Task(
+  Extra(
       {@required this.id,
       @required this.id_tour,
       @required this.id_stop,
-      @required this.desc,
-      @required this.task,
-      @required this.type,
-      @required this.answerOpt});
-  factory Task.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      @required this.textInfo,
+      this.type,
+      this.answerOpt});
+  factory Extra.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
-    return Task(
+    return Extra(
       id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
       id_tour:
           intType.mapFromDatabaseResponse(data['${effectivePrefix}id_tour']),
       id_stop:
           intType.mapFromDatabaseResponse(data['${effectivePrefix}id_stop']),
-      desc: stringType.mapFromDatabaseResponse(data['${effectivePrefix}desc']),
-      task: stringType.mapFromDatabaseResponse(data['${effectivePrefix}task']),
-      type: $TasksTable.$converter0.mapToDart(
+      textInfo: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}text_info']),
+      type: $ExtrasTable.$converter0.mapToDart(
           intType.mapFromDatabaseResponse(data['${effectivePrefix}type'])),
-      answerOpt: $TasksTable.$converter1.mapToDart(stringType
+      answerOpt: $ExtrasTable.$converter1.mapToDart(stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}answer_opt'])),
     );
   }
-  factory Task.fromJson(Map<String, dynamic> json,
+  factory Extra.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
-    return Task(
+    return Extra(
       id: serializer.fromJson<int>(json['id']),
       id_tour: serializer.fromJson<int>(json['id_tour']),
       id_stop: serializer.fromJson<int>(json['id_stop']),
-      desc: serializer.fromJson<String>(json['desc']),
-      task: serializer.fromJson<String>(json['task']),
+      textInfo: serializer.fromJson<String>(json['textInfo']),
       type: serializer.fromJson<TaskType>(json['type']),
       answerOpt: serializer.fromJson<List<String>>(json['answerOpt']),
     );
@@ -1753,16 +1750,15 @@ class Task extends DataClass implements Insertable<Task> {
       'id': serializer.toJson<int>(id),
       'id_tour': serializer.toJson<int>(id_tour),
       'id_stop': serializer.toJson<int>(id_stop),
-      'desc': serializer.toJson<String>(desc),
-      'task': serializer.toJson<String>(task),
+      'textInfo': serializer.toJson<String>(textInfo),
       'type': serializer.toJson<TaskType>(type),
       'answerOpt': serializer.toJson<List<String>>(answerOpt),
     };
   }
 
   @override
-  TasksCompanion createCompanion(bool nullToAbsent) {
-    return TasksCompanion(
+  ExtrasCompanion createCompanion(bool nullToAbsent) {
+    return ExtrasCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       id_tour: id_tour == null && nullToAbsent
           ? const Value.absent()
@@ -1770,8 +1766,9 @@ class Task extends DataClass implements Insertable<Task> {
       id_stop: id_stop == null && nullToAbsent
           ? const Value.absent()
           : Value(id_stop),
-      desc: desc == null && nullToAbsent ? const Value.absent() : Value(desc),
-      task: task == null && nullToAbsent ? const Value.absent() : Value(task),
+      textInfo: textInfo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(textInfo),
       type: type == null && nullToAbsent ? const Value.absent() : Value(type),
       answerOpt: answerOpt == null && nullToAbsent
           ? const Value.absent()
@@ -1779,31 +1776,28 @@ class Task extends DataClass implements Insertable<Task> {
     );
   }
 
-  Task copyWith(
+  Extra copyWith(
           {int id,
           int id_tour,
           int id_stop,
-          String desc,
-          String task,
+          String textInfo,
           TaskType type,
           List<String> answerOpt}) =>
-      Task(
+      Extra(
         id: id ?? this.id,
         id_tour: id_tour ?? this.id_tour,
         id_stop: id_stop ?? this.id_stop,
-        desc: desc ?? this.desc,
-        task: task ?? this.task,
+        textInfo: textInfo ?? this.textInfo,
         type: type ?? this.type,
         answerOpt: answerOpt ?? this.answerOpt,
       );
   @override
   String toString() {
-    return (StringBuffer('Task(')
+    return (StringBuffer('Extra(')
           ..write('id: $id, ')
           ..write('id_tour: $id_tour, ')
           ..write('id_stop: $id_stop, ')
-          ..write('desc: $desc, ')
-          ..write('task: $task, ')
+          ..write('textInfo: $textInfo, ')
           ..write('type: $type, ')
           ..write('answerOpt: $answerOpt')
           ..write(')'))
@@ -1817,77 +1811,67 @@ class Task extends DataClass implements Insertable<Task> {
           id_tour.hashCode,
           $mrjc(
               id_stop.hashCode,
-              $mrjc(
-                  desc.hashCode,
-                  $mrjc(task.hashCode,
-                      $mrjc(type.hashCode, answerOpt.hashCode)))))));
+              $mrjc(textInfo.hashCode,
+                  $mrjc(type.hashCode, answerOpt.hashCode))))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
-      (other is Task &&
+      (other is Extra &&
           other.id == this.id &&
           other.id_tour == this.id_tour &&
           other.id_stop == this.id_stop &&
-          other.desc == this.desc &&
-          other.task == this.task &&
+          other.textInfo == this.textInfo &&
           other.type == this.type &&
           other.answerOpt == this.answerOpt);
 }
 
-class TasksCompanion extends UpdateCompanion<Task> {
+class ExtrasCompanion extends UpdateCompanion<Extra> {
   final Value<int> id;
   final Value<int> id_tour;
   final Value<int> id_stop;
-  final Value<String> desc;
-  final Value<String> task;
+  final Value<String> textInfo;
   final Value<TaskType> type;
   final Value<List<String>> answerOpt;
-  const TasksCompanion({
+  const ExtrasCompanion({
     this.id = const Value.absent(),
     this.id_tour = const Value.absent(),
     this.id_stop = const Value.absent(),
-    this.desc = const Value.absent(),
-    this.task = const Value.absent(),
+    this.textInfo = const Value.absent(),
     this.type = const Value.absent(),
     this.answerOpt = const Value.absent(),
   });
-  TasksCompanion.insert({
+  ExtrasCompanion.insert({
     this.id = const Value.absent(),
     @required int id_tour,
     @required int id_stop,
-    this.desc = const Value.absent(),
-    @required String task,
-    @required TaskType type,
-    @required List<String> answerOpt,
+    @required String textInfo,
+    this.type = const Value.absent(),
+    this.answerOpt = const Value.absent(),
   })  : id_tour = Value(id_tour),
         id_stop = Value(id_stop),
-        task = Value(task),
-        type = Value(type),
-        answerOpt = Value(answerOpt);
-  TasksCompanion copyWith(
+        textInfo = Value(textInfo);
+  ExtrasCompanion copyWith(
       {Value<int> id,
       Value<int> id_tour,
       Value<int> id_stop,
-      Value<String> desc,
-      Value<String> task,
+      Value<String> textInfo,
       Value<TaskType> type,
       Value<List<String>> answerOpt}) {
-    return TasksCompanion(
+    return ExtrasCompanion(
       id: id ?? this.id,
       id_tour: id_tour ?? this.id_tour,
       id_stop: id_stop ?? this.id_stop,
-      desc: desc ?? this.desc,
-      task: task ?? this.task,
+      textInfo: textInfo ?? this.textInfo,
       type: type ?? this.type,
       answerOpt: answerOpt ?? this.answerOpt,
     );
   }
 }
 
-class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
+class $ExtrasTable extends Extras with TableInfo<$ExtrasTable, Extra> {
   final GeneratedDatabase _db;
   final String _alias;
-  $TasksTable(this._db, [this._alias]);
+  $ExtrasTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
   GeneratedIntColumn _id;
   @override
@@ -1915,22 +1899,13 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
         $customConstraints: 'REFERENCES stops(id)');
   }
 
-  final VerificationMeta _descMeta = const VerificationMeta('desc');
-  GeneratedTextColumn _desc;
+  final VerificationMeta _textInfoMeta = const VerificationMeta('textInfo');
+  GeneratedTextColumn _textInfo;
   @override
-  GeneratedTextColumn get desc => _desc ??= _constructDesc();
-  GeneratedTextColumn _constructDesc() {
-    return GeneratedTextColumn('desc', $tableName, false,
-        defaultValue: const Constant(""));
-  }
-
-  final VerificationMeta _taskMeta = const VerificationMeta('task');
-  GeneratedTextColumn _task;
-  @override
-  GeneratedTextColumn get task => _task ??= _constructTask();
-  GeneratedTextColumn _constructTask() {
+  GeneratedTextColumn get textInfo => _textInfo ??= _constructTextInfo();
+  GeneratedTextColumn _constructTextInfo() {
     return GeneratedTextColumn(
-      'task',
+      'text_info',
       $tableName,
       false,
     );
@@ -1944,7 +1919,7 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     return GeneratedIntColumn(
       'type',
       $tableName,
-      false,
+      true,
     );
   }
 
@@ -1956,21 +1931,21 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     return GeneratedTextColumn(
       'answer_opt',
       $tableName,
-      false,
+      true,
     );
   }
 
   @override
   List<GeneratedColumn> get $columns =>
-      [id, id_tour, id_stop, desc, task, type, answerOpt];
+      [id, id_tour, id_stop, textInfo, type, answerOpt];
   @override
-  $TasksTable get asDslTable => this;
+  $ExtrasTable get asDslTable => this;
   @override
-  String get $tableName => _alias ?? 'tasks';
+  String get $tableName => _alias ?? 'extras';
   @override
-  final String actualTableName = 'tasks';
+  final String actualTableName = 'extras';
   @override
-  VerificationContext validateIntegrity(TasksCompanion d,
+  VerificationContext validateIntegrity(ExtrasCompanion d,
       {bool isInserting = false}) {
     final context = VerificationContext();
     if (d.id.present) {
@@ -1988,15 +1963,11 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     } else if (isInserting) {
       context.missing(_id_stopMeta);
     }
-    if (d.desc.present) {
-      context.handle(
-          _descMeta, desc.isAcceptableValue(d.desc.value, _descMeta));
-    }
-    if (d.task.present) {
-      context.handle(
-          _taskMeta, task.isAcceptableValue(d.task.value, _taskMeta));
+    if (d.textInfo.present) {
+      context.handle(_textInfoMeta,
+          textInfo.isAcceptableValue(d.textInfo.value, _textInfoMeta));
     } else if (isInserting) {
-      context.missing(_taskMeta);
+      context.missing(_textInfoMeta);
     }
     context.handle(_typeMeta, const VerificationResult.success());
     context.handle(_answerOptMeta, const VerificationResult.success());
@@ -2006,13 +1977,13 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id, id_tour, id_stop};
   @override
-  Task map(Map<String, dynamic> data, {String tablePrefix}) {
+  Extra map(Map<String, dynamic> data, {String tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Task.fromData(data, _db, prefix: effectivePrefix);
+    return Extra.fromData(data, _db, prefix: effectivePrefix);
   }
 
   @override
-  Map<String, Variable> entityToSql(TasksCompanion d) {
+  Map<String, Variable> entityToSql(ExtrasCompanion d) {
     final map = <String, Variable>{};
     if (d.id.present) {
       map['id'] = Variable<int, IntType>(d.id.value);
@@ -2023,18 +1994,15 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
     if (d.id_stop.present) {
       map['id_stop'] = Variable<int, IntType>(d.id_stop.value);
     }
-    if (d.desc.present) {
-      map['desc'] = Variable<String, StringType>(d.desc.value);
-    }
-    if (d.task.present) {
-      map['task'] = Variable<String, StringType>(d.task.value);
+    if (d.textInfo.present) {
+      map['text_info'] = Variable<String, StringType>(d.textInfo.value);
     }
     if (d.type.present) {
-      final converter = $TasksTable.$converter0;
+      final converter = $ExtrasTable.$converter0;
       map['type'] = Variable<int, IntType>(converter.mapToSql(d.type.value));
     }
     if (d.answerOpt.present) {
-      final converter = $TasksTable.$converter1;
+      final converter = $ExtrasTable.$converter1;
       map['answer_opt'] =
           Variable<String, StringType>(converter.mapToSql(d.answerOpt.value));
     }
@@ -2042,8 +2010,8 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
   }
 
   @override
-  $TasksTable createAlias(String alias) {
-    return $TasksTable(_db, alias);
+  $ExtrasTable createAlias(String alias) {
+    return $ExtrasTable(_db, alias);
   }
 
   static TaskTypeConverter $converter0 = TaskTypeConverter();
@@ -2345,8 +2313,8 @@ abstract class _$MuseumDatabase extends GeneratedDatabase {
   $ToursTable get tours => _tours ??= $ToursTable(this);
   $TourStopsTable _tourStops;
   $TourStopsTable get tourStops => _tourStops ??= $TourStopsTable(this);
-  $TasksTable _tasks;
-  $TasksTable get tasks => _tasks ??= $TasksTable(this);
+  $ExtrasTable _extras;
+  $ExtrasTable get extras => _extras ??= $ExtrasTable(this);
   $StopFeaturesTable _stopFeatures;
   $StopFeaturesTable get stopFeatures =>
       _stopFeatures ??= $StopFeaturesTable(this);
@@ -2354,5 +2322,5 @@ abstract class _$MuseumDatabase extends GeneratedDatabase {
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [users, badges, stops, devisions, tours, tourStops, tasks, stopFeatures];
+      [users, badges, stops, devisions, tours, tourStops, extras, stopFeatures];
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:museum_app/add_tour/join_tour.dart';
+import 'package:museum_app/database/database.dart';
 import 'package:museum_app/museum_tabs.dart';
 
 import 'create_tour.dart';
@@ -12,7 +13,7 @@ class AddTour extends StatefulWidget {
   _AddTourState createState() => _AddTourState();
 }
 
-enum AddType { CHOOSE, CREATE, JOIN }
+enum AddType { CHOOSE, CREATE, EDIT }
 
 class _AddTourState extends State<AddTour> {
   AddType _type = AddType.CHOOSE;
@@ -23,9 +24,9 @@ class _AddTourState extends State<AddTour> {
   Widget build(BuildContext context) {
     switch (_type) {
       case AddType.CREATE:
-        return CreateTour(goBack);
-      case AddType.JOIN:
-        return JoinTour(goBack);
+        return CreateTour(goBack, TourWithStops.empty());
+      case AddType.EDIT:
+        return EditTour(goBack);
       default:
         return MuseumTabs(
           Center(child: Text("SCHÖNES BILD")),
@@ -44,8 +45,8 @@ class _AddTourState extends State<AddTour> {
           child: Text("CREATE"),
         ),
         FlatButton(
-          onPressed: () => setState(() => _type = AddType.JOIN),
-          child: Text("JOIN"),
+          onPressed: () => setState(() => _type = AddType.EDIT),
+          child: Text("EDIT"),
         )
       ],
     );

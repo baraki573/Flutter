@@ -61,7 +61,7 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  widget.tour.tour.name,
+                  widget.tour.name.text,
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   style: TextStyle(
@@ -70,7 +70,7 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                       fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  "von " + widget.tour.tour.author,
+                  "von " + widget.tour.author,
                   style: TextStyle(
                       fontSize: 15,
                       fontStyle: FontStyle.italic,
@@ -129,7 +129,7 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                   height: verSize(17, 20),
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                        image: AssetImage(stops[index].stop.images[0]),
+                        image: AssetImage(stops[index].stop.images.isNotEmpty ? stops[index].stop.images[0] : "assets/images/profile_test.png"),
                         fit: BoxFit.cover),
                     border: Border(right: BorderSide(color: Colors.black)),
                   ),
