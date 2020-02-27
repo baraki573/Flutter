@@ -129,11 +129,11 @@ class _CreateTourState extends State<CreateTour> {
               controller: widget.tour.name,
               decoration: InputDecoration(
                 suffixIcon: Icon(Icons.border_color),
-                labelText: "Tourname festlegen",
+                labelText: "Tournamen festlegen",
                 border: InputBorder.none,
               ),
             ),
-            Text("Schwierigkeitsgrad:"),
+            Text("Schwierigkeitsgrad bestimmen:"),
             RatingBar(
               initialRating: widget.tour.difficulty,
               minRating: 1,
@@ -143,11 +143,12 @@ class _CreateTourState extends State<CreateTour> {
               tapOnlyMode: true,
               itemSize: 33,
             ),
-            Text("Eine kurze Beschreibung:"),
+            Text("Eine kurze Beschreibung verfassen:"),
             Container(
               margin: EdgeInsets.only(top: 5),
               height: verSize(18, 10),
-              decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+              decoration:
+                  BoxDecoration(border: Border.all(color: Colors.black)),
               padding: EdgeInsets.symmetric(horizontal: 13),
               child: TextFormField(
                 expands: true,
@@ -164,29 +165,34 @@ class _CreateTourState extends State<CreateTour> {
               buttonHeight: verSize(6.5, 6.5),
               buttonMinWidth: horSize(35, 38),
               children: [
-                FlatButton(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  textColor: Colors.white,
-                  color: Colors.orange,
-                  onPressed: () {
-                    // TODO make input variable
-                    widget.tour.author = "Mariaa";
-                    widget.tour.creationTime = DateTime.now();
-                    for (var s in widget.tour.stops)
-                      for (var e in s.extras)
-                        if (e is ActualTask) {
-                          //e.descr.text = e.descr.text.trim();
-                          e.textInfo.text = e.textInfo.text.trim();
-                        }
-                    MuseumDatabase.get().writeTourStops(widget.tour);
-                    showDialog(
-                        context: context,
-                        builder: (context) =>
-                            AlertDialog(title: Text("Finish")));
-                  },
-                  child: Text("Erstellen"),
-                ),
+                StreamBuilder(
+                    stream: MuseumDatabase.get().getUser(),
+                    builder: (context, snap) {
+                      String username = snap.data?.username;
+                      return FlatButton(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                        textColor: Colors.white,
+                        color: Colors.orange,
+                        onPressed: () {
+                          // TODO make input variable
+                          widget.tour.author = username;
+                          widget.tour.creationTime = DateTime.now();
+                          for (var s in widget.tour.stops)
+                            for (var e in s.extras)
+                              if (e is ActualTask) {
+                                //e.descr.text = e.descr.text.trim();
+                                e.textInfo.text = e.textInfo.text.trim();
+                              }
+                          MuseumDatabase.get().writeTourStops(widget.tour);
+                          showDialog(
+                              context: context,
+                              builder: (context) =>
+                                  AlertDialog(title: Text("Finish")));
+                        },
+                        child: Text("Fertigstellen"),
+                      );
+                    }),
                 FlatButton(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),

@@ -6,6 +6,8 @@ import 'package:museum_app/map/map_page.dart';
 import 'package:museum_app/museum_tabs.dart';
 import 'package:museum_app/tours_page/tours_widgets.dart';
 
+import '../SizeConfig.dart';
+
 class Tours extends StatefulWidget {
   Tours({Key key}) : super(key: key);
 
@@ -28,8 +30,8 @@ class _ToursState extends State<Tours> {
             ),
           ),
           Positioned(
-            right: 5,
-            top: 4,
+            left: SizeConfig.blockSizeHorizontal * 2,
+            top: SizeConfig.blockSizeVertical * 2,
             child: FlatButton(
               padding: EdgeInsets.all(3),
               shape: CircleBorder(),
