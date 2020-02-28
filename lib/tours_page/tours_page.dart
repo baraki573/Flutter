@@ -53,7 +53,7 @@ class _ToursState extends State<Tours> {
 
   Widget _bottomInfo(funct) {
     return StreamBuilder(
-        stream: MuseumDatabase.get().getUser(),
+        stream: MuseumDatabase.get().watchUser(),
         builder: (context, snapU) {
           var username =
               (snapU.data ?? User(username: "", imgPath: "")).username;
@@ -71,15 +71,14 @@ class _ToursState extends State<Tours> {
   Widget build(BuildContext context) {
     return MuseumTabs(
         _topInfo(),
-        [
-          // All tours
-          _bottomInfo((_) => (tour) => true),
-          // Only the created ones
-          _bottomInfo((username) => (tour) => tour.tour.author == username),
-          // The rest
-          _bottomInfo((username) => (tour) => tour.tour.author != username),
-        ],
-        names: ["Alle", "Eigene", "Favoriten"],
+      {
+        // All tours
+        "Alle": _bottomInfo((_) => (tour) => true),
+        // Only the created ones
+        "Eigene": _bottomInfo((username) => (tour) => tour.tour.author == username),
+        // The rest
+        "Favoriten": _bottomInfo((username) => (tour) => tour.tour.author != username),
+      },
         color: Colors.pink,
     );
   }

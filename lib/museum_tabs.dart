@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -10,49 +8,51 @@ import 'database/database.dart';
 class MuseumTabs extends StatefulWidget {
   final Widget top;
   final Color color;
-  final List<String> names;
-  final List<Widget> tabs;
+  final Map<String, Widget> tabs;
+  final List<int> staticScroll;
 
-  MuseumTabs(this.top, this.tabs, {this.names = const [], this.color, Key key})
+  //final List<String> names;
+  //final List<Widget> tabs;
+
+  MuseumTabs(this.top, this.tabs,
+      {this.staticScroll = const <int>[], this.color = Colors.black, Key key})
       : super(key: key);
+
+  MuseumTabs.single(this.top, widget,
+      {this.staticScroll = const <int>[], this.color = Colors.black, Key key})
+      : tabs = {"Single": widget},
+        super(key: key);
 
   @override
   _MuseumTabsState createState() => _MuseumTabsState();
 }
 
-class _MuseumTabsState extends State<MuseumTabs> {
-  int _currentTab = 0;
-  int minLength;
+class _MuseumTabsState extends State<MuseumTabs> with TickerProviderStateMixin {
+  String _currentTab;
 
-  @override
   void initState() {
     super.initState();
-    if (widget.names == null || widget.tabs == null)
-      minLength = 0;
-    else
-      minLength = min(widget.names.length, widget.tabs.length);
+    if (widget.tabs.length >= 1)
+      _currentTab = widget.tabs.keys.toList()[0];
   }
 
   List<Widget> _customButtons() {
-    return List.generate(minLength, (index) {
-      var selected = (index == _currentTab);
+    return widget.tabs.entries.map((entry) {
+      var selected = (_currentTab == entry.key);
       return FlatButton(
         //textColor: Colors.black,
         //disabledTextColor: Colors.green,
         splashColor: widget.color.withOpacity(.4),
-        child: Text(widget.names[index],
+        child: Text(entry.key,
             style: TextStyle(
                 color: (selected ? widget.color : Colors.black),
                 fontSize: size(16, 19))),
-        onPressed: () => setState(() {
-          _currentTab = index;
-        }),
+        onPressed: () => setState(() => _currentTab = entry.key),
       );
-    });
+    }).toList();
   }
 
   Widget _bottomInfo() {
-    print(minLength);
     return Container(
       //height: SizeConfig.safeBlockVertical * 100,
       decoration: BoxDecoration(
@@ -63,7 +63,7 @@ class _MuseumTabsState extends State<MuseumTabs> {
       ),
       child: Column(
         children: <Widget>[
-          widget.names.length > 0
+          widget.tabs.length > 1
               ? ButtonBar(
                   buttonMinWidth: 100,
                   alignment: MainAxisAlignment.center,
@@ -81,10 +81,7 @@ class _MuseumTabsState extends State<MuseumTabs> {
     SizeConfig().init(context);
     return ListView(
       children: <Widget>[
-
-        Stack(
-            overflow: Overflow.visible,
-            children: [
+        Stack(overflow: Overflow.visible, children: [
           Container(height: verSize(30, 45), child: widget.top),
           Positioned(
             top: verSize(41, 47),
@@ -100,17 +97,16 @@ class _MuseumTabsState extends State<MuseumTabs> {
             child: MuseumSettings(),
           ),
         ]),
-
         _bottomInfo(),
       ],
     );
   }
 }
 
-enum OptionType { editUs, editPw, editPp, about }
+enum _OptionType { editUs, editPw, editPp, about }
 
 class MuseumSettings extends StatelessWidget {
-  PopupMenuItem _myPopUpItem(String s, IconData i, OptionType t) {
+  PopupMenuItem _myPopUpItem(String s, IconData i, _OptionType t) {
     return PopupMenuItem(
       child: Row(children: [
         Container(padding: EdgeInsets.only(right: 4), child: Icon(i)),
@@ -153,16 +149,16 @@ class MuseumSettings extends StatelessWidget {
   void _select(val, BuildContext context) {
     switch (val) {
       // TODO build own about dialog in german. Maybe general dialog, val determines content
-      case OptionType.about:
+      case _OptionType.about:
         showAboutDialog(context: context);
         break;
-      case OptionType.editUs:
+      case _OptionType.editUs:
         showDialog(context: context, builder: _editUS);
         break;
-      case OptionType.editPw:
+      case _OptionType.editPw:
         demo();
         break;
-      case OptionType.editPp:
+      case _OptionType.editPp:
         MuseumDatabase.get().clear();
         //showDialog(context: context, builder: _editPp);
         break;
@@ -171,20 +167,23 @@ class MuseumSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return PopupMenuButton(
       itemBuilder: (context) => [
-        _myPopUpItem("Profilbild ändern", Icons.image, OptionType.editPp),
-        _myPopUpItem("Username ändern", Icons.person, OptionType.editUs),
-        _myPopUpItem("Passwort ändern", Icons.fiber_pin, OptionType.editPw),
-        _myPopUpItem("Über diese App", Icons.info, OptionType.about),
+        _myPopUpItem("Profilbild ändern", Icons.image, _OptionType.editPp),
+        _myPopUpItem("Username ändern", Icons.person, _OptionType.editUs),
+        _myPopUpItem("Passwort ändern", Icons.fiber_pin, _OptionType.editPw),
+        _myPopUpItem("Über diese App", Icons.info, _OptionType.about),
       ],
       onSelected: (result) => _select(result, context),
       /*onPressed: () {
                 print("Options");
               },
               iconSize: 35,*/
-      icon: Icon(Icons.settings, size: 35, color: Colors.white,),
+      icon: Icon(
+        Icons.settings,
+        size: 35,
+        color: Colors.white,
+      ),
     );
   }
 }

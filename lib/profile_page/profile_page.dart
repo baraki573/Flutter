@@ -38,7 +38,7 @@ class _ProfileState extends State<Profile> {
 
   Widget _topInfo() {
     return StreamBuilder(
-        stream: MuseumDatabase.get().getUser(),
+        stream: MuseumDatabase.get().watchUser(),
         builder: (context, snap) {
           var user = snap.data ??
               User(username: "", imgPath: "assets/images/profile_test.png");
@@ -85,8 +85,8 @@ class _ProfileState extends State<Profile> {
   Widget build(BuildContext context) {
     return MuseumTabs(
       _topInfo(),
-      [FavWidget(), BadgeWidget(), StatWidget()],
-      names: ["Favoriten", "Erfolge", "Statistik"],
+      {"Favoriten": FavWidget(), "Erfolge": BadgeWidget(), "Statistik": StatWidget()},
+      staticScroll: [2],
       color: Colors.green,
     );
   }

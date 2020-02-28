@@ -9,6 +9,7 @@ import 'package:museum_app/tours_page/walk_tour/walk_tour_extras.dart';
 import 'package:reorderables/reorderables.dart';
 
 import '../SizeConfig.dart';
+import 'add_tour.dart';
 
 class CreateTour extends StatefulWidget {
   final void Function() goBack;
@@ -22,7 +23,7 @@ class CreateTour extends StatefulWidget {
 
 class _CreateTourState extends State<CreateTour> {
   //List<MyString> list = [MyString("Stop 0")];
-  int index = 0;
+  int _index = 0;
   CreateType _type = CreateType.GENERAL;
 
   //final List<ActualStop> stops = [ActualStop.custom()];
@@ -34,95 +35,210 @@ class _CreateTourState extends State<CreateTour> {
         onHide: () => FocusScope.of(context).requestFocus(FocusNode()));
   }
 
-  Widget _draggable() {
-    var horPad = horSize(27.5, 32.5);
+  Widget _editMultiStop() {
+    var horPad = horSize(25, 32.5);
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          _navigator(),
+          _info(),
+          Expanded(
+            child: Container(
+              width: horSize(100, 100),
+              child: ReorderableWrap(
+                //alignment: WrapAlignment.center,
+                //crossAxisAlignment: WrapCrossAlignment.center,
+                needsLongPressDraggable: true,
+                alignment: WrapAlignment.center,
+                //padding: EdgeInsets.only(top: 30, right: horPad, left: horPad),
+                buildDraggableFeedback: (contexta, constraints, widget) =>
+                    Material(child: widget, color: Colors.transparent),
+                //spacing: 50.0,
+                maxMainAxisCount: 1,
+                onReorder: (int oldIndex, int newIndex) => setState(() {
+                  var old = widget.tour.stops[oldIndex];
 
-    return ReorderableWrap(
-      //alignment: WrapAlignment.center,
-      //crossAxisAlignment: WrapCrossAlignment.center,
-      needsLongPressDraggable: true,
-      padding: EdgeInsets.only(top: 30, right: horPad, left: horPad),
-      //spacing: 50.0,
-      maxMainAxisCount: 1,
-      onReorder: (int oldIndex, int newIndex) => setState(() {
-        var old = widget.tour.stops[oldIndex];
+                  oldIndex += newIndex < oldIndex ? 1 : 0;
+                  newIndex += newIndex > oldIndex ? 1 : 0;
 
-        oldIndex += newIndex < oldIndex ? 1 : 0;
-        newIndex += newIndex > oldIndex ? 1 : 0;
-
-        widget.tour.stops.insert(newIndex, old);
-        widget.tour.stops.removeAt(oldIndex);
-      }),
-      children: widget.tour.stops
-          .map((elem) => GestureDetector(
-                onTap: () => setState(() {
-                  index = widget.tour.stops.indexOf(elem);
-                  _type = CreateType.SINGLE_STOP;
+                  widget.tour.stops.insert(newIndex, old);
+                  widget.tour.stops.removeAt(oldIndex);
                 }),
-                child: Container(
-                  color: Colors.white,
-                  alignment: Alignment.center,
-                  height: verSize(20, 10),
-                  width: horSize(45, 35),
-                  margin: EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 70,
-                        child: Text(
-                          elem.stop?.name ?? "Empty",
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.only(left: 25),
-                        width: 60,
-                        child: ButtonBar(
-                          mainAxisSize: MainAxisSize.min,
-                          buttonMinWidth: 50,
-                          buttonHeight: 40,
-                          children: [
-                            FlatButton(
-                                color: Colors.green,
-                                onPressed: () => setState(() {
-                                      var index =
-                                          widget.tour.stops.indexOf(elem);
-                                      widget.tour.stops.insert(
-                                          index + 1, ActualStop.custom());
-                                    }),
-                                child: Icon(Icons.add_circle)),
-                            FlatButton(
-                                color: Colors.red,
-                                onPressed: () => setState(() {
-                                      if (widget.tour.stops.length > 1)
-                                        widget.tour.stops.remove(elem);
-                                      if (index >= widget.tour.stops.length)
-                                        index--;
-                                    }),
-                                child: Icon(Icons.remove_circle)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ))
-          .toList(),
+                children: widget.tour.stops.map(_draggable).toList(),
+              ),
+            ),
+          )
+        ],
+      ),
     );
   }
 
-  Widget _foo() {
-    return MuseumTabs(Center(child: Text("JAJAJ")), [
-      Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-          border: Border.all(color: Colors.orange),
+  Widget _info() {
+    var style = TextStyle(color: Colors.white, fontWeight: FontWeight.bold);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16),
+      color: Colors.orange.withOpacity(.5),
+      height: verSize(13, 10),
+      width: horSize(100, 100),
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: verSize(1, 1),
+        runSpacing: horSize(7, 10),
+        direction: Axis.vertical,
+        children: [
+          Row(children: [
+            Icon(Icons.add_circle, color: Colors.white),
+            Text(" Station ergänzen", style: style),
+          ]),
+          Row(children: [
+            Icon(Icons.remove_circle, color: Colors.white),
+            Text(" Station löschen", style: style),
+          ]),
+          Row(children: [
+            Icon(Icons.touch_app, color: Colors.white),
+            Text(" Station bearbeiten\n durch tippen", style: style),
+          ]),
+          Row(children: [
+            Icon(Icons.crop_5_4, color: Colors.white),
+            Text(" Reihenfolge ändern\n durch gedrückt halten", style: style),
+          ]),
+        ],
+      ),
+    );
+  }
+
+  Widget _navigator() {
+    var topPad = MediaQuery.of(context).padding.top;
+
+    String tourName = widget.tour.name.text.trim();
+    if (tourName.isEmpty) tourName = "NEUE TOUR";
+    String tourAuthor = widget.tour.author.trim();
+    if (tourAuthor.isEmpty) tourAuthor = "mir";
+    return Container(
+        padding: EdgeInsets.only(left: 15, right: 15, bottom: 9, top: topPad),
+        height: verSize(13, 25) + topPad,
+        color: Colors.orange,
+        child: Row(
+          //mainAxisAlignment: MainAxisAlignment.center,
+          //mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: horSize(21, 10)),
+            Container(
+              //color: Colors.red,
+              width: horSize(50, 65),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    tourName,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    "von " + tourAuthor,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Spacer(),
+            MuseumSettings(),
+          ],
         ),
-        margin: EdgeInsets.only(left: 16, right: 16, top: 20),
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Column(
+
+    );
+  }
+
+  Widget _draggable(ActualStop elem) {
+    return GestureDetector(
+      onTap: () => setState(() {
+        _index = widget.tour.stops.indexOf(elem);
+        _type = CreateType.SINGLE_STOP;
+      }),
+      child: border(
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: horSize(37, 10),
+              height: verSize(17, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Container(
+                    margin: EdgeInsets.only(top: 8),
+                    height: verSize(7, 5),
+                    child: Text(
+                      "Station " +
+                          (widget.tour.stops.indexOf(elem) + 1).toString(),
+                      style: TextStyle(
+                        color: Colors.orange,
+                        fontSize: 19,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                      child: Text(
+                    elem.stop?.name ?? "Fehler",
+                    style: TextStyle(fontSize: 16),
+                  ))
+                ],
+              ),
+            ),
+            Container(
+              //margin: EdgeInsets.only(left: 25),
+              width: horSize(16, 20),
+              //color: Colors.green,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                //buttonMinWidth: 50,
+                //buttonPadding: EdgeInsets.zero,
+                //buttonHeight: 40,
+                children: [
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () => setState(() {
+                      var index = widget.tour.stops.indexOf(elem);
+                      widget.tour.stops.insert(index + 1, ActualStop.custom());
+                    }),
+                    icon: Icon(Icons.add_circle),
+                    iconSize: 50,
+                    color: Colors.orange,
+                  ),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () => setState(() {
+                      if (widget.tour.stops.length > 1)
+                        widget.tour.stops.remove(elem);
+                      if (_index >= widget.tour.stops.length) _index--;
+                    }),
+                    icon: Icon(Icons.remove_circle),
+                    iconSize: 50,
+                    color: Colors.orange,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        margin: EdgeInsets.symmetric(vertical: 10),
+      ),
+    );
+  }
+
+  Widget _general() {
+    return MuseumTabs.single(
+      Center(child: Text("JAJAJ")),
+      border(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextFormField(
@@ -161,38 +277,33 @@ class _CreateTourState extends State<CreateTour> {
               ),
             ),
             ButtonBar(
+              buttonPadding: EdgeInsets.all(6),
               alignment: MainAxisAlignment.center,
               buttonHeight: verSize(6.5, 6.5),
               buttonMinWidth: horSize(35, 38),
               children: [
-                StreamBuilder(
-                    stream: MuseumDatabase.get().getUser(),
-                    builder: (context, snap) {
-                      String username = snap.data?.username;
-                      return FlatButton(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        textColor: Colors.white,
-                        color: Colors.orange,
-                        onPressed: () {
-                          // TODO make input variable
-                          widget.tour.author = username;
-                          widget.tour.creationTime = DateTime.now();
-                          for (var s in widget.tour.stops)
-                            for (var e in s.extras)
-                              if (e is ActualTask) {
-                                //e.descr.text = e.descr.text.trim();
-                                e.textInfo.text = e.textInfo.text.trim();
-                              }
-                          MuseumDatabase.get().writeTourStops(widget.tour);
-                          showDialog(
-                              context: context,
-                              builder: (context) =>
-                                  AlertDialog(title: Text("Finish")));
-                        },
-                        child: Text("Fertigstellen"),
-                      );
-                    }),
+                FlatButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  textColor: Colors.white,
+                  color: Colors.orange,
+                  onPressed: () {
+                    // TODO make input variable
+                    widget.tour.creationTime = DateTime.now();
+                    for (var s in widget.tour.stops)
+                      for (var e in s.extras)
+                        if (e is ActualTask) {
+                          //e.descr.text = e.descr.text.trim();
+                          e.textInfo.text = e.textInfo.text.trim();
+                        }
+                    MuseumDatabase.get().writeTourStops(widget.tour);
+                    showDialog(
+                        context: context,
+                        builder: (context) =>
+                            AlertDialog(title: Text("Finish")));
+                  },
+                  child: Text("Fertigstellen"),
+                ),
                 FlatButton(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
@@ -200,44 +311,78 @@ class _CreateTourState extends State<CreateTour> {
                     color: Colors.orange,
                     onPressed: () =>
                         setState(() => _type = CreateType.MULTI_STOP),
-                    child: Text("Stationen wählen"))
+                    child: Text("Stationen festlegen"))
               ],
-            )
+            ),
           ],
         ),
+        margin: EdgeInsets.only(left: 16, right: 16, top: 20, bottom: 7),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       ),
-    ]);
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
+    Widget mainWidget;
+    switch (_type) {
+      case CreateType.GENERAL:
+        mainWidget = _general();
+        break;
+      case CreateType.MULTI_STOP:
+        mainWidget = _editMultiStop();
+        break;
+      case CreateType.SINGLE_STOP:
+        mainWidget = _EditSingleStop(widget.tour.stops[_index]);
+        break;
+    }
     return GestureDetector(
       onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
       child: Container(
         height: SizeConfig.safeBlockVertical * 100,
         child: Stack(
           children: [
-            _type == CreateType.GENERAL
-                ? _foo()
-                : (_type == CreateType.MULTI_STOP
-                    ? _draggable()
-                    : _EditSingleStop(widget.tour.stops[index])),
+            mainWidget,
             Positioned(
-              top: 23,
-              child: IconButton(
-                onPressed: _type == CreateType.GENERAL
-                    ? widget.goBack
-                    : () => setState(() => _type =
-                        (_type == CreateType.MULTI_STOP
-                            ? CreateType.GENERAL
-                            : CreateType.MULTI_STOP)),
-                icon: Icon(Icons.arrow_back),
-                iconSize: 30,
-              ),
+              left: SizeConfig.blockSizeHorizontal * 2,
+              top: SizeConfig.blockSizeVertical * 4,
+              child: _backButton(),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _backButton() {
+    var funct;
+    String label = "";
+    switch (_type) {
+      case CreateType.GENERAL:
+        funct = widget.goBack;
+        label = "Zur Übersicht";
+        break;
+      case CreateType.MULTI_STOP:
+        funct = () => setState(() => _type = CreateType.GENERAL);
+        label = "Zu Tourdaten";
+        break;
+      case CreateType.SINGLE_STOP:
+        funct = () => setState(() => _type = CreateType.MULTI_STOP);
+        break;
+    }
+    return Container(
+      width: horSize(25, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          IconButton(
+            onPressed: funct,
+            icon: Icon(Icons.arrow_back),
+            iconSize: 30,
+          ),
+          Text(label),
+        ],
       ),
     );
   }

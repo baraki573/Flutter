@@ -29,11 +29,13 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
   }
 
   Widget _navigator(List<ActualStop> stops) {
+    var topPad = MediaQuery.of(context).padding.top;
+
     int length = stops.length;
     Color colorNav = Colors.white;
     return Container(
-      padding: EdgeInsets.only(top: 30, left: 15, right: 15, bottom: 9),
-      height: verSize(17, 25),
+      padding: EdgeInsets.only(left: 15, right: 15, bottom: 9, top: topPad),
+      height: verSize(13, 25) + topPad,
       decoration: BoxDecoration(
         color: Colors.pink,
         border: Border(bottom: BorderSide(color: Colors.black, width: 1.5)),
@@ -196,8 +198,8 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
 
     var bottomOff = MediaQuery.of(context).viewInsets.bottom;
     var stops = widget.tour.stops ??
-        [
-          ActualStop(
+        <ActualStop>[
+          /*ActualStop(
               Stop(
                   name: "",
                   descr: "",
@@ -209,7 +211,7 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                   showImages: false,
                   showText: false,
                   showDetails: false),
-              [])
+              [])*/
         ];
     int length = stops.length;
     return WillPopScope(

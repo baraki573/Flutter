@@ -12,6 +12,8 @@ import 'package:rxdart/rxdart.dart';
 
 part 'database.g.dart';
 
+String _customName = "Individuell";
+
 class Users extends Table {
   TextColumn get username =>
       text().withLength(min: MIN_USERNAME, max: MAX_USERNAME)();
@@ -114,12 +116,12 @@ class TourWithStops {
     creationTime = t.creationTime;
   }
 
-  TourWithStops.empty()
+  TourWithStops.empty(String author)
       : this(
       Tour(
           id: null,
           name: "",
-          author: "",
+          author: author,
           rating: 0,
           creationTime: null,
           desc: ""),
@@ -139,7 +141,7 @@ class ActualStop {
   StopFeature features;
   List<ActualExtra> extras;
 
-  bool isCustom() => stop != null && stop.name == "Custom";
+  bool isCustom() => stop != null && stop.name == _customName;
 
   ActualStop(this.stop, this.features, this.extras);
 
@@ -148,7 +150,7 @@ class ActualStop {
       Stop(
           id: MuseumDatabase.customID,
           images: <String>[],
-          name: "Custom",
+          name: _customName,
           descr: ""),
       StopFeature(
           id_tour: null,
@@ -330,7 +332,9 @@ class MuseumDatabase extends _$MuseumDatabase {
   @override
   int get schemaVersion => 5;
 
-  Stream<User> getUser() => select(users).watchSingle();
+  Stream<User> watchUser() => select(users).watchSingle();
+
+  Future<User> getUser() => select(users).getSingle();
 
   Future setUser(UsersCompanion uc) {
     customStatement("DELETE FROM users");
@@ -497,7 +501,7 @@ class MuseumDatabase extends _$MuseumDatabase {
 
   Stream<ActualStop> getCustomStop() {
     final query = select(stops)
-      ..where((stop) => stop.name.equals("Custom"));
+      ..where((stop) => stop.name.equals(_customName));
     return query.watchSingle().map((stop) =>
         ActualStop(
             stop,
@@ -514,11 +518,7 @@ class MuseumDatabase extends _$MuseumDatabase {
     return transaction(() async {
       final tour = entry.createToursCompanion(true);
 
-      print(tour);
-
       var id = await into(tours).insert(tour, orReplace: true);
-      print("UGH");
-      //TODO INSERT STOPS
 
       await (delete(tourStops)
         ..where((e) => e.id_tour.equals(id))).go();
@@ -573,7 +573,7 @@ class MuseumDatabase extends _$MuseumDatabase {
   Future<void> demoStops() async {
     //customStatement("DELETE FROM stops");
     customID = await into(stops).insert(
-        StopsCompanion.insert(images: <String>[], name: "Custom", descr: ""));
+        StopsCompanion.insert(images: <String>[], name: _customName, descr: ""));
     await batch((batch) {
       batch.insertAll(
           stops,
