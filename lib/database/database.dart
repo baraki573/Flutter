@@ -125,7 +125,7 @@ class TourWithStops {
           rating: 0,
           creationTime: null,
           desc: ""),
-      [ActualStop.custom()]);
+      <ActualStop>[]);
 
   ToursCompanion createToursCompanion(bool nullToAbsent) {
     return Tour(name: name.text,
@@ -150,7 +150,7 @@ class ActualStop {
       Stop(
           id: MuseumDatabase.customID,
           images: <String>[],
-          name: _customName,
+          name: "HAALLO",
           descr: ""),
       StopFeature(
           id_tour: null,
@@ -161,40 +161,72 @@ class ActualStop {
       <ActualExtra>[]);
 }
 
-enum TaskType { TEXT, MULTI_ONE, MULTI }
+enum ExtraType { TASK_TEXT, TASK_MULTI_ONE, TASK_MULTI, IMAGE, TEXT }
 
 class ActualExtra {
   final m.TextEditingController textInfo = m.TextEditingController();
-  ActualTask task;
+  final ActualTask task;
+  final ExtraType type;
 
-  ActualExtra.onlyText(text) {
+  ActualExtra(this.type, {text = "", sel = const [""]}) : task = ActualTask(type, answerNames: sel) {
+    textInfo.text = text;
+  }
+
+  /*
+  ActualExtra.onlyText(String text) : image = false {
     this.textInfo.text = text;
   }
 
-  ActualExtra.realTask(task, type, answerNames) {
+  ActualExtra.realTask(task, type, answerNames) : image = false {
     this.textInfo.text = task;
     this.task = ActualTask(type, answerNames: answerNames);
   }
+
+  ActualExtra.images(String images) : image = true {
+    this.textInfo.text = images;
+  }*/
 }
 
 class ActualTask {
-  final TaskType type;
-  Map<String, m.TextEditingController> answers;
+  //final ExtraType type;
+//  Map<String, m.TextEditingController> answers;
+  //final List<m.TextEditingController> labels;
+  //final List<m.TextEditingController> answers;
+  final List<MapEntry<m.TextEditingController, m.TextEditingController>> entries;
   Set<int> selected;
 
   //final List<String> answers;
 
-  ActualTask(this.type, {answerNames = const [""]}) {
+  factory ActualTask(type, {answerNames = const [""]}) {
     switch (type) {
-      case TaskType.TEXT:
-        answers = Map<String, m.TextEditingController>();
-        for (String s in answerNames)
-          answers[s] = m.TextEditingController();
-        break;
+      case ExtraType.TASK_TEXT:
+        return ActualTask.text(answerNames);
       default:
-        selected = Set<int>();
+        return null;
     }
   }
+
+
+  ActualTask.text(names) : entries = <MapEntry<m.TextEditingController, m.TextEditingController>>[] {//labels = <m.TextEditingController>[], answers = <m.TextEditingController>[]{
+    //answers = Map<String, m.TextEditingController>();
+    for (String s in names) {
+      addLabel(s);
+    }
+  }
+
+  addLabel(String label) {
+    var tedit = m.TextEditingController();
+    tedit.text = label;
+    //labels.add(tedit);
+    //answers.add(m.TextEditingController());
+    entries.add(MapEntry(tedit, m.TextEditingController()));
+  }
+
+  removeLast() {
+    if (entries.length < 1) return;
+    entries.removeLast();
+  }
+
 }
 
 class Devisions extends Table {
@@ -265,33 +297,23 @@ class StringListConverter extends TypeConverter<List<String>, String> {
   }
 }
 
-class TaskTypeConverter extends TypeConverter<TaskType, int> {
+class TaskTypeConverter extends TypeConverter<ExtraType, int> {
   const TaskTypeConverter();
 
   @override
-  TaskType mapToDart(int fromDb) {
+  ExtraType mapToDart(int fromDb) {
     if (fromDb == null) return null;
-    switch (fromDb) {
-      case 0:
-        return TaskType.MULTI;
-      case 1:
-        return TaskType.MULTI_ONE;
-      default:
-        return TaskType.TEXT;
-    }
+    var values = ExtraType.values;
+    if (0 <= fromDb && fromDb < values.length)
+      return values[fromDb];
+    print("NOT FOUND");
+    return ExtraType.TEXT;
   }
 
   @override
-  int mapToSql(TaskType value) {
+  int mapToSql(ExtraType value) {
     if (value == null) return null;
-    switch (value) {
-      case TaskType.MULTI:
-        return 0;
-      case TaskType.MULTI_ONE:
-        return 1;
-      default:
-        return 2;
-    }
+    return value.index;
   }
 }
 
@@ -363,14 +385,17 @@ class MuseumDatabase extends _$MuseumDatabase {
   }
 
   Stream<StopFeature> getStopFeatures(int stop_id, int tour_id) {
+    if (stop_id == customID)
+      return Stream.value(StopFeature(id_tour: tour_id, id_stop: stop_id, showImages: false, showText: true, showDetails: false));
     final query = select(stopFeatures)
-      ..where((f) => f.id_stop.equals(stop_id))..where((f) =>
-          f.id_tour.equals(tour_id));
+      ..where((f) => f.id_stop.equals(stop_id))
+      ..where((f) => f.id_tour.equals(tour_id));
 
     return query.watchSingle();
   }
 
-  Future updateStopFeatures(int stop_id, int tour_id, {images, text, details}) {
+  Future<void> updateStopFeatures(int stop_id, int tour_id, {images, text, details}) {
+    if (stop_id != customID)
     update(stopFeatures).replace(
       StopFeature(
         id_stop: stop_id,
@@ -389,13 +414,13 @@ class MuseumDatabase extends _$MuseumDatabase {
               id_tour: tour_id,
               id_stop: stop_id,
               textInfo: e.textInfo.text,
-              type: Value(e.task.type),
-              answerOpt: Value(e.task.answers.keys.toList())),
+              type: Value(e.type),
+              answerOpt: Value(e.task.entries.map((e) => e.key.text).toList())),
           mode: InsertMode.insertOrReplace);
     }
     return into(extras).insert(
         ExtrasCompanion.insert(
-            id_tour: tour_id, id_stop: stop_id, textInfo: e.textInfo.text),
+            id_tour: tour_id, id_stop: stop_id, type: Value(e.type), textInfo: e.textInfo.text),
         mode: InsertMode.insertOrReplace);
   }
 
@@ -403,14 +428,11 @@ class MuseumDatabase extends _$MuseumDatabase {
     final stop = select(stops)
       ..where((s) => s.id.equals(stop_id));
 
-    final feature = select(stopFeatures)
-      ..where((f) =>
-      f.id_stop.equals(stop_id) | f.id_stop.equals(
-          MuseumDatabase.customID))..where((f) => f.id_tour.equals(tour_id));
+    final feature = getStopFeatures(stop_id, tour_id);
 
     return CombineLatestStream.combine3(
         stop.watchSingle(),
-        feature.watchSingle(),
+        feature,
         getExtras(tour_id, stop_id),
             (Stop s, StopFeature f, List<ActualExtra> l) =>
             ActualStop(s, f, l));
@@ -425,15 +447,34 @@ class MuseumDatabase extends _$MuseumDatabase {
         rows.map(
               (e) {
             //if (t.desc != null) return ActualText(t.desc);
-            if (e.type != null)
+            return ActualExtra(e.type, text: e.textInfo, sel: e.answerOpt);
+                /*if (e.type != null)
               return ActualExtra.realTask(
                 e.textInfo,
                 e.type,
                 e.answerOpt,
               );
-            return ActualExtra.onlyText(e.textInfo);
+            return ActualExtra.onlyText(e.textInfo);*/
           },
         ).toList());
+  }
+
+  Stream<Tour> getDBTour(TourWithStops t) {
+    var query = select(tours)
+      ..where((tour) => tour.name.equals(t.name.text))
+      ..where((tour) => tour.author.equals(t.author))
+      ..where((tour) => tour.creationTime.equals(t.creationTime));
+
+    return query.watchSingle();
+  }
+
+  Future<void> removeTour(int id) async {
+    await batch((batch) {
+      batch.deleteWhere(tours, (t) => t.id.equals(id));
+      batch.deleteWhere(tourStops, (t) => t.id_tour.equals(id));
+      batch.deleteWhere(extras, (t) => t.id_tour.equals(id));
+      batch.deleteWhere(stopFeatures, (t) => t.id_tour.equals(id));
+    });
   }
 
   Stream<List<Badge>> getBadges() => select(badges).watch();

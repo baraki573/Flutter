@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/database/database.dart';
+import 'package:museum_app/image_carousel.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_extras.dart';
 import 'package:photo_view/photo_view.dart';
 
@@ -42,137 +43,10 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
       //padding: EdgeInsets.all(0),
       children: [
         // Images
-        _imageView(feat.showImages),
+        feat.showImages ? ImageCaroussel.fromStrings(widget.stop.stop.images) : Container(height: 16),
         _information(feat.showText, feat.showDetails),
         //TourWalkerTasks(widget.),
       ],
-    );
-  }
-
-  Widget _imageView(bool showImages) {
-    if (!showImages || widget.stop.stop.images.isEmpty) return Container();
-    return Column(children: [
-      CarouselSlider(
-        //enlargeCenterPage: true,
-        onPageChanged: (index) => setState(() => _currentImage = index),
-        viewportFraction: 1.0,
-        height: verSize(52, 68.5),
-        enableInfiniteScroll: false,
-        items: widget.stop.stop.images
-            .map(
-              (img) => GestureDetector(
-                onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => _ImageDetail("A", AssetImage(img)))),
-                //_ImageDetail("A", img))),
-                //onTap: () => _imagePopup(widget.stop.imgs[_currentImage]),
-                child: Container(
-                  //color: Colors.green,
-                  //height: verSize(52, 68.5),
-                  //margin: EdgeInsets.symmetric(horizontal: 16),
-                  //height: SizeConfig.safeBlockVertical * 40,
-                  //width: SizeConfig.safeBlockHorizontal * 100,
-                  //decoration: BoxDecoration(
-                  //borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                  //border: Border.all(color: Colors.black),
-                  //image: DecorationImage(image: img, fit: BoxFit.cover),
-                  //),
-                  child: Hero(
-                    transitionOnUserGestures: true,
-                    child: Image(
-                        //height: verSize(57, 68.5),
-                        width: horSize(100, 100),
-                        image: AssetImage(img),
-                        fit: BoxFit.cover),
-                    tag: "A",
-                  ),
-                ),
-                /*Positioned(
-                      top: 7,
-                      right: 23,
-                      height: SizeConfig.safeBlockVertical * 6,
-                      width: SizeConfig.safeBlockVertical * 6,
-                      child: FlatButton(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        padding: EdgeInsets.all(0),
-                        color: Colors.black.withOpacity(0.3),
-                        child: Icon(Icons.zoom_out_map,
-                            color: Colors.white, size: 30),
-                        onPressed: () {
-                          _imagePopup(widget.stop.imgs[_currentImage]);
-                        },
-                      ),*/
-              ),
-            )
-            .toList(),
-      ),
-      // Dot Indicator
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(
-          widget.stop.stop.images.length,
-          (index) => Container(
-            width: 8.0,
-            height: 8.0,
-            margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _currentImage == index
-                  ? Colors.black
-                  : Colors.grey.withOpacity(0.75),
-            ),
-          ),
-        ),
-      ),
-    ]);
-  }
-
-  void _imagePopup(final ImageProvider img) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => GestureDetector(
-          onVerticalDragEnd: (det) {
-            //if (det.primaryVelocity < 0) Navigator.pop(context);
-          },
-          //print(det.velocity.toString()),
-          onPanUpdate: (details) {
-            if (details.delta.dy > 0) {
-              // swiping in right direction
-              print("J");
-            }
-          },
-          child: Stack(
-            children: [
-              PhotoView(
-                heroAttributes: PhotoViewHeroAttributes(tag: _currentImage),
-                imageProvider: img,
-                maxScale: 3.0,
-                minScale: PhotoViewComputedScale.contained,
-                backgroundDecoration: const BoxDecoration(
-                  color: Colors.black,
-                ),
-              ),
-              Positioned(
-                top: 35,
-                left: 7,
-                height: SizeConfig.safeBlockVertical * 6,
-                width: SizeConfig.safeBlockVertical * 6,
-                child: FlatButton(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  padding: EdgeInsets.all(0),
-                  color: Colors.black.withOpacity(0.3),
-                  child: Icon(Icons.arrow_back, color: Colors.white, size: 32),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -202,9 +76,7 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
         children: [
           showText ? _text(widget.stop.stop) : Container(),
           showDetails ? _informationTable(widget.stop.stop) : Container(),
-          widget.showExtras
-              ? TourWalkerExtras(widget.stop.extras)
-              : Container(),
+          widget.showExtras ? _extras(widget.stop.extras) : Container(),
         ],
       ),
     );
@@ -333,49 +205,20 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
       ],
     );
   }
-}
 
-class _ImageDetail extends StatelessWidget {
-  ImageProvider _img;
-  var _tag;
+  Widget _extras(List<ActualExtra> extras) {
+    if (extras == null || extras.length < 1) return Container();
+    List<ActualExtra> tasks = extras.where((e) => e.task != null).toList();
+    return Container(
+      margin: EdgeInsets.only(top: 13),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children:
+            extras
+            // TODO Numerierung nur mit actualTask
+                .map((t) => TourExtra(tasks.indexOf(t) + 1, t))
+                .toList(),),
 
-  _ImageDetail(this._tag, this._img);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: GestureDetector(
-        onTap: () => Navigator.pop(context),
-        //onVerticalDragEnd: (a)=>print(a.primaryVelocity),
-        child: Stack(
-          children: [
-            PhotoView(
-              heroAttributes: const PhotoViewHeroAttributes(
-                  tag: "A", transitionOnUserGestures: true),
-              imageProvider: _img,
-              maxScale: 3.0,
-              minScale: PhotoViewComputedScale.contained,
-              backgroundDecoration: const BoxDecoration(
-                color: Colors.black,
-              ),
-            ),
-            Positioned(
-              top: 35,
-              left: 7,
-              height: SizeConfig.safeBlockVertical * 6,
-              width: SizeConfig.safeBlockVertical * 6,
-              child: FlatButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-                padding: EdgeInsets.all(0),
-                color: Colors.black.withOpacity(0.3),
-                child: Icon(Icons.arrow_back, color: Colors.white, size: 32),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

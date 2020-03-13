@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:museum_app/SizeConfig.dart';
-import 'package:museum_app/add_tour/edit_tour.dart';
 import 'package:museum_app/database/database.dart';
 import 'package:museum_app/museum_tabs.dart';
 
@@ -20,28 +19,55 @@ enum AddType { CHOOSE, CREATE, EDIT }
 
 class _AddTourState extends State<AddTour> {
   AddType _type = AddType.CHOOSE;
+  TourWithStops _tour;
 
   void goBack() => setState(() => _type = AddType.CHOOSE);
 
   @override
   Widget build(BuildContext context) {
+    //print(_tour==null);
     switch (_type) {
       case AddType.CREATE:
         return StreamBuilder(
           stream: MuseumDatabase.get().watchUser(),
           builder: (context, snap) {
             var name = snap.data?.username ?? "";
-            return CreateTour(goBack, TourWithStops.empty(name));
+            //print("Tour Null: "+(_tour == null).toString());
+            //print("Tour Author: " + (_tour?.author != name).toString());
+            //print("Author: "+((_tour?.author) ?? "NULL") +" Name: "+name.toString());
+            //print("----------------");
+
+            return StreamBuilder(stream: MuseumDatabase.get().getCustomStop(),
+            builder: (context, snap) {
+              var stop = snap.data ?? ActualStop.custom();
+              if (_tour == null || _tour.author != name) {
+                _tour = TourWithStops.empty(name);
+                _tour.stops.add(stop);
+              }
+              return CreateTour(goBack, _tour);
+            },
+            );
           },
         );
       case AddType.EDIT:
-        return EditTour(goBack);
+        return StreamBuilder(
+          stream: MuseumDatabase.get().watchUser(),
+          builder: (context, snap) {
+            var name = snap.data?.username ?? "";
+            return StreamBuilder(
+              stream: MuseumDatabase.get().getTourStops(),
+              builder: (context, snap) {
+                var tours = snap.data ?? List<TourWithStops>();
+                tours.where((t) => t.author == name);
+                return _editList(tours);
+              },
+            );
+          },
+        );
       default:
         return MuseumTabs.single(
           Center(child: Text("SCHÖNES BILD")),
-          _chooseState(), //TestWidget()],
-          //names: ["Erstellen", "Beitreten"],
-          //color: Colors.orange,
+          _chooseState(),
         );
     }
   }
@@ -127,6 +153,12 @@ class _AddTourState extends State<AddTour> {
       ],
     );
   }
+
+  Widget _editList(List<TourWithStops> tours) {
+    return MuseumTabs.single(Center(child: Text("EDIT")), Column(
+      children: tours.map((t) => border(Text(t.name.text))),
+    ));
+  }
 }
 
 Widget border(Widget w,
@@ -151,3 +183,4 @@ Widget border(Widget w,
     child: w,
   );
 }
+

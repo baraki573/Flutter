@@ -227,6 +227,7 @@ class _TourListState extends State<TourList> {
   //TODO schöner machen -> soll animiert sein
   void _showTour(TourWithStops t) {
     //SizeConfig().init(context);
+    var tours = widget.tours;
     showGeneralDialog(
       barrierColor: Colors.grey.withOpacity(0.7),
       barrierDismissible: true,
@@ -296,17 +297,31 @@ class _TourListState extends State<TourList> {
                 buttonPadding: EdgeInsets.all(12),
                 //buttonHeight: SizeConfig.safeBlockVertical * 12,
                 children: [
-                  FlatButton(
-                    splashColor: Colors.pink[100],
-                    color: Colors.white,
-                    shape: CircleBorder(side: BorderSide(color: Colors.black)),
-                    child: Icon(
-                      Icons.file_download,
-                      color: Colors.black,
-                      size: 31,
-                    ),
-                    onPressed: () {},
-                  ),
+                  StreamBuilder(
+                      stream: MuseumDatabase.get().getDBTour(t),
+                      builder: (context, snap) {
+                        var id = snap.data?.id ?? -1;
+                        return FlatButton(
+                          splashColor: Colors.pink[100],
+                          color: Colors.white,
+                          shape: CircleBorder(side: BorderSide(color: Colors.black)),
+                          child: Icon(
+                            Icons.file_download,
+                            color: Colors.black,
+                            size: 31,
+                          ),
+                          onPressed: () => setState(() {
+                            // TODO confirmation dialog
+                            if (id != -1) {
+                              tours.remove(t);
+                              MuseumDatabase.get().removeTour(id);
+                              Navigator.pop(context);
+                            }
+                          }
+                          ),
+                        );
+                      }),
+
                   FlatButton(
                     padding: EdgeInsets.all(9),
                     splashColor: Colors.pink[100],

@@ -1703,7 +1703,7 @@ class Extra extends DataClass implements Insertable<Extra> {
   final int id_tour;
   final int id_stop;
   final String textInfo;
-  final TaskType type;
+  final ExtraType type;
   final List<String> answerOpt;
   Extra(
       {@required this.id,
@@ -1739,7 +1739,7 @@ class Extra extends DataClass implements Insertable<Extra> {
       id_tour: serializer.fromJson<int>(json['id_tour']),
       id_stop: serializer.fromJson<int>(json['id_stop']),
       textInfo: serializer.fromJson<String>(json['textInfo']),
-      type: serializer.fromJson<TaskType>(json['type']),
+      type: serializer.fromJson<ExtraType>(json['type']),
       answerOpt: serializer.fromJson<List<String>>(json['answerOpt']),
     );
   }
@@ -1751,7 +1751,7 @@ class Extra extends DataClass implements Insertable<Extra> {
       'id_tour': serializer.toJson<int>(id_tour),
       'id_stop': serializer.toJson<int>(id_stop),
       'textInfo': serializer.toJson<String>(textInfo),
-      'type': serializer.toJson<TaskType>(type),
+      'type': serializer.toJson<ExtraType>(type),
       'answerOpt': serializer.toJson<List<String>>(answerOpt),
     };
   }
@@ -1781,7 +1781,7 @@ class Extra extends DataClass implements Insertable<Extra> {
           int id_tour,
           int id_stop,
           String textInfo,
-          TaskType type,
+          ExtraType type,
           List<String> answerOpt}) =>
       Extra(
         id: id ?? this.id,
@@ -1830,7 +1830,7 @@ class ExtrasCompanion extends UpdateCompanion<Extra> {
   final Value<int> id_tour;
   final Value<int> id_stop;
   final Value<String> textInfo;
-  final Value<TaskType> type;
+  final Value<ExtraType> type;
   final Value<List<String>> answerOpt;
   const ExtrasCompanion({
     this.id = const Value.absent(),
@@ -1855,7 +1855,7 @@ class ExtrasCompanion extends UpdateCompanion<Extra> {
       Value<int> id_tour,
       Value<int> id_stop,
       Value<String> textInfo,
-      Value<TaskType> type,
+      Value<ExtraType> type,
       Value<List<String>> answerOpt}) {
     return ExtrasCompanion(
       id: id ?? this.id,
