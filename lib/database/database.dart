@@ -161,7 +161,7 @@ class ActualStop {
       <ActualExtra>[]);
 }
 
-enum ExtraType { TASK_TEXT, TASK_MULTI_ONE, TASK_MULTI, IMAGE, TEXT }
+enum ExtraType { TASK_TEXT, TASK_SINGLE, TASK_MULTI, IMAGE, TEXT }
 
 class ActualExtra {
   final m.TextEditingController textInfo = m.TextEditingController();
@@ -187,39 +187,48 @@ class ActualExtra {
   }*/
 }
 
+class Tuple<K, V> {
+  K valA;
+  V valB;
+
+  Tuple(this.valA, this.valB);
+}
+
 class ActualTask {
   //final ExtraType type;
-//  Map<String, m.TextEditingController> answers;
+  //Map<String, m.TextEditingController> answers;
   //final List<m.TextEditingController> labels;
   //final List<m.TextEditingController> answers;
-  final List<MapEntry<m.TextEditingController, m.TextEditingController>> entries;
-  Set<int> selected;
-
+  //final Set<int> selected;
   //final List<String> answers;
+  final List<Tuple> entries;
+  int selected;
 
   factory ActualTask(type, {answerNames = const [""]}) {
+    var w;
     switch (type) {
-      case ExtraType.TASK_TEXT:
-        return ActualTask.text(answerNames);
-      default:
-        return null;
+      case ExtraType.TASK_TEXT: w = m.TextEditingController(); break;
+      case ExtraType.TASK_MULTI:
+      case ExtraType.TASK_SINGLE: w = false; break;
+      default: return null;
     }
+
+    return ActualTask.text(answerNames, w);
   }
 
-
-  ActualTask.text(names) : entries = <MapEntry<m.TextEditingController, m.TextEditingController>>[] {//labels = <m.TextEditingController>[], answers = <m.TextEditingController>[]{
+  ActualTask.text(names, start) : entries = <Tuple>[] {//labels = <m.TextEditingController>[], answers = <m.TextEditingController>[]{
     //answers = Map<String, m.TextEditingController>();
     for (String s in names) {
-      addLabel(s);
+      addLabel(s, start);
     }
   }
 
-  addLabel(String label) {
+  addLabel(String label, value) {
     var tedit = m.TextEditingController();
     tedit.text = label;
     //labels.add(tedit);
     //answers.add(m.TextEditingController());
-    entries.add(MapEntry(tedit, m.TextEditingController()));
+    entries.add(Tuple(tedit, value));
   }
 
   removeLast() {
@@ -415,7 +424,7 @@ class MuseumDatabase extends _$MuseumDatabase {
               id_stop: stop_id,
               textInfo: e.textInfo.text,
               type: Value(e.type),
-              answerOpt: Value(e.task.entries.map((e) => e.key.text).toList())),
+              answerOpt: Value(e.task.entries.map((e) => e.valA.text as String).toList())),
           mode: InsertMode.insertOrReplace);
     }
     return into(extras).insert(

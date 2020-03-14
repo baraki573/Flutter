@@ -28,9 +28,7 @@ class _TourExtraState extends State<TourExtra> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8),
-        child: _makeExtra()
-    );
+        padding: EdgeInsets.symmetric(vertical: 8), child: _makeExtra());
   }
 
   Widget _makeExtra() {
@@ -58,13 +56,13 @@ class _TourExtraState extends State<TourExtra> {
                 ),
                 widget.edit
                     ? TextFormField(
-                  controller: widget.extra.textInfo,
-                  minLines: 1,
-                  maxLines: 10,
-                  style: TextStyle(fontSize: 20.0),
-                )
+                        controller: widget.extra.textInfo,
+                        minLines: 1,
+                        maxLines: 10,
+                        style: TextStyle(fontSize: 20.0),
+                      )
                     : Text(widget.extra.textInfo.text,
-                    style: TextStyle(fontSize: 20.0)),
+                        style: TextStyle(fontSize: 20.0)),
               ],
             ),
           ),
@@ -75,93 +73,155 @@ class _TourExtraState extends State<TourExtra> {
     if (widget.extra.type == ExtraType.IMAGE)
       return ImageCaroussel.fromStrings(widget.extra.textInfo.text.split(";"));
     return Container(
-        child: widget.edit
-            ? TextFormField(
-          decoration: InputDecoration(labelText: "Freies Textfeld"),
-          controller: widget.extra.textInfo,
-          minLines: 1,
-          maxLines: 10,
-          style: TextStyle(fontSize: 18),
-        )
-            : Text(
-          widget.extra.textInfo.text,
-          textAlign: TextAlign.justify,
-          style: TextStyle(fontSize: 18),
-        ),
-      );
+      child: widget.edit
+          ? TextFormField(
+              decoration: InputDecoration(labelText: "Freies Textfeld"),
+              controller: widget.extra.textInfo,
+              minLines: 1,
+              maxLines: 10,
+              style: TextStyle(fontSize: 18),
+            )
+          : Text(
+              widget.extra.textInfo.text,
+              textAlign: TextAlign.justify,
+              style: TextStyle(fontSize: 18),
+            ),
+    );
   }
 
   Widget _makeAnswers(ExtraType type, ActualTask t) {
     switch (type) {
       case ExtraType.TASK_TEXT:
-        //TODO no labels -> no table
-        return Column(children: [
-          Container(
-              width: horSize(80, 100),
+        return Column(
+          children: [
+            Table(
+              //width: horSize(80, 100),
               //padding: EdgeInsets.only(left: 7, right: 4),
-              decoration:
-                  BoxDecoration(border: Border.all(color: Colors.black)),
-              child: Table(
-                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                  columnWidths: {0: FixedColumnWidth(90)},
-                  border: TableBorder.all(color: Colors.black),
-                  children: t.entries
-                      .map((e) => TableRow(
-                            //fit: FlexFit.loose,
-                            children: [
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: 5),
-                                      alignment: Alignment.center,
-                                      //decoration: BoxDecoration(border: Border.all(color: Colors.black)),
-                                      //padding: EdgeInsets.only(right: 5),
-                                      child: widget.edit
-                                          ? TextField(
-                                        controller: e.key,
-                                        minLines: 1,
-                                        maxLines: 5,
-                                        decoration: InputDecoration(
-                                          border: InputBorder.none,
-                                          //icon: Icon(Icons.create),
-                                          hintText: "Label",
-                                        ),
-                                      )
-                                          : Text(e.key.text),
-                                    ),
-                              TextField(
-                                //focusNode: node,
-                                //onTap: () => FocusScope.of(context).requestFocus(node),
-                                //onEditingComplete: () {if (FocusScope.of(context)==node) node.unfocus();},
-                                //textInputAction: TextInputAction.done,
-                                controller: e.value,
-                                minLines: 1,
-                                maxLines: 10,
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  icon: Icon(Icons.create),
-                                  //labelText: "....",
-                                  hintText: "....",
-                                ),
-                              ),
-                            ],
-                          ))
-                      .toList())),
-          widget.edit
-              ? ButtonBar(
-            children: [
-              FlatButton(
-                onPressed: () => setState(() => t.addLabel("HH")),
-                child: Text("Hinzu"),
-              ),
-              FlatButton(
-                onPressed: () => setState(() => t.removeLast()),
-                child: Text("Weg"),
-              )
-            ],
-          )
-              : Container(),
-        ]);
+              //decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+              columnWidths: {0: FixedColumnWidth(horSize(30, 20))},
+              border: TableBorder.all(
+                  color:
+                      t.entries.isNotEmpty ? Colors.black : Colors.transparent),
+              children: t.entries
+                  .map(
+                    (e) => TableRow(
+                      //fit: FlexFit.loose,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 6),
+                          alignment: Alignment.center,
+                          child: widget.edit
+                              ? TextField(
+                                  controller: e.valA,
+                                  minLines: 1,
+                                  maxLines: 5,
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: "Label",
+                                  ),
+                                )
+                              : Text(e.valA.text),
+                        ),
+                        Container(
+                          alignment: Alignment.center,
+                          child: TextField(
+                            controller: e.valB,
+                            minLines: 1,
+                            maxLines: 10,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              prefixIcon: Icon(Icons.create),
+                              hintText: "....",
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                  .toList(),
+            ),
+            widget.edit ? _addLine(t, TextEditingController()) : Container(),
+          ],
+        );
+      case ExtraType.TASK_MULTI:
+        return Column(
+          children: List<Widget>() +
+              t.entries
+                  .map((e) => CheckboxListTile(
+                        value: e.valB,
+                        onChanged: (newVal) => setState(() => e.valB = newVal),
+                        title: widget.edit
+                            ? TextField(
+                          controller: e.valA,
+                          minLines: 1,
+                          maxLines: 3,
+                          maxLength: 70,
+                          decoration: InputDecoration(hintText: "Label"),
+                        )
+                            : Text(e.valA.text),
+                      ))
+                  .toList() +
+              [widget.edit ? _addLine(t, false) : Container()],
+        );
+      case ExtraType.TASK_SINGLE:
+        return Column(
+          children: List<Widget>() +
+              t.entries.map((e) {
+                int id = t.entries.indexOf(e);
+                return RadioListTile(
+                  value: id,
+                  onChanged: (newVal) => setState(() => t.selected = id),
+                  title: widget.edit
+                      ? TextField(
+                    controller: e.valA,
+                    minLines: 1,
+                    maxLines: 3,
+                    maxLength: 70,
+                    decoration: InputDecoration(hintText: "Label"),
+                  )
+                      : Text(e.valA.text),
+                  groupValue: t.selected,
+                );
+              }).toList() +
+              [widget.edit ? _addLine(t, false) : Container()],
+        );
       default:
         return Container();
     }
+  }
+
+  Widget _addLine(ActualTask t, toAdd) {
+    return Wrap(
+      spacing: 10,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      //alignment: MainAxisAlignment.spaceEvenly,
+      //buttonMinWidth: horSize(20, 20),
+      children: [
+        Padding(
+          padding: EdgeInsets.only(top: 8),
+          child: Text(
+            "Antworteinstellungen:",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+          ),
+        ),
+        OutlineButton(
+          color: Colors.white,
+          borderSide: BorderSide(color: Colors.orange),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          onPressed: () => setState(() => t.addLabel("Antwort", toAdd)),
+          child: Text("Hinzufügen"),
+        ),
+        OutlineButton(
+          color: Colors.white,
+          borderSide: BorderSide(color: Colors.orange),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          onPressed: () => setState(() => t.removeLast()),
+          child: Text("Entfernen"),
+        )
+      ],
+    );
   }
 }

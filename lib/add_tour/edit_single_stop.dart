@@ -21,7 +21,6 @@ class EditSingleStop extends StatefulWidget {
 }
 
 class _EditSingleStopState extends State<EditSingleStop> {
-
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
@@ -130,8 +129,8 @@ class _EditSingleStopState extends State<EditSingleStop> {
                           widget.stop.features = widget.stop.features
                               .copyWith(showImages: !showImgs);
                         }),
-                cross:
-                    !widget.stop.isCustom() && !widget.stop.features.showImages),
+                cross: !widget.stop.isCustom() &&
+                    !widget.stop.features.showImages),
             _withLabel(FontAwesomeIcons.fileAlt, "Text",
                 funct: widget.stop.isCustom()
                     ? null
@@ -159,8 +158,9 @@ class _EditSingleStopState extends State<EditSingleStop> {
             ),
           ]),
           _withLabel(Icons.text_fields, "Textfeld",
-              funct: () => setState(() => widget.stop.extras
-                  .add(ActualExtra(ExtraType.TEXT, text: "ICH füge hier Sachen ein")))),
+              funct: () => setState(() => widget.stop.extras.add(ActualExtra(
+                  ExtraType.TEXT,
+                  text: "ICH füge hier Sachen ein")))),
           // TODO pop up for task type
           _withLabel(
             Icons.playlist_add,
@@ -168,48 +168,79 @@ class _EditSingleStopState extends State<EditSingleStop> {
             funct: _onTap,
             key: key,
           ),
-          _withLabel(
-            FontAwesomeIcons.fileImage,
-            "Bild",
-            //TODO block for individuell
-            funct: widget.stop.isCustom() ? null :
-                () => setState(() => widget.stop.extras.add(
-                    ActualExtra(ExtraType.IMAGE, text: widget.stop.stop.images[0])))
-          ),
+          _withLabel(FontAwesomeIcons.fileImage, "Bild",
+              //TODO block for individuell
+              funct: widget.stop.isCustom()
+                  ? null
+                  : () => setState(() => widget.stop.extras.add(ActualExtra(
+                      ExtraType.IMAGE,
+                      text: widget.stop.stop.images[0])))),
         ],
       ),
     );
   }
 
   void _onTap() {
-        /*setState(() => widget.stop.extras.add(
+    /*setState(() => widget.stop.extras.add(
         ActualExtra(ExtraType.TASK_TEXT,
             text: "HALLO " + DateTime.now().toIso8601String(),
             sel: ["", "TEST", "", "ABBA"])));*/
     PopupMenu m = PopupMenu(
       context: context,
       backgroundColor: Colors.orange[300],
+      highlightColor: Colors.orange[400],
       items: [
-        MenuItem(title: "Text", image: Icon(Icons.add), textStyle: TextStyle(color: Colors.white)),
-        MenuItem(title: "Multi", image: Icon(Icons.remove), textStyle: TextStyle(color: Colors.white)),
-        MenuItem(title: "Mult-Single", image: Icon(Icons.remove), textStyle: TextStyle(color: Colors.white)),
+        MenuItem(
+            title: "Text",
+            image: Icon(Icons.list),
+            textStyle: TextStyle(color: Colors.white)),
+        MenuItem(
+            title: "Multi",
+            image: Icon(Icons.check_box),
+            textStyle: TextStyle(color: Colors.white)),
+        MenuItem(
+            title: "Single",
+            image: Icon(Icons.check_circle),
+            textStyle: TextStyle(color: Colors.white)),
       ],
       onClickMenu: _onClick,
     );
     m.show(widgetKey: key);
-
   }
 
   void _onClick(MenuItemProvider prov) {
     switch (prov.menuTitle) {
-      case "Text": setState(() => widget.stop.extras.add(
-          ActualExtra(ExtraType.TASK_TEXT,
-              text: "HALLO " + DateTime.now().toIso8601String())));
+      case "Text":
+        setState(() => widget.stop.extras.add(
+              ActualExtra(
+                ExtraType.TASK_TEXT,
+                text: "HALLO " + DateTime.now().toIso8601String(),
+                sel: ["Antwort"]
+              ),
+            ));
+        break;
+      case "Multi":
+        setState(() => widget.stop.extras.add(
+          ActualExtra(
+              ExtraType.TASK_MULTI,
+              text: "HALLO " + DateTime.now().toIso8601String(),
+              sel: ["Antwort"]
+          ),
+        ));
+        break;
+      case "Single":
+        setState(() => widget.stop.extras.add(
+          ActualExtra(
+              ExtraType.TASK_SINGLE,
+              text: "HALLO " + DateTime.now().toIso8601String(),
+              sel: ["Antwort"]
+          ),
+        ));
+        break;
     }
   }
 
   GlobalKey key = GlobalKey();
-
 
   Widget _objectLabel(widgets, {Color color = Colors.white}) {
     return Column(
@@ -245,11 +276,11 @@ class _EditSingleStopState extends State<EditSingleStop> {
     if (funct == null) color = color.withOpacity(.5);
     return GestureDetector(
       key: key,
-        onTap: funct,
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 3),
-          margin: EdgeInsets.symmetric(vertical: 2),
-          child: Column(
+      onTap: funct,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 3),
+        margin: EdgeInsets.symmetric(vertical: 2),
+        child: Column(
           children: [
             Stack(
               overflow: Overflow.visible,
@@ -279,7 +310,8 @@ class _EditSingleStopState extends State<EditSingleStop> {
   }
 
   Widget _maker() {
-    List<ActualExtra> tasks = widget.stop.extras.where((e) => e.task != null).toList();
+    List<ActualExtra> tasks =
+        widget.stop.extras.where((e) => e.task != null).toList();
     return Expanded(
       child: Container(
         height: verSize(75, 90),
@@ -305,27 +337,27 @@ class _EditSingleStopState extends State<EditSingleStop> {
                 (e) => Padding(
                   padding: EdgeInsets.only(left: 16),
                   child: Row(
-                  children: [
-                    Expanded(
-                      child:
-                      TourExtra(
-                        tasks.indexOf(e) + 1,
-                        e,
-                        edit: true,
-                        //images: e.image ? widget.stop.stop.images : []
+                    children: [
+                      Expanded(
+                        child: TourExtra(
+                          tasks.indexOf(e) + 1,
+                          e,
+                          edit: true,
+                          //images: e.image ? widget.stop.stop.images : []
+                        ),
                       ),
-                    ),
-                    Column(
-                      children: [
-                        Icon(Icons.drag_handle),
-                        IconButton(
-                            onPressed: () =>
-                                setState(() => widget.stop.extras.remove(e)),
-                            icon: Icon(Icons.remove_circle)),
-                      ],
-                    )
-                  ],
-                ),),
+                      Column(
+                        children: [
+                          Icon(Icons.drag_handle),
+                          IconButton(
+                              onPressed: () =>
+                                  setState(() => widget.stop.extras.remove(e)),
+                              icon: Icon(Icons.remove_circle)),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
               )
               .toList(),
           footer: Container(height: verSize(4, 4)),
