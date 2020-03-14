@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:museum_app/database/database.dart';
+import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/map/map_page.dart';
 import 'package:museum_app/museum_tabs.dart';
 import 'package:museum_app/tours_page/tours_widgets.dart';

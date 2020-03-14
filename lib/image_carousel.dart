@@ -90,7 +90,7 @@ class _ImageCarouselState extends State<ImageCaroussel> {
             .toList(),
       ),
       // Dot Indicator
-      Row(
+      widget.images.length > 1 ? Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: List.generate(
           widget.images.length,
@@ -106,7 +106,7 @@ class _ImageCarouselState extends State<ImageCaroussel> {
             ),
           ),
         ),
-      ),
+      ) : Container(),
     ]);
   }
 }

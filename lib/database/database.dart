@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart' as m;
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:moor/moor.dart';
 import 'package:moor_ffi/moor_ffi.dart';
 import 'package:museum_app/constants.dart';
@@ -10,9 +12,11 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 
+import 'modelling.dart';
+
 part 'database.g.dart';
 
-String _customName = "Individuell";
+String customName = "Individuell";
 
 class Users extends Table {
   TextColumn get username =>
@@ -45,9 +49,9 @@ class Badges extends Table {
 class Tours extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  TextColumn get name => text().withLength(min: 3, max: 30)();
+  TextColumn get name => text().withLength(min: MIN_TOURNAME, max: MAX_TOURNAME)();
 
-  TextColumn get author => text().withLength(min: 3, max: 20)();
+  TextColumn get author => text().withLength(min: MIN_USERNAME, max: MAX_USERNAME)();
 
   //TODO convert to difficulty
   RealColumn get rating => real()();
@@ -97,145 +101,6 @@ class TourStops extends Table {
   IntColumn get id_tour => integer().customConstraint("REFERENCES tours(id)")();
 
   IntColumn get id_stop => integer().customConstraint("REFERENCES stops(id)")();
-}
-
-class TourWithStops {
-  //Tour tour;
-  final m.TextEditingController name = m.TextEditingController();
-  final m.TextEditingController descr = m.TextEditingController();
-  String author;
-  double difficulty;
-  DateTime creationTime;
-  List<ActualStop> stops;
-
-  TourWithStops(Tour t, this.stops) {
-    this.name.text = t.name;
-    this.descr.text = t.desc;
-    author = t.author;
-    difficulty = t.rating;
-    creationTime = t.creationTime;
-  }
-
-  TourWithStops.empty(String author)
-      : this(
-      Tour(
-          id: null,
-          name: "",
-          author: author,
-          rating: 0,
-          creationTime: null,
-          desc: ""),
-      <ActualStop>[]);
-
-  ToursCompanion createToursCompanion(bool nullToAbsent) {
-    return Tour(name: name.text,
-        author: author,
-        rating: difficulty,
-        creationTime: creationTime,
-        desc: descr.text, id: null).createCompanion(nullToAbsent);
-  }
-}
-
-class ActualStop {
-  Stop stop;
-  StopFeature features;
-  List<ActualExtra> extras;
-
-  bool isCustom() => stop != null && stop.name == _customName;
-
-  ActualStop(this.stop, this.features, this.extras);
-
-  ActualStop.custom()
-      : this(
-      Stop(
-          id: MuseumDatabase.customID,
-          images: <String>[],
-          name: "HAALLO",
-          descr: ""),
-      StopFeature(
-          id_tour: null,
-          id_stop: MuseumDatabase.customID,
-          showImages: false,
-          showText: true,
-          showDetails: false),
-      <ActualExtra>[]);
-}
-
-enum ExtraType { TASK_TEXT, TASK_SINGLE, TASK_MULTI, IMAGE, TEXT }
-
-class ActualExtra {
-  final m.TextEditingController textInfo = m.TextEditingController();
-  final ActualTask task;
-  final ExtraType type;
-
-  ActualExtra(this.type, {text = "", sel = const [""]}) : task = ActualTask(type, answerNames: sel) {
-    textInfo.text = text;
-  }
-
-  /*
-  ActualExtra.onlyText(String text) : image = false {
-    this.textInfo.text = text;
-  }
-
-  ActualExtra.realTask(task, type, answerNames) : image = false {
-    this.textInfo.text = task;
-    this.task = ActualTask(type, answerNames: answerNames);
-  }
-
-  ActualExtra.images(String images) : image = true {
-    this.textInfo.text = images;
-  }*/
-}
-
-class Tuple<K, V> {
-  K valA;
-  V valB;
-
-  Tuple(this.valA, this.valB);
-}
-
-class ActualTask {
-  //final ExtraType type;
-  //Map<String, m.TextEditingController> answers;
-  //final List<m.TextEditingController> labels;
-  //final List<m.TextEditingController> answers;
-  //final Set<int> selected;
-  //final List<String> answers;
-  final List<Tuple> entries;
-  int selected;
-
-  factory ActualTask(type, {answerNames = const [""]}) {
-    var w;
-    switch (type) {
-      case ExtraType.TASK_TEXT: w = m.TextEditingController(); break;
-      case ExtraType.TASK_MULTI:
-      case ExtraType.TASK_SINGLE: w = false; break;
-      default: return null;
-    }
-
-    return ActualTask.text(answerNames, w);
-  }
-
-  ActualTask.text(names, start) : entries = <Tuple>[] {//labels = <m.TextEditingController>[], answers = <m.TextEditingController>[]{
-    //answers = Map<String, m.TextEditingController>();
-    for (String s in names) {
-      addLabel(s, start);
-    }
-  }
-
-  addLabel(String label, value) {
-    var tedit = m.TextEditingController();
-    tedit.text = label;
-    //labels.add(tedit);
-    //answers.add(m.TextEditingController());
-    entries.add(Tuple(tedit, value));
-  }
-
-  removeLast() {
-    if (entries.length < 1) return;
-    entries.removeLast();
-  }
-
 }
 
 class Devisions extends Table {
@@ -519,7 +384,7 @@ class MuseumDatabase extends _$MuseumDatabase {
     var res = CombineLatestStream.combine2(tour.watchSingle(), l2,
             (Tour t, List<Stream<ActualStop>> a) {
           Stream<List<ActualStop>> s = CombineLatestStream.list(a);
-          return s.map((list) => TourWithStops(t, list));
+          return s.map((list) => TourWithStops(t, list.sublist(0)));
         });
 
     return SwitchLatestStream(res);
@@ -551,7 +416,7 @@ class MuseumDatabase extends _$MuseumDatabase {
 
   Stream<ActualStop> getCustomStop() {
     final query = select(stops)
-      ..where((stop) => stop.name.equals(_customName));
+      ..where((stop) => stop.name.equals(customName));
     return query.watchSingle().map((stop) =>
         ActualStop(
             stop,
@@ -623,7 +488,7 @@ class MuseumDatabase extends _$MuseumDatabase {
   Future<void> demoStops() async {
     //customStatement("DELETE FROM stops");
     customID = await into(stops).insert(
-        StopsCompanion.insert(images: <String>[], name: _customName, descr: ""));
+        StopsCompanion.insert(images: <String>[], name: customName, descr: ""));
     await batch((batch) {
       batch.insertAll(
           stops,

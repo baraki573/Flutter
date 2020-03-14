@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:museum_app/SizeConfig.dart';
-import 'package:museum_app/database/database.dart';
+import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/image_carousel.dart';
 
 class TourExtra extends StatefulWidget {

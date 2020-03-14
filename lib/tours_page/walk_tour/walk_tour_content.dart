@@ -1,15 +1,14 @@
 import 'dart:math';
 
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/database/database.dart';
+import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/image_carousel.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_extras.dart';
-import 'package:photo_view/photo_view.dart';
 
 class TourWalkerContent extends StatefulWidget {
   //final int tour_id;
@@ -27,7 +26,6 @@ class TourWalkerContent extends StatefulWidget {
 }
 
 class _TourWalkerContentState extends State<TourWalkerContent> {
-  int _currentImage = 0;
 
   @override
   Widget build(BuildContext context) {

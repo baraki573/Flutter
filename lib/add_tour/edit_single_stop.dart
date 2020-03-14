@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:museum_app/database/database.dart';
+import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_content.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_extras.dart';
 import 'package:popup_menu/popup_menu.dart';
@@ -157,34 +158,35 @@ class _EditSingleStopState extends State<EditSingleStop> {
                   !widget.stop.isCustom() && !widget.stop.features.showDetails,
             ),
           ]),
-          _withLabel(Icons.text_fields, "Textfeld",
-              funct: () => setState(() => widget.stop.extras.add(ActualExtra(
-                  ExtraType.TEXT,
-                  text: "ICH füge hier Sachen ein")))),
-          // TODO pop up for task type
+          _withLabel(
+            Icons.text_fields,
+            "Textfeld",
+            funct: () => setState(() => widget.stop.extras.add(
+                ActualExtra(ExtraType.TEXT, text: "ICH füge hier Sachen ein"))),
+          ),
           _withLabel(
             Icons.playlist_add,
             "Aufgabe",
-            funct: _onTap,
-            key: key,
+            funct: _onTapTask,
+            key: _keyTask,
           ),
-          _withLabel(FontAwesomeIcons.fileImage, "Bild",
-              //TODO block for individuell
-              funct: widget.stop.isCustom()
-                  ? null
-                  : () => setState(() => widget.stop.extras.add(ActualExtra(
-                      ExtraType.IMAGE,
-                      text: widget.stop.stop.images[0])))),
+          _withLabel(
+            FontAwesomeIcons.fileImage, "Bild",
+            //TODO block for individuell
+            funct: widget.stop.isCustom() ? null : () => setState(() => widget.stop.extras.add(ActualExtra(
+                ExtraType.IMAGE,
+                text: widget.stop.stop.images.join(";")))),
+            key: _keyImg,
+          ),
         ],
       ),
     );
   }
 
-  void _onTap() {
-    /*setState(() => widget.stop.extras.add(
-        ActualExtra(ExtraType.TASK_TEXT,
-            text: "HALLO " + DateTime.now().toIso8601String(),
-            sel: ["", "TEST", "", "ABBA"])));*/
+  GlobalKey _keyTask = GlobalKey();
+  GlobalKey _keyImg = GlobalKey();
+
+  void _onTapTask() {
     PopupMenu m = PopupMenu(
       context: context,
       backgroundColor: Colors.orange[300],
@@ -203,44 +205,56 @@ class _EditSingleStopState extends State<EditSingleStop> {
             image: Icon(Icons.check_circle),
             textStyle: TextStyle(color: Colors.white)),
       ],
-      onClickMenu: _onClick,
+      onClickMenu: _onClickTask,
     );
-    m.show(widgetKey: key);
+    m.show(widgetKey: _keyTask);
   }
 
-  void _onClick(MenuItemProvider prov) {
+  void _onClickTask(MenuItemProvider prov) {
     switch (prov.menuTitle) {
       case "Text":
         setState(() => widget.stop.extras.add(
-              ActualExtra(
-                ExtraType.TASK_TEXT,
-                text: "HALLO " + DateTime.now().toIso8601String(),
-                sel: ["Antwort"]
-              ),
+              ActualExtra(ExtraType.TASK_TEXT,
+                  text: "HALLO " + DateTime.now().toIso8601String(),
+                  sel: ["Antwort"]),
             ));
         break;
       case "Multi":
         setState(() => widget.stop.extras.add(
-          ActualExtra(
-              ExtraType.TASK_MULTI,
-              text: "HALLO " + DateTime.now().toIso8601String(),
-              sel: ["Antwort"]
-          ),
-        ));
+              ActualExtra(ExtraType.TASK_MULTI,
+                  text: "HALLO " + DateTime.now().toIso8601String(),
+                  sel: ["Antwort"]),
+            ));
         break;
       case "Single":
         setState(() => widget.stop.extras.add(
-          ActualExtra(
-              ExtraType.TASK_SINGLE,
-              text: "HALLO " + DateTime.now().toIso8601String(),
-              sel: ["Antwort"]
-          ),
-        ));
+              ActualExtra(ExtraType.TASK_SINGLE,
+                  text: "HALLO " + DateTime.now().toIso8601String(),
+                  sel: ["Antwort"]),
+            ));
         break;
     }
   }
 
-  GlobalKey key = GlobalKey();
+  void _onTapImg() {
+    PopupMenu m = PopupMenu(
+      context: context,
+      backgroundColor: Colors.orange[300],
+      highlightColor: Colors.orange[400],
+      items: [
+        MenuItem(title: "Alle", image: Icon(Icons.image), textStyle: TextStyle(color: Colors.white)),
+      ],
+      onClickMenu: _onClickImg,
+    );
+    m.show(widgetKey: _keyImg);
+  }
+
+  void _onClickImg(MenuItemProvider prov) {
+    setState(() => widget.stop.extras.add(ActualExtra(
+        ExtraType.IMAGE,
+        text: widget.stop.stop.images[0])));
+  }
+
 
   Widget _objectLabel(widgets, {Color color = Colors.white}) {
     return Column(

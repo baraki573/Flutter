@@ -4,9 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:intl/intl.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/database/database.dart';
+import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour.dart';
 
 class TourList extends StatefulWidget {
@@ -60,12 +60,12 @@ class _TourListState extends State<TourList> {
               height: verSize(4, 5),
               child: Row(
                 children: [
-                  getRating(t.difficulty,
+                  t.getRating(
                       color: Colors.pink,
                       color2: Colors.grey,
-                      size: horSize(4.5, 3.5)),
-                  Container(width: horSize(2, 3)),
-                  _buildTime(t.creationTime),
+                      size: horSize(5, 3.5)),
+                  //Container(width: horSize(1, 3)),
+                  t.buildTime(),
                 ],
               ),
             ),
@@ -182,47 +182,11 @@ class _TourListState extends State<TourList> {
               stops: [0.0, 1.0],
               end: Alignment.bottomLeft),
         ),
-        child: _buildTime(time),
+        //child: _buildTime(time),
       ),
     );
   }
 
-  Widget _buildTime(DateTime time,
-      {color = Colors.pink, color2 = Colors.black, scale = 1.0}) {
-    if (time == null) return Container();
-    /*var day = time.day;
-    var month = time.month;
-    var year = time.year;
-    var dur = time.difference(DateTime.now());
-    var d = dur.inDays;
-    var h = dur.inHours;
-    String s = "noch\n" +
-        (d != 0
-            ? d.toString() + (d > 1 ? " Tage" : "Tag")
-            : h.toString() + (h > 1 ? " Stunden" : " Stunde"));*/
-    //TODO used package is not MIT
-    String s = DateFormat('dd.MM.yyyy').format(time);
-    return Row(
-      //crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Icon(
-          Icons.date_range,
-          color: color,
-          size: size(21, 25) * scale,
-        ),
-        Container(
-          padding: EdgeInsets.only(left: 4, top: 2),
-          child: Text(
-            s,
-            style: TextStyle(
-                fontSize: size(13, 14) * scale,
-                fontWeight: FontWeight.bold,
-                color: color2),
-          ),
-        ),
-      ],
-    );
-  }
 
   //TODO schöner machen -> soll animiert sein
   void _showTour(TourWithStops t) {
@@ -274,12 +238,12 @@ class _TourListState extends State<TourList> {
               Container(
                   margin: EdgeInsets.symmetric(vertical: 3.5),
                   child: Row(children: [
-                    getRating(t.difficulty,
+                    t.getRating(
                         color: Colors.white,
                         color2: Colors.pink,
                         size: horSize(7, 3.5)),
                     Container(width: 8),
-                    _buildTime(t.creationTime,
+                    t.buildTime(
                         color: Colors.white, color2: Colors.white, scale: 1.2),
                   ])),
 
@@ -360,17 +324,6 @@ class _TourListState extends State<TourList> {
     );
   }
 
-  Widget getRating(double rating,
-          {color = Colors.black, color2 = Colors.white, size = 40.0}) =>
-      RatingBarIndicator(
-        rating: min(max(rating, 0), 5),
-        itemSize: size,
-        itemBuilder: (BuildContext context, int index) => Icon(
-          Icons.star,
-          color: color,
-        ),
-        unratedColor: color2.withOpacity(.5),
-      );
 
   @override
   Widget build(BuildContext context) {

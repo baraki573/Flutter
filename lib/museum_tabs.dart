@@ -85,11 +85,11 @@ class _MuseumTabsState extends State<MuseumTabs> with TickerProviderStateMixin {
         Stack(overflow: Overflow.visible, children: [
           Container(height: verSize(30, 45), child: widget.top),
           Positioned(
-            top: verSize(41, 47),
+            top: verSize(28.5, 47, top: true),
             child: Container(
               color: Colors.white,
               width: horSize(100, 100),
-              height: verSize(50, 30),
+              height: verSize(80, 30),
             ),
           ),
           widget.showSetting ? Positioned(

@@ -2,7 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
+import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
+import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/museum_tabs.dart';
 import 'package:reorderables/reorderables.dart';
 
@@ -246,6 +248,8 @@ class _CreateTourState extends State<CreateTour> {
           children: [
             TextFormField(
               controller: widget.tour.name,
+              autovalidate: true,
+              validator: (s) => MIN_TOURNAME > s.length ? "Name zu kurz" : (MAX_TOURNAME < s.length ? "Name zu lang" : null),
               decoration: InputDecoration(
                 suffixIcon: Icon(Icons.border_color),
                 labelText: "Tournamen festlegen",
@@ -350,8 +354,8 @@ class _CreateTourState extends State<CreateTour> {
           children: [
             mainWidget,
             Positioned(
-              left: SizeConfig.blockSizeHorizontal * 2,
-              top: SizeConfig.blockSizeVertical * 4,
+              left: horSize(2, 2, left: true),
+              top: verSize(1, 1, top: true),
               child: _backButton(),
             ),
             Positioned(
