@@ -21,7 +21,7 @@ class TourWithStops {
     this.name.text = t.name;
     this.descr.text = t.desc;
     author = t.author;
-    difficulty = t.rating;
+    difficulty = t.difficulty;
     creationTime = t.creationTime;
   }
 
@@ -29,9 +29,9 @@ class TourWithStops {
       : this(
       Tour(
           id: null,
-          name: "",
+          name: "Neue Tour",
           author: author,
-          rating: 0,
+          difficulty: 0,
           creationTime: null,
           desc: ""),
       <ActualStop>[]);
@@ -39,7 +39,7 @@ class TourWithStops {
   ToursCompanion createToursCompanion(bool nullToAbsent) {
     return Tour(name: name.text,
         author: author,
-        rating: difficulty,
+        difficulty: difficulty,
         creationTime: creationTime,
         desc: descr.text, id: null).createCompanion(nullToAbsent);
   }
@@ -95,7 +95,7 @@ class ActualStop {
       Stop(
           id: MuseumDatabase.customID,
           images: <String>[],
-          name: "HAALLO",
+          name: customName,
           descr: ""),
       StopFeature(
           id_tour: null,
@@ -113,7 +113,7 @@ class ActualExtra {
   final ActualTask task;
   final ExtraType type;
 
-  ActualExtra(this.type, {text = "", sel = const [""]}) : task = ActualTask(type, answerNames: sel) {
+  ActualExtra(this.type, {text = "", sel = const [""], correct = const <int>{}}) : task = ActualTask(type, answerNames: sel, correct: correct) {
     textInfo.text = text;
   }
 
@@ -147,9 +147,10 @@ class ActualTask {
   //final Set<int> selected;
   //final List<String> answers;
   final List<Tuple> entries;
+  final Set<int> correct;
   int selected;
 
-  factory ActualTask(type, {answerNames = const [""]}) {
+  factory ActualTask(type, {answerNames = const [""], correct}) {
     var w;
     switch (type) {
       case ExtraType.TASK_TEXT: w = TextEditingController(); break;
@@ -158,14 +159,12 @@ class ActualTask {
       default: return null;
     }
 
-    return ActualTask.text(answerNames, w);
+    return ActualTask.create(answerNames, w, correct: correct);
   }
 
-  ActualTask.text(names, start) : entries = <Tuple>[] {//labels = <m.TextEditingController>[], answers = <m.TextEditingController>[]{
-    //answers = Map<String, m.TextEditingController>();
-    for (String s in names) {
+  ActualTask.create(names, start, {this.correct = const <int>{}}) : entries = <Tuple>[] {
+    for (String s in names)
       addLabel(s, start);
-    }
   }
 
   addLabel(String label, value) {
@@ -179,6 +178,12 @@ class ActualTask {
   removeLast() {
     if (entries.length < 1) return;
     entries.removeLast();
+  }
+
+  bool isCorrect(int id) {
+    if (id < 0 || entries.length <= id) return false;
+    var t = entries[id];
+    return (correct.contains(id) && selected == id) || (!correct.contains(id) && selected != id) || (correct.contains(id) && t.valB == true) || (!correct.contains(id) && t.valB != true) ;
   }
 
 }

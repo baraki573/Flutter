@@ -2,11 +2,13 @@ import 'package:expandable_bottom_bar/expandable_bottom_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/map/map_page.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_content.dart';
+import 'package:museum_app/tours_page/walk_tour/walk_tour_extras.dart';
 
 class TourWalker extends StatefulWidget {
   final TourWithStops tour;
@@ -50,11 +52,11 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
               alignment: Alignment.centerLeft,
               width: horSize(17, 10),
               //TODO info-icon for non "Stops"
-              child: Text(
+              child: _currentItem < length ? Text(
                 "Station\n" + (_currentItem + 1).toString() + " / $length",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 17, color: colorNav),
-              )),
+              ) : Icon(FontAwesomeIcons.crown, color: Colors.white)),
           Spacer(),
           Container(
             //color: Colors.red,
@@ -132,7 +134,9 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                   height: verSize(17, 20),
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                        image: AssetImage(stops[index].stop.images.isNotEmpty ? stops[index].stop.images[0] : "assets/images/profile_test.png"),
+                        image: AssetImage(stops[index].stop.images.isNotEmpty
+                            ? stops[index].stop.images[0]
+                            : "assets/images/profile_test.png"),
                         fit: BoxFit.cover),
                     border: Border(right: BorderSide(color: Colors.black)),
                   ),
@@ -284,7 +288,7 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                   ),
                   Spacer(flex: 2),
                   FlatButton(
-                    onPressed: _currentItem == length - 1
+                    onPressed: _currentItem == length
                         ? null
                         : () => setState(() {
                               _currentItem++;
@@ -310,7 +314,9 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                 child: ListView(
                   padding: EdgeInsets.all(0),
                   children: [
-                    TourWalkerContent(stops[_currentItem]),
+                    _currentItem < stops.length
+                        ? TourWalkerContent(stops[_currentItem])
+                        : _results(),
                     /*TourWalkerTasks(widget
                         .tour.tasks[widget.tour.stops[_currentItem].name]),*/
                     Container(
@@ -323,6 +329,47 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _results() {
+    return Column(
+      children: <Widget>[
+            Padding(
+                padding: EdgeInsets.only(bottom: 6, top: 5),
+                child: Text(
+              "Aufgabenergebnisse",
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.bold,
+              ),
+            ))
+          ] +
+          widget.tour.stops
+              .map((s) {
+                int id = widget.tour.stops.indexOf(s);
+                List<ActualExtra> tasks = s.extras.where((e) => e.task != null).toList();
+                return Container(
+                    //margin: EdgeInsets.symmetric(vertical: 5),
+                    padding: EdgeInsets.only(left: 16, right: 16, top: 12),
+                    decoration: id == 0 ? null : BoxDecoration(
+                        border: Border(top: BorderSide(color: Colors.black))),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                            Text(
+                              "Station: "+s.stop.name,
+                              style: TextStyle(
+                                  fontSize: 20, decoration: TextDecoration.underline),
+                            )
+                          ] +
+                          tasks.map((e) {
+                            int id = tasks.indexOf(e) + 1;
+                            return TourExtra(id, e, result: true);
+                          }).toList(),
+                    ),
+                  );})
+              .toList(),
     );
   }
 }

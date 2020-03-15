@@ -31,13 +31,9 @@ class _EditSingleStopState extends State<EditSingleStop> {
       color: Colors.white,
       child: Column(
         children: [
-          SafeArea(
-            bottom: false,
-            left: false,
-            right: false,
-            child: Container(
+          Container(
               color: COLOR_ADD,
-              height: verSize(17, 31),
+              height: verSize(17, 31, top: true),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -45,7 +41,7 @@ class _EditSingleStopState extends State<EditSingleStop> {
                     child: Container(
                       padding: EdgeInsets.only(
                           left: horSize(16, 9, left: true),
-                          top: verSize(-1, -1, top: true)),
+                          top: verSize(3.5, 5.5, top: true)),
                       //alignment: Alignment.center,
                       child: Text("Zurück zur Stationsübersicht"),
                     ),
@@ -53,7 +49,7 @@ class _EditSingleStopState extends State<EditSingleStop> {
                   _selecter(),
                 ],
               ),
-            ),
+
           ),
           Expanded(
             child: Row(

@@ -10,9 +10,11 @@ import '../../constants.dart';
 class TourExtra extends StatefulWidget {
   final int index;
   final ActualExtra extra;
-  final edit;
+  final bool edit;
+  final bool result;
 
-  TourExtra(this.index, this.extra, {this.edit = false, Key key})
+  TourExtra(this.index, this.extra,
+      {this.edit = false, this.result = false, Key key})
       : super(key: key);
 
   @override
@@ -57,14 +59,18 @@ class _TourExtraState extends State<TourExtra> {
                   ),
                 ),
                 widget.edit
-                    ? TextFormField(
+                    ? TextField(
                         controller: widget.extra.textInfo,
                         minLines: 1,
-                        maxLines: 10,
+                        maxLines: 5,
+                        maxLength: TextField.noMaxLength,
                         style: TextStyle(fontSize: 20.0),
                       )
-                    : Text(widget.extra.textInfo.text,
-                        style: TextStyle(fontSize: 20.0)),
+                    : Text(
+                        widget.extra.textInfo.text +
+                            (widget.extra.task?.correct)?.toString(),
+                        style: TextStyle(fontSize: 20.0),
+                      ),
               ],
             ),
           ),
@@ -76,11 +82,12 @@ class _TourExtraState extends State<TourExtra> {
       return ImageCaroussel.fromStrings(widget.extra.textInfo.text.split(";"));
     return Container(
       child: widget.edit
-          ? TextFormField(
+          ? TextField(
               decoration: InputDecoration(labelText: "Freies Textfeld"),
               controller: widget.extra.textInfo,
               minLines: 1,
               maxLines: 10,
+              maxLength: TextField.noMaxLength,
               style: TextStyle(fontSize: 18),
             )
           : Text(
@@ -112,7 +119,7 @@ class _TourExtraState extends State<TourExtra> {
                       children: [
                         Container(
                           padding:
-                              EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                              EdgeInsets.symmetric(horizontal: 7, vertical: 6),
                           alignment: Alignment.center,
                           child: widget.edit
                               ? TextField(
@@ -127,16 +134,18 @@ class _TourExtraState extends State<TourExtra> {
                         ),
                         Container(
                           alignment: Alignment.center,
-                          child: TextField(
-                            controller: e.valB,
-                            minLines: 1,
-                            maxLines: 10,
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              prefixIcon: Icon(Icons.create),
-                              hintText: "....",
-                            ),
-                          ),
+                          child: !widget.result
+                              ? TextField(
+                                  controller: e.valB,
+                                  minLines: 1,
+                                  maxLines: 10,
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    prefixIcon: Icon(Icons.create),
+                                    hintText: "....",
+                                  ),
+                                )
+                              : Text(e.valB.text),
                         ),
                       ],
                     ),
@@ -149,21 +158,29 @@ class _TourExtraState extends State<TourExtra> {
       case ExtraType.TASK_MULTI:
         return Column(
           children: List<Widget>() +
-              t.entries
-                  .map((e) => CheckboxListTile(
-                        value: e.valB,
-                        onChanged: (newVal) => setState(() => e.valB = newVal),
-                        title: widget.edit
-                            ? TextField(
-                                controller: e.valA,
-                                minLines: 1,
-                                maxLines: 3,
-                                maxLength: 70,
-                                decoration: InputDecoration(hintText: "Label"),
-                              )
-                            : Text(e.valA.text),
-                      ))
-                  .toList() +
+              t.entries.map((e) {
+                int id = t.entries.indexOf(e);
+                return CheckboxListTile(
+                  value: e.valB,
+                  onChanged: widget.result
+                      ? null
+                      : (newVal) => setState(() => e.valB = newVal),
+                  title: widget.edit
+                      ? TextField(
+                          controller: e.valA,
+                          minLines: 1,
+                          maxLines: 3,
+                          maxLength: 70,
+                          decoration: InputDecoration(hintText: "Label"),
+                        )
+                      : Row(children: [
+                          Expanded(child: Text(e.valA.text)),
+                          widget.result
+                              ? Padding(padding: EdgeInsets.only(left: 5), child: Icon(t.isCorrect(id) ? Icons.check : Icons.stop))
+                              : Container()
+                        ]),
+                );
+              }).toList() +
               [widget.edit ? _addLine(t, false) : Container()],
         );
       case ExtraType.TASK_SINGLE:
@@ -173,7 +190,9 @@ class _TourExtraState extends State<TourExtra> {
                 int id = t.entries.indexOf(e);
                 return RadioListTile(
                   value: id,
-                  onChanged: (newVal) => setState(() => t.selected = id),
+                  onChanged: widget.result
+                      ? null
+                      : (newVal) => setState(() => t.selected = id),
                   title: widget.edit
                       ? TextField(
                           controller: e.valA,
@@ -182,7 +201,12 @@ class _TourExtraState extends State<TourExtra> {
                           maxLength: 70,
                           decoration: InputDecoration(hintText: "Label"),
                         )
-                      : Text(e.valA.text),
+                      : Row(children: [
+                          widget.result
+                              ? Padding(padding: EdgeInsets.only(right: 5), child: Icon(t.isCorrect(id) ? Icons.check : Icons.stop))
+                              : Container(),
+                    Expanded(child: Text(e.valA.text)),
+                        ]),
                   groupValue: t.selected,
                 );
               }).toList() +
@@ -207,21 +231,21 @@ class _TourExtraState extends State<TourExtra> {
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
           ),
         ),
-        OutlineButton(
-          color: Colors.white,
-          borderSide: BorderSide(color: Colors.orange),
+        FlatButton(
+          color: COLOR_ADD,
+          //borderSide: BorderSide(color: Colors.orange),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           onPressed: () => setState(() => t.addLabel("Antwort", toAdd)),
-          child: Text("Hinzufügen"),
+          child: Text("Hinzufügen", style: TextStyle(color: Colors.white)),
         ),
-        OutlineButton(
-          color: Colors.white,
-          borderSide: BorderSide(color: Colors.orange),
+        FlatButton(
+          color: COLOR_ADD,
+          //borderSide: BorderSide(color: Colors.orange),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           onPressed: () => setState(() => t.removeLast()),
-          child: Text("Entfernen"),
+          child: Text("Entfernen", style: TextStyle(color: Colors.white)),
         )
       ],
     );

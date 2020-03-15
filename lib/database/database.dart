@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart' as m;
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:moor/moor.dart';
 import 'package:moor_ffi/moor_ffi.dart';
 import 'package:museum_app/constants.dart';
@@ -49,12 +47,14 @@ class Badges extends Table {
 class Tours extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  TextColumn get name => text().withLength(min: MIN_TOURNAME, max: MAX_TOURNAME)();
+  TextColumn get name =>
+      text().withLength(min: MIN_TOURNAME, max: MAX_TOURNAME)();
 
-  TextColumn get author => text().withLength(min: MIN_USERNAME, max: MAX_USERNAME)();
+  TextColumn get author =>
+      text().withLength(min: MIN_USERNAME, max: MAX_USERNAME)();
 
   //TODO convert to difficulty
-  RealColumn get rating => real()();
+  RealColumn get difficulty => real()();
 
   DateTimeColumn get creationTime => dateTime()();
 
@@ -126,6 +126,8 @@ class Extras extends Table {
 
   TextColumn get answerOpt => text().map(StringListConverter()).nullable()();
 
+  TextColumn get answerCor => text().map(IntListConverter()).nullable()();
+
   @override
   Set<Column> get primaryKey => {id, id_tour, id_stop};
 }
@@ -171,6 +173,25 @@ class StringListConverter extends TypeConverter<List<String>, String> {
   }
 }
 
+class IntListConverter extends TypeConverter<List<int>, String> {
+  const IntListConverter();
+
+  @override
+  List<int> mapToDart(String fromDb) {
+    if (fromDb != null && fromDb.isEmpty) return List<int>();
+    if (fromDb == null) return null;
+    return fromDb.split(";").map((s) {
+      var v = int.tryParse(s);
+      return v ?? 0;
+    }).toList();
+  }
+
+  @override
+  String mapToSql(List<int> value) {
+    return value?.join(";");
+  }
+}
+
 class TaskTypeConverter extends TypeConverter<ExtraType, int> {
   const TaskTypeConverter();
 
@@ -178,8 +199,7 @@ class TaskTypeConverter extends TypeConverter<ExtraType, int> {
   ExtraType mapToDart(int fromDb) {
     if (fromDb == null) return null;
     var values = ExtraType.values;
-    if (0 <= fromDb && fromDb < values.length)
-      return values[fromDb];
+    if (0 <= fromDb && fromDb < values.length) return values[fromDb];
     print("NOT FOUND");
     return ExtraType.TEXT;
   }
@@ -260,7 +280,12 @@ class MuseumDatabase extends _$MuseumDatabase {
 
   Stream<StopFeature> getStopFeatures(int stop_id, int tour_id) {
     if (stop_id == customID)
-      return Stream.value(StopFeature(id_tour: tour_id, id_stop: stop_id, showImages: false, showText: true, showDetails: false));
+      return Stream.value(StopFeature(
+          id_tour: tour_id,
+          id_stop: stop_id,
+          showImages: false,
+          showText: true,
+          showDetails: false));
     final query = select(stopFeatures)
       ..where((f) => f.id_stop.equals(stop_id))
       ..where((f) => f.id_tour.equals(tour_id));
@@ -268,39 +293,52 @@ class MuseumDatabase extends _$MuseumDatabase {
     return query.watchSingle();
   }
 
-  Future<void> updateStopFeatures(int stop_id, int tour_id, {images, text, details}) {
+  Future<void> updateStopFeatures(int stop_id, int tour_id,
+      {images, text, details}) {
     if (stop_id != customID)
-    update(stopFeatures).replace(
-      StopFeature(
-        id_stop: stop_id,
-        id_tour: tour_id,
-        showImages: images,
-        showText: text,
-        showDetails: details,
-      ).createCompanion(true),
-    );
+      update(stopFeatures).replace(
+        StopFeature(
+          id_stop: stop_id,
+          id_tour: tour_id,
+          showImages: images,
+          showText: text,
+          showDetails: details,
+        ).createCompanion(true),
+      );
   }
 
   Future addExtra(ActualExtra e, int tour_id, int stop_id) {
     if (e.task != null) {
+      var list = List<int>();
+
+      if (e.type == ExtraType.TASK_MULTI)
+        for (int i = 0; i < e.task.entries.length; i++)
+          if (e.task.entries[i].valB == true) list.add(i);
+
+      if (e.type == ExtraType.TASK_SINGLE) list.add(e.task.selected);
+
       return into(extras).insert(
           ExtrasCompanion.insert(
               id_tour: tour_id,
               id_stop: stop_id,
               textInfo: e.textInfo.text,
               type: Value(e.type),
-              answerOpt: Value(e.task.entries.map((e) => e.valA.text as String).toList())),
+              answerOpt: Value(
+                  e.task.entries.map((e) => e.valA.text as String).toList()),
+              answerCor: Value(list)),
           mode: InsertMode.insertOrReplace);
     }
     return into(extras).insert(
         ExtrasCompanion.insert(
-            id_tour: tour_id, id_stop: stop_id, type: Value(e.type), textInfo: e.textInfo.text),
+            id_tour: tour_id,
+            id_stop: stop_id,
+            type: Value(e.type),
+            textInfo: e.textInfo.text),
         mode: InsertMode.insertOrReplace);
   }
 
   Stream<ActualStop> getActualStop(int tour_id, int stop_id) {
-    final stop = select(stops)
-      ..where((s) => s.id.equals(stop_id));
+    final stop = select(stops)..where((s) => s.id.equals(stop_id));
 
     final feature = getStopFeatures(stop_id, tour_id);
 
@@ -308,29 +346,18 @@ class MuseumDatabase extends _$MuseumDatabase {
         stop.watchSingle(),
         feature,
         getExtras(tour_id, stop_id),
-            (Stop s, StopFeature f, List<ActualExtra> l) =>
-            ActualStop(s, f, l));
+        (Stop s, StopFeature f, List<ActualExtra> l) => ActualStop(s, f, l));
   }
 
   Stream<List<ActualExtra>> getExtras(int tour_id, int stop_id) {
     final query = select(extras)
-      ..where((t) => t.id_tour.equals(tour_id))..where((t) =>
-          t.id_stop.equals(stop_id));
+      ..where((t) => t.id_tour.equals(tour_id))
+      ..where((t) => t.id_stop.equals(stop_id));
 
-    return query.watch().map((rows) =>
-        rows.map(
-              (e) {
-            //if (t.desc != null) return ActualText(t.desc);
-            return ActualExtra(e.type, text: e.textInfo, sel: e.answerOpt);
-                /*if (e.type != null)
-              return ActualExtra.realTask(
-                e.textInfo,
-                e.type,
-                e.answerOpt,
-              );
-            return ActualExtra.onlyText(e.textInfo);*/
-          },
-        ).toList());
+    return query.watch().map((rows) => rows
+        .map((e) => ActualExtra(e.type,
+            text: e.textInfo, sel: e.answerOpt, correct: e.answerCor?.toSet()))
+        .toList());
   }
 
   Stream<Tour> getDBTour(TourWithStops t) {
@@ -370,11 +397,10 @@ class MuseumDatabase extends _$MuseumDatabase {
   }
 
   Stream<TourWithStops> getTour(int tour_id) {
-    final tour = select(tours)
-      ..where((t) => t.id.equals(tour_id));
+    final tour = select(tours)..where((t) => t.id.equals(tour_id));
 
     final stop_ids = (select(tourStops, distinct: true)
-      ..where((ts) => ts.id_tour.equals(tour_id)))
+          ..where((ts) => ts.id_tour.equals(tour_id)))
         .map((t) => t.id_stop)
         .watch();
 
@@ -382,10 +408,10 @@ class MuseumDatabase extends _$MuseumDatabase {
         .map((list) => list.map((i) => getActualStop(tour_id, i)).toList());
 
     var res = CombineLatestStream.combine2(tour.watchSingle(), l2,
-            (Tour t, List<Stream<ActualStop>> a) {
-          Stream<List<ActualStop>> s = CombineLatestStream.list(a);
-          return s.map((list) => TourWithStops(t, list.sublist(0)));
-        });
+        (Tour t, List<Stream<ActualStop>> a) {
+      Stream<List<ActualStop>> s = CombineLatestStream.list(a);
+      return s.map((list) => TourWithStops(t, list.sublist(0)));
+    });
 
     return SwitchLatestStream(res);
   }
@@ -394,9 +420,9 @@ class MuseumDatabase extends _$MuseumDatabase {
 
   Stream<List<Extra>> getExtrasId(int id_tour, int id_stop) {
     final contentQuery = select(extras)
-    //.join([innerJoin(stops, stops.id.equalsExp(tourStops.id_stop))])
-      ..where((e) => e.id_tour.equals(id_tour))..where((e) =>
-          e.id_stop.equals(id_stop));
+      //.join([innerJoin(stops, stops.id.equalsExp(tourStops.id_stop))])
+      ..where((e) => e.id_tour.equals(id_tour))
+      ..where((e) => e.id_stop.equals(id_stop));
 
     return contentQuery.watch();
   }
@@ -404,7 +430,7 @@ class MuseumDatabase extends _$MuseumDatabase {
   Stream<List<Stop>> getStopsId(int id) {
     final contentQuery = select(tourStops)
         .join([innerJoin(stops, stops.id.equalsExp(tourStops.id_stop))])
-      ..where(tourStops.id_tour.equals(id));
+          ..where(tourStops.id_tour.equals(id));
 
     //final tourStream = tourQuery.watchSingle();
     final contentStream = contentQuery
@@ -415,18 +441,16 @@ class MuseumDatabase extends _$MuseumDatabase {
   }
 
   Stream<ActualStop> getCustomStop() {
-    final query = select(stops)
-      ..where((stop) => stop.name.equals(customName));
-    return query.watchSingle().map((stop) =>
-        ActualStop(
-            stop,
-            StopFeature(
-                id_tour: null,
-                id_stop: stop.id,
-                showImages: false,
-                showText: true,
-                showDetails: false),
-            <ActualExtra>[]));
+    final query = select(stops)..where((stop) => stop.name.equals(customName));
+    return query.watchSingle().map((stop) => ActualStop(
+        stop,
+        StopFeature(
+            id_tour: null,
+            id_stop: stop.id,
+            showImages: false,
+            showText: true,
+            showDetails: false),
+        <ActualExtra>[]));
   }
 
   Future<void> writeTourStops(TourWithStops entry) {
@@ -435,8 +459,7 @@ class MuseumDatabase extends _$MuseumDatabase {
 
       var id = await into(tours).insert(tour, orReplace: true);
 
-      await (delete(tourStops)
-        ..where((e) => e.id_tour.equals(id))).go();
+      await (delete(tourStops)..where((e) => e.id_tour.equals(id))).go();
 
       await batch((batch) {
         batch.insertAll(
@@ -456,8 +479,7 @@ class MuseumDatabase extends _$MuseumDatabase {
       });
 
       for (var stop in entry.stops)
-        for (var extra in stop.extras)
-          addExtra(extra, id, stop.stop.id);
+        for (var extra in stop.extras) addExtra(extra, id, stop.stop.id);
     });
   }
 
@@ -493,22 +515,22 @@ class MuseumDatabase extends _$MuseumDatabase {
       batch.insertAll(
           stops,
           List.generate(4, (i) {
-            String s = (i % 3 == 0 ? "" : "2");
-            return StopsCompanion.insert(
-              name: "Zoologisch $i",
-              devision: Value("Zoologisch"),
-              descr: "Description foo",
-              images: [
-                'assets/images/profile_test' + s + '.png',
-                'assets/images/profile_test.png'
-              ],
-              creator: Value("Me"),
-              material: Value("Holz"),
-              size: Value("32m x 45m"),
-              interContext: Value("Wurde von Napoleon besucht"),
-              location: Value("Zuhause"),
-            );
-          }) +
+                String s = (i % 3 == 0 ? "" : "2");
+                return StopsCompanion.insert(
+                  name: "Zoologisch $i",
+                  devision: Value("Zoologisch"),
+                  descr: "Description foo",
+                  images: [
+                    'assets/images/profile_test' + s + '.png',
+                    'assets/images/profile_test.png'
+                  ],
+                  creator: Value("Me"),
+                  material: Value("Holz"),
+                  size: Value("32m x 45m"),
+                  interContext: Value("Wurde von Napoleon besucht"),
+                  location: Value("Zuhause"),
+                );
+              }) +
               List.generate(2, (i) {
                 String s = (i % 2 == 0 ? "" : "2");
                 return StopsCompanion.insert(
@@ -537,7 +559,7 @@ class MuseumDatabase extends _$MuseumDatabase {
                 return StopsCompanion.insert(
                     name: "Bonus $i",
                     descr:
-                    "Mit dieser Tour werden Sie interessante neue Fakten kennenlernen. Sie werden das Museum so erkunden, wie es bis heute noch kein Mensch getan hat. Nebenbei werden Sie spannende Aufgaben lösen.",
+                        "Mit dieser Tour werden Sie interessante neue Fakten kennenlernen. Sie werden das Museum so erkunden, wie es bis heute noch kein Mensch getan hat. Nebenbei werden Sie spannende Aufgaben lösen.",
                     images: ['assets/images/haupthalle_hlm_blue.png'],
                     devision: Value("Bonus"),
                     creator: Value("VanGogh"));
@@ -553,14 +575,13 @@ class MuseumDatabase extends _$MuseumDatabase {
         badges,
         List.generate(
           16,
-              (i) =>
-              BadgesCompanion.insert(
-                name: "Badge $i",
-                toGet: 16.0,
-                color: Value(m.Colors.primaries[i]),
-                imgPath: "assets/images/profile_test.png",
-                current: Value(i.roundToDouble()),
-              ),
+          (i) => BadgesCompanion.insert(
+            name: "Badge $i",
+            toGet: 16.0,
+            color: Value(m.Colors.primaries[i]),
+            imgPath: "assets/images/profile_test.png",
+            current: Value(i.roundToDouble()),
+          ),
         ),
         mode: InsertMode.insertOrReplace,
       );

@@ -216,7 +216,7 @@ class Badge extends DataClass implements Insertable<Badge> {
   final String name;
   final double current;
   final double toGet;
-  final dynamic color;
+  final Color color;
   final String imgPath;
   Badge(
       {@required this.name,
@@ -249,7 +249,7 @@ class Badge extends DataClass implements Insertable<Badge> {
       name: serializer.fromJson<String>(json['name']),
       current: serializer.fromJson<double>(json['current']),
       toGet: serializer.fromJson<double>(json['toGet']),
-      color: serializer.fromJson<dynamic>(json['color']),
+      color: serializer.fromJson<Color>(json['color']),
       imgPath: serializer.fromJson<String>(json['imgPath']),
     );
   }
@@ -260,7 +260,7 @@ class Badge extends DataClass implements Insertable<Badge> {
       'name': serializer.toJson<String>(name),
       'current': serializer.toJson<double>(current),
       'toGet': serializer.toJson<double>(toGet),
-      'color': serializer.toJson<dynamic>(color),
+      'color': serializer.toJson<Color>(color),
       'imgPath': serializer.toJson<String>(imgPath),
     };
   }
@@ -286,7 +286,7 @@ class Badge extends DataClass implements Insertable<Badge> {
           {String name,
           double current,
           double toGet,
-          dynamic color,
+          Color color,
           String imgPath}) =>
       Badge(
         name: name ?? this.name,
@@ -327,7 +327,7 @@ class BadgesCompanion extends UpdateCompanion<Badge> {
   final Value<String> name;
   final Value<double> current;
   final Value<double> toGet;
-  final Value<dynamic> color;
+  final Value<Color> color;
   final Value<String> imgPath;
   const BadgesCompanion({
     this.name = const Value.absent(),
@@ -349,7 +349,7 @@ class BadgesCompanion extends UpdateCompanion<Badge> {
       {Value<String> name,
       Value<double> current,
       Value<double> toGet,
-      Value<dynamic> color,
+      Value<Color> color,
       Value<String> imgPath}) {
     return BadgesCompanion(
       name: name ?? this.name,
@@ -489,7 +489,7 @@ class $BadgesTable extends Badges with TableInfo<$BadgesTable, Badge> {
     return $BadgesTable(_db, alias);
   }
 
-  static ColorConverter $converter0 = ColorConverter();
+  static TypeConverter<Color, int> $converter0 = ColorConverter();
 }
 
 class Stop extends DataClass implements Insertable<Stop> {
@@ -1045,12 +1045,13 @@ class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
     return $StopsTable(_db, alias);
   }
 
-  static StringListConverter $converter0 = StringListConverter();
+  static TypeConverter<List<String>, String> $converter0 =
+      StringListConverter();
 }
 
 class Devision extends DataClass implements Insertable<Devision> {
   final String name;
-  final dynamic color;
+  final Color color;
   Devision({@required this.name, @required this.color});
   factory Devision.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
@@ -1068,7 +1069,7 @@ class Devision extends DataClass implements Insertable<Devision> {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return Devision(
       name: serializer.fromJson<String>(json['name']),
-      color: serializer.fromJson<dynamic>(json['color']),
+      color: serializer.fromJson<Color>(json['color']),
     );
   }
   @override
@@ -1076,7 +1077,7 @@ class Devision extends DataClass implements Insertable<Devision> {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'name': serializer.toJson<String>(name),
-      'color': serializer.toJson<dynamic>(color),
+      'color': serializer.toJson<Color>(color),
     };
   }
 
@@ -1089,7 +1090,7 @@ class Devision extends DataClass implements Insertable<Devision> {
     );
   }
 
-  Devision copyWith({String name, dynamic color}) => Devision(
+  Devision copyWith({String name, Color color}) => Devision(
         name: name ?? this.name,
         color: color ?? this.color,
       );
@@ -1114,7 +1115,7 @@ class Devision extends DataClass implements Insertable<Devision> {
 
 class DevisionsCompanion extends UpdateCompanion<Devision> {
   final Value<String> name;
-  final Value<dynamic> color;
+  final Value<Color> color;
   const DevisionsCompanion({
     this.name = const Value.absent(),
     this.color = const Value.absent(),
@@ -1123,7 +1124,7 @@ class DevisionsCompanion extends UpdateCompanion<Devision> {
     @required String name,
     this.color = const Value.absent(),
   }) : name = Value(name);
-  DevisionsCompanion copyWith({Value<String> name, Value<dynamic> color}) {
+  DevisionsCompanion copyWith({Value<String> name, Value<Color> color}) {
     return DevisionsCompanion(
       name: name ?? this.name,
       color: color ?? this.color,
@@ -1205,21 +1206,21 @@ class $DevisionsTable extends Devisions
     return $DevisionsTable(_db, alias);
   }
 
-  static ColorConverter $converter0 = ColorConverter();
+  static TypeConverter<Color, int> $converter0 = ColorConverter();
 }
 
 class Tour extends DataClass implements Insertable<Tour> {
   final int id;
   final String name;
   final String author;
-  final double rating;
+  final double difficulty;
   final DateTime creationTime;
   final String desc;
   Tour(
       {@required this.id,
       @required this.name,
       @required this.author,
-      @required this.rating,
+      @required this.difficulty,
       @required this.creationTime,
       @required this.desc});
   factory Tour.fromData(Map<String, dynamic> data, GeneratedDatabase db,
@@ -1234,8 +1235,8 @@ class Tour extends DataClass implements Insertable<Tour> {
       name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
       author:
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}author']),
-      rating:
-          doubleType.mapFromDatabaseResponse(data['${effectivePrefix}rating']),
+      difficulty: doubleType
+          .mapFromDatabaseResponse(data['${effectivePrefix}difficulty']),
       creationTime: dateTimeType
           .mapFromDatabaseResponse(data['${effectivePrefix}creation_time']),
       desc: stringType.mapFromDatabaseResponse(data['${effectivePrefix}desc']),
@@ -1248,7 +1249,7 @@ class Tour extends DataClass implements Insertable<Tour> {
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       author: serializer.fromJson<String>(json['author']),
-      rating: serializer.fromJson<double>(json['rating']),
+      difficulty: serializer.fromJson<double>(json['difficulty']),
       creationTime: serializer.fromJson<DateTime>(json['creationTime']),
       desc: serializer.fromJson<String>(json['desc']),
     );
@@ -1260,7 +1261,7 @@ class Tour extends DataClass implements Insertable<Tour> {
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'author': serializer.toJson<String>(author),
-      'rating': serializer.toJson<double>(rating),
+      'difficulty': serializer.toJson<double>(difficulty),
       'creationTime': serializer.toJson<DateTime>(creationTime),
       'desc': serializer.toJson<String>(desc),
     };
@@ -1273,8 +1274,9 @@ class Tour extends DataClass implements Insertable<Tour> {
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
       author:
           author == null && nullToAbsent ? const Value.absent() : Value(author),
-      rating:
-          rating == null && nullToAbsent ? const Value.absent() : Value(rating),
+      difficulty: difficulty == null && nullToAbsent
+          ? const Value.absent()
+          : Value(difficulty),
       creationTime: creationTime == null && nullToAbsent
           ? const Value.absent()
           : Value(creationTime),
@@ -1286,14 +1288,14 @@ class Tour extends DataClass implements Insertable<Tour> {
           {int id,
           String name,
           String author,
-          double rating,
+          double difficulty,
           DateTime creationTime,
           String desc}) =>
       Tour(
         id: id ?? this.id,
         name: name ?? this.name,
         author: author ?? this.author,
-        rating: rating ?? this.rating,
+        difficulty: difficulty ?? this.difficulty,
         creationTime: creationTime ?? this.creationTime,
         desc: desc ?? this.desc,
       );
@@ -1303,7 +1305,7 @@ class Tour extends DataClass implements Insertable<Tour> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('author: $author, ')
-          ..write('rating: $rating, ')
+          ..write('difficulty: $difficulty, ')
           ..write('creationTime: $creationTime, ')
           ..write('desc: $desc')
           ..write(')'))
@@ -1317,7 +1319,7 @@ class Tour extends DataClass implements Insertable<Tour> {
           name.hashCode,
           $mrjc(
               author.hashCode,
-              $mrjc(rating.hashCode,
+              $mrjc(difficulty.hashCode,
                   $mrjc(creationTime.hashCode, desc.hashCode))))));
   @override
   bool operator ==(dynamic other) =>
@@ -1326,7 +1328,7 @@ class Tour extends DataClass implements Insertable<Tour> {
           other.id == this.id &&
           other.name == this.name &&
           other.author == this.author &&
-          other.rating == this.rating &&
+          other.difficulty == this.difficulty &&
           other.creationTime == this.creationTime &&
           other.desc == this.desc);
 }
@@ -1335,14 +1337,14 @@ class ToursCompanion extends UpdateCompanion<Tour> {
   final Value<int> id;
   final Value<String> name;
   final Value<String> author;
-  final Value<double> rating;
+  final Value<double> difficulty;
   final Value<DateTime> creationTime;
   final Value<String> desc;
   const ToursCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.author = const Value.absent(),
-    this.rating = const Value.absent(),
+    this.difficulty = const Value.absent(),
     this.creationTime = const Value.absent(),
     this.desc = const Value.absent(),
   });
@@ -1350,26 +1352,26 @@ class ToursCompanion extends UpdateCompanion<Tour> {
     this.id = const Value.absent(),
     @required String name,
     @required String author,
-    @required double rating,
+    @required double difficulty,
     @required DateTime creationTime,
     @required String desc,
   })  : name = Value(name),
         author = Value(author),
-        rating = Value(rating),
+        difficulty = Value(difficulty),
         creationTime = Value(creationTime),
         desc = Value(desc);
   ToursCompanion copyWith(
       {Value<int> id,
       Value<String> name,
       Value<String> author,
-      Value<double> rating,
+      Value<double> difficulty,
       Value<DateTime> creationTime,
       Value<String> desc}) {
     return ToursCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       author: author ?? this.author,
-      rating: rating ?? this.rating,
+      difficulty: difficulty ?? this.difficulty,
       creationTime: creationTime ?? this.creationTime,
       desc: desc ?? this.desc,
     );
@@ -1394,8 +1396,11 @@ class $ToursTable extends Tours with TableInfo<$ToursTable, Tour> {
   @override
   GeneratedTextColumn get name => _name ??= _constructName();
   GeneratedTextColumn _constructName() {
-    return GeneratedTextColumn('name', $tableName, false,
-        minTextLength: 3, maxTextLength: 30);
+    return GeneratedTextColumn(
+      'name',
+      $tableName,
+      false,
+    );
   }
 
   final VerificationMeta _authorMeta = const VerificationMeta('author');
@@ -1403,17 +1408,20 @@ class $ToursTable extends Tours with TableInfo<$ToursTable, Tour> {
   @override
   GeneratedTextColumn get author => _author ??= _constructAuthor();
   GeneratedTextColumn _constructAuthor() {
-    return GeneratedTextColumn('author', $tableName, false,
-        minTextLength: 3, maxTextLength: 20);
+    return GeneratedTextColumn(
+      'author',
+      $tableName,
+      false,
+    );
   }
 
-  final VerificationMeta _ratingMeta = const VerificationMeta('rating');
-  GeneratedRealColumn _rating;
+  final VerificationMeta _difficultyMeta = const VerificationMeta('difficulty');
+  GeneratedRealColumn _difficulty;
   @override
-  GeneratedRealColumn get rating => _rating ??= _constructRating();
-  GeneratedRealColumn _constructRating() {
+  GeneratedRealColumn get difficulty => _difficulty ??= _constructDifficulty();
+  GeneratedRealColumn _constructDifficulty() {
     return GeneratedRealColumn(
-      'rating',
+      'difficulty',
       $tableName,
       false,
     );
@@ -1447,7 +1455,7 @@ class $ToursTable extends Tours with TableInfo<$ToursTable, Tour> {
 
   @override
   List<GeneratedColumn> get $columns =>
-      [id, name, author, rating, creationTime, desc];
+      [id, name, author, difficulty, creationTime, desc];
   @override
   $ToursTable get asDslTable => this;
   @override
@@ -1473,11 +1481,11 @@ class $ToursTable extends Tours with TableInfo<$ToursTable, Tour> {
     } else if (isInserting) {
       context.missing(_authorMeta);
     }
-    if (d.rating.present) {
-      context.handle(
-          _ratingMeta, rating.isAcceptableValue(d.rating.value, _ratingMeta));
+    if (d.difficulty.present) {
+      context.handle(_difficultyMeta,
+          difficulty.isAcceptableValue(d.difficulty.value, _difficultyMeta));
     } else if (isInserting) {
-      context.missing(_ratingMeta);
+      context.missing(_difficultyMeta);
     }
     if (d.creationTime.present) {
       context.handle(
@@ -1516,8 +1524,8 @@ class $ToursTable extends Tours with TableInfo<$ToursTable, Tour> {
     if (d.author.present) {
       map['author'] = Variable<String, StringType>(d.author.value);
     }
-    if (d.rating.present) {
-      map['rating'] = Variable<double, RealType>(d.rating.value);
+    if (d.difficulty.present) {
+      map['difficulty'] = Variable<double, RealType>(d.difficulty.value);
     }
     if (d.creationTime.present) {
       map['creation_time'] =
@@ -1705,13 +1713,15 @@ class Extra extends DataClass implements Insertable<Extra> {
   final String textInfo;
   final ExtraType type;
   final List<String> answerOpt;
+  final List<int> answerCor;
   Extra(
       {@required this.id,
       @required this.id_tour,
       @required this.id_stop,
       @required this.textInfo,
       this.type,
-      this.answerOpt});
+      this.answerOpt,
+      this.answerCor});
   factory Extra.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -1729,6 +1739,8 @@ class Extra extends DataClass implements Insertable<Extra> {
           intType.mapFromDatabaseResponse(data['${effectivePrefix}type'])),
       answerOpt: $ExtrasTable.$converter1.mapToDart(stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}answer_opt'])),
+      answerCor: $ExtrasTable.$converter2.mapToDart(stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}answer_cor'])),
     );
   }
   factory Extra.fromJson(Map<String, dynamic> json,
@@ -1741,6 +1753,7 @@ class Extra extends DataClass implements Insertable<Extra> {
       textInfo: serializer.fromJson<String>(json['textInfo']),
       type: serializer.fromJson<ExtraType>(json['type']),
       answerOpt: serializer.fromJson<List<String>>(json['answerOpt']),
+      answerCor: serializer.fromJson<List<int>>(json['answerCor']),
     );
   }
   @override
@@ -1753,6 +1766,7 @@ class Extra extends DataClass implements Insertable<Extra> {
       'textInfo': serializer.toJson<String>(textInfo),
       'type': serializer.toJson<ExtraType>(type),
       'answerOpt': serializer.toJson<List<String>>(answerOpt),
+      'answerCor': serializer.toJson<List<int>>(answerCor),
     };
   }
 
@@ -1773,6 +1787,9 @@ class Extra extends DataClass implements Insertable<Extra> {
       answerOpt: answerOpt == null && nullToAbsent
           ? const Value.absent()
           : Value(answerOpt),
+      answerCor: answerCor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(answerCor),
     );
   }
 
@@ -1782,7 +1799,8 @@ class Extra extends DataClass implements Insertable<Extra> {
           int id_stop,
           String textInfo,
           ExtraType type,
-          List<String> answerOpt}) =>
+          List<String> answerOpt,
+          List<int> answerCor}) =>
       Extra(
         id: id ?? this.id,
         id_tour: id_tour ?? this.id_tour,
@@ -1790,6 +1808,7 @@ class Extra extends DataClass implements Insertable<Extra> {
         textInfo: textInfo ?? this.textInfo,
         type: type ?? this.type,
         answerOpt: answerOpt ?? this.answerOpt,
+        answerCor: answerCor ?? this.answerCor,
       );
   @override
   String toString() {
@@ -1799,7 +1818,8 @@ class Extra extends DataClass implements Insertable<Extra> {
           ..write('id_stop: $id_stop, ')
           ..write('textInfo: $textInfo, ')
           ..write('type: $type, ')
-          ..write('answerOpt: $answerOpt')
+          ..write('answerOpt: $answerOpt, ')
+          ..write('answerCor: $answerCor')
           ..write(')'))
         .toString();
   }
@@ -1811,8 +1831,10 @@ class Extra extends DataClass implements Insertable<Extra> {
           id_tour.hashCode,
           $mrjc(
               id_stop.hashCode,
-              $mrjc(textInfo.hashCode,
-                  $mrjc(type.hashCode, answerOpt.hashCode))))));
+              $mrjc(
+                  textInfo.hashCode,
+                  $mrjc(type.hashCode,
+                      $mrjc(answerOpt.hashCode, answerCor.hashCode)))))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -1822,7 +1844,8 @@ class Extra extends DataClass implements Insertable<Extra> {
           other.id_stop == this.id_stop &&
           other.textInfo == this.textInfo &&
           other.type == this.type &&
-          other.answerOpt == this.answerOpt);
+          other.answerOpt == this.answerOpt &&
+          other.answerCor == this.answerCor);
 }
 
 class ExtrasCompanion extends UpdateCompanion<Extra> {
@@ -1832,6 +1855,7 @@ class ExtrasCompanion extends UpdateCompanion<Extra> {
   final Value<String> textInfo;
   final Value<ExtraType> type;
   final Value<List<String>> answerOpt;
+  final Value<List<int>> answerCor;
   const ExtrasCompanion({
     this.id = const Value.absent(),
     this.id_tour = const Value.absent(),
@@ -1839,6 +1863,7 @@ class ExtrasCompanion extends UpdateCompanion<Extra> {
     this.textInfo = const Value.absent(),
     this.type = const Value.absent(),
     this.answerOpt = const Value.absent(),
+    this.answerCor = const Value.absent(),
   });
   ExtrasCompanion.insert({
     this.id = const Value.absent(),
@@ -1847,6 +1872,7 @@ class ExtrasCompanion extends UpdateCompanion<Extra> {
     @required String textInfo,
     this.type = const Value.absent(),
     this.answerOpt = const Value.absent(),
+    this.answerCor = const Value.absent(),
   })  : id_tour = Value(id_tour),
         id_stop = Value(id_stop),
         textInfo = Value(textInfo);
@@ -1856,7 +1882,8 @@ class ExtrasCompanion extends UpdateCompanion<Extra> {
       Value<int> id_stop,
       Value<String> textInfo,
       Value<ExtraType> type,
-      Value<List<String>> answerOpt}) {
+      Value<List<String>> answerOpt,
+      Value<List<int>> answerCor}) {
     return ExtrasCompanion(
       id: id ?? this.id,
       id_tour: id_tour ?? this.id_tour,
@@ -1864,6 +1891,7 @@ class ExtrasCompanion extends UpdateCompanion<Extra> {
       textInfo: textInfo ?? this.textInfo,
       type: type ?? this.type,
       answerOpt: answerOpt ?? this.answerOpt,
+      answerCor: answerCor ?? this.answerCor,
     );
   }
 }
@@ -1935,9 +1963,21 @@ class $ExtrasTable extends Extras with TableInfo<$ExtrasTable, Extra> {
     );
   }
 
+  final VerificationMeta _answerCorMeta = const VerificationMeta('answerCor');
+  GeneratedTextColumn _answerCor;
+  @override
+  GeneratedTextColumn get answerCor => _answerCor ??= _constructAnswerCor();
+  GeneratedTextColumn _constructAnswerCor() {
+    return GeneratedTextColumn(
+      'answer_cor',
+      $tableName,
+      true,
+    );
+  }
+
   @override
   List<GeneratedColumn> get $columns =>
-      [id, id_tour, id_stop, textInfo, type, answerOpt];
+      [id, id_tour, id_stop, textInfo, type, answerOpt, answerCor];
   @override
   $ExtrasTable get asDslTable => this;
   @override
@@ -1971,6 +2011,7 @@ class $ExtrasTable extends Extras with TableInfo<$ExtrasTable, Extra> {
     }
     context.handle(_typeMeta, const VerificationResult.success());
     context.handle(_answerOptMeta, const VerificationResult.success());
+    context.handle(_answerCorMeta, const VerificationResult.success());
     return context;
   }
 
@@ -2006,6 +2047,11 @@ class $ExtrasTable extends Extras with TableInfo<$ExtrasTable, Extra> {
       map['answer_opt'] =
           Variable<String, StringType>(converter.mapToSql(d.answerOpt.value));
     }
+    if (d.answerCor.present) {
+      final converter = $ExtrasTable.$converter2;
+      map['answer_cor'] =
+          Variable<String, StringType>(converter.mapToSql(d.answerCor.value));
+    }
     return map;
   }
 
@@ -2014,8 +2060,10 @@ class $ExtrasTable extends Extras with TableInfo<$ExtrasTable, Extra> {
     return $ExtrasTable(_db, alias);
   }
 
-  static TaskTypeConverter $converter0 = TaskTypeConverter();
-  static StringListConverter $converter1 = StringListConverter();
+  static TypeConverter<ExtraType, int> $converter0 = TaskTypeConverter();
+  static TypeConverter<List<String>, String> $converter1 =
+      StringListConverter();
+  static TypeConverter<List<int>, String> $converter2 = IntListConverter();
 }
 
 class StopFeature extends DataClass implements Insertable<StopFeature> {

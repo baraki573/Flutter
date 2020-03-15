@@ -343,7 +343,7 @@ class _CreateTourState extends State<CreateTour> {
                       Scaffold.of(context).showSnackBar(SnackBar(
                         content: Text("Tour hinzugefügt!"),
                       ));
-                    }, onError: (error) => print(error));
+                    });
                   },
                   child: Text("Fertigstellen"),
                 ),
