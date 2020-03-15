@@ -49,13 +49,13 @@ class TourWithStops {
         rating: min(max(difficulty, 0), 5),
         itemSize: size,
         itemBuilder: (BuildContext context, int index) => Icon(
-          Icons.star,
+          Icons.school,
           color: color,
         ),
         unratedColor: color2.withOpacity(.5),
       );
 
-  Widget buildTime({color = Colors.pink, color2 = Colors.black, scale = 1.0}) {
+  Widget buildTime({Color color = Colors.pink, Color color2 = Colors.black, scale = 1.0}) {
     if (creationTime == null) return Container();
     String s = DateFormat('dd.MM.yyyy').format(creationTime);
     return Row(

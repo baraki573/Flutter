@@ -3,8 +3,8 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:museum_app/SizeConfig.dart';
+import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
 import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour.dart';
@@ -61,7 +61,7 @@ class _TourListState extends State<TourList> {
               child: Row(
                 children: [
                   t.getRating(
-                      color: Colors.pink,
+                      color: COLOR_TOUR,
                       color2: Colors.grey,
                       size: horSize(5, 3.5)),
                   //Container(width: horSize(1, 3)),
@@ -80,7 +80,7 @@ class _TourListState extends State<TourList> {
             FlatButton(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10.0)),
-              color: Colors.pinkAccent,
+              color: COLOR_TOUR,
               child: Text("Anzeigen ",
                   style:
                       TextStyle(fontSize: size(14, 17), color: Colors.white)),
@@ -115,18 +115,6 @@ class _TourListState extends State<TourList> {
       );
 
   // TODO move these to the tour class
-  Widget _tourRating(Tour t) => Container(
-        margin: EdgeInsets.only(top: 3.5, bottom: 3.5, right: 8),
-        child: RatingBarIndicator(
-          rating: min(max(t.rating, 0), 5),
-          itemSize: horSize(4.5, 3.5),
-          itemBuilder: (BuildContext context, int index) => Icon(
-            Icons.star,
-            color: Colors.pinkAccent,
-          ),
-          unratedColor: Colors.grey.withAlpha(50),
-        ),
-      );
 
   Widget _tourButtons(TourWithStops t) => ButtonBar(
         buttonPadding: EdgeInsets.symmetric(horizontal: size(5, 9)),
@@ -176,7 +164,7 @@ class _TourListState extends State<TourList> {
         padding: EdgeInsets.symmetric(horizontal: 30, vertical: 2),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-              colors: [Colors.pink[300], Colors.pink],
+              colors: [COLOR_TOUR.shade200, COLOR_ADD],
               tileMode: TileMode.clamp,
               begin: Alignment.topRight,
               stops: [0.0, 1.0],
@@ -205,7 +193,7 @@ class _TourListState extends State<TourList> {
           child: SimpleDialog(
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(10))),
-            backgroundColor: Colors.pinkAccent,
+            backgroundColor: COLOR_TOUR,
             contentPadding: EdgeInsets.all(16),
             children: [
               // Picture
@@ -240,7 +228,7 @@ class _TourListState extends State<TourList> {
                   child: Row(children: [
                     t.getRating(
                         color: Colors.white,
-                        color2: Colors.pink,
+                        color2: COLOR_TOUR,
                         size: horSize(7, 3.5)),
                     Container(width: 8),
                     t.buildTime(
@@ -266,7 +254,7 @@ class _TourListState extends State<TourList> {
                       builder: (context, snap) {
                         var id = snap.data?.id ?? -1;
                         return FlatButton(
-                          splashColor: Colors.pink[100],
+                          splashColor: COLOR_TOUR.shade100,
                           color: Colors.white,
                           shape: CircleBorder(side: BorderSide(color: Colors.black)),
                           child: Icon(
@@ -288,7 +276,7 @@ class _TourListState extends State<TourList> {
 
                   FlatButton(
                     padding: EdgeInsets.all(9),
-                    splashColor: Colors.pink[100],
+                    splashColor: COLOR_TOUR.shade100,
                     color: Colors.white,
                     shape: CircleBorder(side: BorderSide(color: Colors.black)),
                     child: Icon(
@@ -304,7 +292,7 @@ class _TourListState extends State<TourList> {
                     },
                   ),
                   FlatButton(
-                    splashColor: Colors.pink[100],
+                    splashColor: COLOR_TOUR.shade100,
                     color: Colors.white,
                     shape: CircleBorder(side: BorderSide(color: Colors.black)),
                     child: Icon(

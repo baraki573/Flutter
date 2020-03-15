@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
 import 'package:museum_app/museum_tabs.dart';
 import 'package:museum_app/profile_page/profile_widgets.dart';
@@ -87,7 +88,7 @@ class _ProfileState extends State<Profile> {
       _topInfo(),
       {"Favoriten": FavWidget(), "Erfolge": BadgeWidget(), "Statistik": StatWidget()},
       staticScroll: [2],
-      color: Colors.green,
+      color: COLOR_PROFILE,
     );
   }
 }

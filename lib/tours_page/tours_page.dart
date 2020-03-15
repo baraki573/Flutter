@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
 import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/map/map_page.dart';
@@ -80,7 +81,7 @@ class _ToursState extends State<Tours> {
         // The rest
         "Favoriten": _bottomInfo((username) => (tour) => tour.tour.author != username),
       },
-        color: Colors.pink,
+        color: COLOR_TOUR,
     );
   }
 }

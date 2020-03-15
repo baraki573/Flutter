@@ -11,6 +11,7 @@ import 'package:popup_menu/popup_menu.dart';
 import 'package:reorderables/reorderables.dart';
 
 import '../SizeConfig.dart';
+import '../constants.dart';
 
 class EditSingleStop extends StatefulWidget {
   final ActualStop stop;
@@ -35,16 +36,16 @@ class _EditSingleStopState extends State<EditSingleStop> {
             left: false,
             right: false,
             child: Container(
-              color: Colors.orange,
-              height: verSize(17, 10),
+              color: COLOR_ADD,
+              height: verSize(17, 31),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: Container(
                       padding: EdgeInsets.only(
-                          left: horSize(16, 4, left: true),
-                          top: verSize(-1, 2, top: true)),
+                          left: horSize(16, 9, left: true),
+                          top: verSize(-1, -1, top: true)),
                       //alignment: Alignment.center,
                       child: Text("Zurück zur Stationsübersicht"),
                     ),
@@ -111,8 +112,8 @@ class _EditSingleStopState extends State<EditSingleStop> {
   // right-hand sidebar
   Widget _sideBar() {
     return Container(
-      color: Colors.orange,
-      width: horSize(19, 20),
+      color: COLOR_ADD,
+      width: horSize(19, 14),
       //height: verSize(80, 90),
       alignment: Alignment.topCenter,
       child: ListView(
@@ -173,9 +174,11 @@ class _EditSingleStopState extends State<EditSingleStop> {
           _withLabel(
             FontAwesomeIcons.fileImage, "Bild",
             //TODO block for individuell
-            funct: widget.stop.isCustom() ? null : () => setState(() => widget.stop.extras.add(ActualExtra(
-                ExtraType.IMAGE,
-                text: widget.stop.stop.images.join(";")))),
+            funct: widget.stop.isCustom()
+                ? null
+                : () => setState(() => widget.stop.extras.add(ActualExtra(
+                    ExtraType.IMAGE,
+                    text: widget.stop.stop.images.join(";")))),
             key: _keyImg,
           ),
         ],
@@ -189,8 +192,8 @@ class _EditSingleStopState extends State<EditSingleStop> {
   void _onTapTask() {
     PopupMenu m = PopupMenu(
       context: context,
-      backgroundColor: Colors.orange[300],
-      highlightColor: Colors.orange[400],
+      backgroundColor: COLOR_ADD.shade300,
+      highlightColor: COLOR_ADD.shade400,
       items: [
         MenuItem(
             title: "Text",
@@ -235,26 +238,6 @@ class _EditSingleStopState extends State<EditSingleStop> {
         break;
     }
   }
-
-  void _onTapImg() {
-    PopupMenu m = PopupMenu(
-      context: context,
-      backgroundColor: Colors.orange[300],
-      highlightColor: Colors.orange[400],
-      items: [
-        MenuItem(title: "Alle", image: Icon(Icons.image), textStyle: TextStyle(color: Colors.white)),
-      ],
-      onClickMenu: _onClickImg,
-    );
-    m.show(widgetKey: _keyImg);
-  }
-
-  void _onClickImg(MenuItemProvider prov) {
-    setState(() => widget.stop.extras.add(ActualExtra(
-        ExtraType.IMAGE,
-        text: widget.stop.stop.images[0])));
-  }
-
 
   Widget _objectLabel(widgets, {Color color = Colors.white}) {
     return Column(
@@ -329,9 +312,10 @@ class _EditSingleStopState extends State<EditSingleStop> {
     return Expanded(
       child: Container(
         height: verSize(75, 90),
-        color: Colors.orange.withOpacity(0.5),
+        color: COLOR_ADD.withOpacity(0.5),
         child: ReorderableWrap(
           controller: ScrollController(),
+          runSpacing: 8,
           header: TourWalkerContent(
             widget.stop,
             color: Colors.black,
@@ -348,27 +332,49 @@ class _EditSingleStopState extends State<EditSingleStop> {
           }),
           children: widget.stop.extras
               .map(
-                (e) => Padding(
-                  padding: EdgeInsets.only(left: 16),
+                (e) => Container(
+                  //padding: EdgeInsets.only(left: 8),
+                  margin: EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.black),
+                    borderRadius: BorderRadius.only(
+                        topRight: Radius.circular(7),
+                        bottomRight: Radius.circular(7)),
+                  ),
                   child: Row(
                     children: [
                       Expanded(
-                        child: TourExtra(
-                          tasks.indexOf(e) + 1,
-                          e,
-                          edit: true,
-                          //images: e.image ? widget.stop.stop.images : []
+                        child: Container(
+                          padding: EdgeInsets.only(left: 8, right: 5),
+                          color: COLOR_ADD.withOpacity(.5),
+                          child: TourExtra(
+                            tasks.indexOf(e) + 1,
+                            e,
+                            edit: true,
+                          ),
                         ),
                       ),
-                      Column(
-                        children: [
-                          Icon(Icons.drag_handle),
-                          IconButton(
-                              onPressed: () =>
-                                  setState(() => widget.stop.extras.remove(e)),
-                              icon: Icon(Icons.remove_circle)),
-                        ],
-                      )
+                      Container(
+                        width: horSize(10, 5),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          //crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 3),
+                              child: Icon(Icons.drag_handle),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 3),
+                              child: GestureDetector(
+                                  onTap: () => _removeExtra(e),
+                                  child: Icon(Icons.remove_circle)),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -378,5 +384,23 @@ class _EditSingleStopState extends State<EditSingleStop> {
         ),
       ),
     );
+  }
+
+  void _removeExtra(ActualExtra e) {
+    showDialog(context: context, builder: (context) => AlertDialog(
+      title: Text("Warnung"),
+      content: Text("Möchten Sie das ausgewählte Extra wirklich entfernen?\nDies kann nicht rückgängig gemacht werden."),
+      actions: [
+        FlatButton(
+          child: Text("Abbrechen", style: TextStyle(color: COLOR_ADD)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        FlatButton(
+          child: Text("Extra entfernen", style: TextStyle(color: COLOR_ADD)),
+          onPressed: () => setState(
+                  () {widget.stop.extras.remove(e); Navigator.pop(context);}),
+        ),
+      ],
+    ));
   }
 }

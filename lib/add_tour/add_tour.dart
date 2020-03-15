@@ -7,6 +7,7 @@ import 'package:museum_app/database/database.dart';
 import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/museum_tabs.dart';
 
+import '../constants.dart';
 import 'create_tour.dart';
 
 class AddTour extends StatefulWidget {
@@ -26,6 +27,7 @@ class _AddTourState extends State<AddTour> {
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     //print(_tour==null);
     switch (_type) {
       case AddType.CREATE:
@@ -68,7 +70,17 @@ class _AddTourState extends State<AddTour> {
         );
       default:
         return MuseumTabs.single(
-          Center(child: Text("SCHÖNES BILD")),
+          Center(
+            child: Container(
+              height: verSize(25, 40),
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(
+                      "assets/images/undraw_detailed_analysis_flipped.png"),
+                ),
+              ),
+            ),
+          ),
           _chooseState(),
         );
     }
@@ -82,7 +94,7 @@ class _AddTourState extends State<AddTour> {
         children: [
           border(
               _content(
-                  "img",
+                  "assets/images/undraw_new_entries_nh3h.png",
                   "Tour erstellen",
                   "Erstelle Deine eigene Tour durch das Landesmuseum.",
                   "Neue Tour erstellen",
@@ -90,7 +102,7 @@ class _AddTourState extends State<AddTour> {
               margin: margin),
           border(
               _content(
-                  "img2",
+                  "assets/images/authentication.png",
                   "Tour bearbeiten",
                   "Bearbeite eine Deiner Touren oder ergänze sie um Stationen.",
                   "Touren bearbeiten",
@@ -103,21 +115,22 @@ class _AddTourState extends State<AddTour> {
                   //mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      width: horSize(27, 30),
-                      child: Text("jj"),
+                      width: horSize(23, 23),
+                      child: Icon(Icons.video_library, color: COLOR_ADD, size: size(60, 74)),
                     ),
                     Container(
                       width: horSize(57, 60),
                       child: Text(
                         "Noch Fragen?\nSchau Dir ein Erklärvideo zur Tour-Erstellung an!",
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18),
+                            fontWeight: FontWeight.bold, fontSize: size(18, 20)),
                       ),
                     )
                   ],
                 ),
               ),
-              margin: margin)
+              margin: margin,
+          padding: EdgeInsets.all(15))
         ],
       ),
     );
@@ -128,22 +141,26 @@ class _AddTourState extends State<AddTour> {
     return Row(
       children: [
         Container(
-          width: horSize(34, 10),
-          child: Text(img),
+          width: horSize(34, 38),
+          height: verSize(18, 45),
+          decoration:
+              BoxDecoration(image: DecorationImage(
+                  //fit: BoxFit.contain,
+                  image: AssetImage(img))),
         ),
         Container(
           margin: EdgeInsets.only(left: 8),
-          width: horSize(48, 10),
+          width: horSize(48, 50),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-              Text(descr),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: size(18, 20))),
+              Text(descr, style: TextStyle(fontSize: size(14, 16))),
               FlatButton(
                 onPressed: action,
                 child: Text(btnText),
-                color: Colors.orange,
+                color: COLOR_ADD,
                 textColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -159,7 +176,17 @@ class _AddTourState extends State<AddTour> {
   Widget _editList(List<TourWithStops> tours) {
     return MuseumTabs.single(
       Stack(children: [
-        Center(child: Text("EDIT")),
+        Center(
+          child: Container(
+            height: verSize(25, 20),
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(
+                    "assets/images/undraw_detailed_analysis_flipped.png"),
+              ),
+            ),
+          ),
+        ),
         Positioned(
             left: horSize(2, 2, left: true),
             top: verSize(1, 1),
@@ -173,7 +200,7 @@ class _AddTourState extends State<AddTour> {
                     icon: Icon(Icons.arrow_back),
                     iconSize: 30,
                   ),
-                  Text("Zur Übersicht"),
+                  Text("Übersicht"),
                 ],
               ),
             ))
@@ -207,7 +234,7 @@ class _AddTourState extends State<AddTour> {
                         ],
                       ),
                       FlatButton(
-                        color: Colors.orange,
+                        color: COLOR_ADD,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(9)),
                         onPressed: () => setState(() {
@@ -239,7 +266,7 @@ Widget border(Widget w,
     margin: margin,
     decoration: BoxDecoration(
         color: Colors.white,
-        border: Border.all(color: Colors.orange, width: 2),
+        border: Border.all(color: COLOR_ADD, width: 2),
         borderRadius: BorderRadius.all(Radius.circular(18.0)),
         boxShadow: [
           BoxShadow(

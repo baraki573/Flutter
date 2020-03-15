@@ -79,13 +79,13 @@ class _CreateTourState extends State<CreateTour> {
     var style = TextStyle(color: Colors.white, fontWeight: FontWeight.bold);
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16),
-      color: Colors.orange.withOpacity(.5),
+      color: COLOR_ADD.withOpacity(.5),
       height: verSize(13, 10),
       width: horSize(100, 100),
       child: Wrap(
         alignment: WrapAlignment.center,
         spacing: verSize(1, 1),
-        runSpacing: horSize(7, 10),
+        runSpacing: horSize(7, 2),
         direction: Axis.vertical,
         children: [
           Row(children: [
@@ -110,21 +110,22 @@ class _CreateTourState extends State<CreateTour> {
   }
 
   Widget _navigator() {
-    var topPad = MediaQuery.of(context).padding.top;
+    //var topPad = MediaQuery.of(context).padding.top;
 
     String tourName = widget.tour.name.text.trim();
     if (tourName.isEmpty) tourName = "NEUE TOUR";
     String tourAuthor = widget.tour.author.trim();
     if (tourAuthor.isEmpty) tourAuthor = "mir";
     return Container(
-      padding: EdgeInsets.only(left: 15, right: 15, bottom: 9, top: topPad),
-      height: verSize(13, 25) + topPad,
-      color: Colors.orange,
+      padding: EdgeInsets.only(
+          left: 15, right: 15, bottom: 9, top: SizeConfig.padding.top),
+      height: verSize(13, 23, top: true),
+      color: COLOR_ADD,
       child: Row(
         //mainAxisAlignment: MainAxisAlignment.center,
         //mainAxisSize: MainAxisSize.min,
         children: [
-          Container(width: horSize(21, 10)),
+          Container(width: horSize(21, 15, left: true)),
           Container(
             //color: Colors.red,
             width: horSize(50, 65),
@@ -167,19 +168,19 @@ class _CreateTourState extends State<CreateTour> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: horSize(37, 10),
-              height: verSize(17, 20),
+              width: horSize(37, 30),
+              height: verSize(17, 23),
               child: Column(
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Container(
                     margin: EdgeInsets.only(top: 8),
-                    height: verSize(7, 5),
+                    height: verSize(7, 7),
                     child: Text(
                       "Station " +
                           (widget.tour.stops.indexOf(elem) + 1).toString(),
                       style: TextStyle(
-                        color: Colors.orange,
+                        color: COLOR_ADD,
                         fontSize: 19,
                         fontWeight: FontWeight.bold,
                       ),
@@ -195,7 +196,7 @@ class _CreateTourState extends State<CreateTour> {
             ),
             Container(
               //margin: EdgeInsets.only(left: 25),
-              width: horSize(16, 20),
+              width: horSize(16, 8),
               //color: Colors.green,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -215,19 +216,15 @@ class _CreateTourState extends State<CreateTour> {
                           }),
                           icon: Icon(Icons.add_circle),
                           iconSize: 50,
-                          color: Colors.orange,
+                          color: COLOR_ADD,
                         );
                       }),
                   IconButton(
                     padding: EdgeInsets.zero,
-                    onPressed: () => setState(() {
-                      if (widget.tour.stops.length > 1)
-                        widget.tour.stops.remove(elem);
-                      if (_index >= widget.tour.stops.length) _index--;
-                    }),
+                    onPressed: () {if (widget.tour.stops.length > 1) _removeStop(elem);},
                     icon: Icon(Icons.remove_circle),
                     iconSize: 50,
-                    color: Colors.orange,
+                    color: COLOR_ADD,
                   ),
                 ],
               ),
@@ -239,9 +236,44 @@ class _CreateTourState extends State<CreateTour> {
     );
   }
 
+  void _removeStop(ActualStop s) {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text("Warnung"),
+              content: Text(
+                  "Möchten Sie die ausgewählte Station wirklich entfernen?\nDies kann nicht rückgängig gemacht werden."),
+              actions: [
+                FlatButton(
+                  child: Text("Abbrechen", style: TextStyle(color: COLOR_ADD)),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                FlatButton(
+                  child: Text("Station entfernen",
+                      style: TextStyle(color: COLOR_ADD)),
+                  onPressed: () => setState(() {
+                    widget.tour.stops.remove(s);
+                    if (_index >= widget.tour.stops.length) _index--;
+                    Navigator.pop(context);
+                  }),
+                ),
+              ],
+            ));
+  }
+
   Widget _general() {
     return MuseumTabs.single(
-      Center(child: Text("JAJAJ")),
+      Center(
+        child: Container(
+          height: verSize(25, 40),
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage(
+                  "assets/images/undraw_detailed_analysis_flipped.png"),
+            ),
+          ),
+        ),
+      ),
       border(
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,7 +281,9 @@ class _CreateTourState extends State<CreateTour> {
             TextFormField(
               controller: widget.tour.name,
               autovalidate: true,
-              validator: (s) => MIN_TOURNAME > s.length ? "Name zu kurz" : (MAX_TOURNAME < s.length ? "Name zu lang" : null),
+              validator: (s) => MIN_TOURNAME > s.length
+                  ? "Name zu kurz"
+                  : (MAX_TOURNAME < s.length ? "Name zu lang" : null),
               decoration: InputDecoration(
                 suffixIcon: Icon(Icons.border_color),
                 labelText: "Tournamen festlegen",
@@ -269,7 +303,7 @@ class _CreateTourState extends State<CreateTour> {
             Text("Eine kurze Beschreibung verfassen:"),
             Container(
               margin: EdgeInsets.only(top: 5),
-              height: verSize(18, 10),
+              height: verSize(18, 30),
               decoration:
                   BoxDecoration(border: Border.all(color: Colors.black)),
               padding: EdgeInsets.symmetric(horizontal: 13),
@@ -286,14 +320,14 @@ class _CreateTourState extends State<CreateTour> {
             ButtonBar(
               buttonPadding: EdgeInsets.all(6),
               alignment: MainAxisAlignment.center,
-              buttonHeight: verSize(6.5, 6.5),
-              buttonMinWidth: horSize(35, 38),
+              buttonHeight: verSize(6.5, 11),
+              buttonMinWidth: horSize(35, 29),
               children: [
                 FlatButton(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                   textColor: Colors.white,
-                  color: Colors.orange,
+                  color: COLOR_ADD,
                   onPressed: () {
                     // TODO make input variable
                     widget.tour.creationTime = DateTime.now();
@@ -303,11 +337,13 @@ class _CreateTourState extends State<CreateTour> {
                           //e.descr.text = e.descr.text.trim();
                           e.textInfo.text = e.textInfo.text.trim();
                         }
-                    MuseumDatabase.get().writeTourStops(widget.tour);
-                    showDialog(
-                        context: context,
-                        builder: (context) =>
-                            AlertDialog(title: Text("Finish")));
+                    MuseumDatabase.get().writeTourStops(widget.tour).then(
+                        (val) {
+                      widget.goBack();
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                        content: Text("Tour hinzugefügt!"),
+                      ));
+                    }, onError: (error) => print(error));
                   },
                   child: Text("Fertigstellen"),
                 ),
@@ -315,7 +351,7 @@ class _CreateTourState extends State<CreateTour> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
                     textColor: Colors.white,
-                    color: Colors.orange,
+                    color: COLOR_ADD,
                     onPressed: () =>
                         setState(() => _type = CreateType.MULTI_STOP),
                     child: Text("Stationen festlegen"))
@@ -374,8 +410,8 @@ class _CreateTourState extends State<CreateTour> {
     String label = "";
     switch (_type) {
       case CreateType.GENERAL:
-        funct = widget.goBack;
-        label = "Zur Übersicht";
+        funct = _confirmBack;
+        label = "Übersicht";
         break;
       case CreateType.MULTI_STOP:
         funct = () => setState(() => _type = CreateType.GENERAL);
@@ -386,7 +422,7 @@ class _CreateTourState extends State<CreateTour> {
         break;
     }
     return Container(
-      width: horSize(25, 4),
+      width: horSize(25, 30),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -399,6 +435,30 @@ class _CreateTourState extends State<CreateTour> {
         ],
       ),
     );
+  }
+
+  void _confirmBack() {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text("Warnung"),
+              content: Text(
+                  "Möchten Sie wirklich zur Übersicht zurückkehren?\nAlle Änderungen gehen unwiderruflich verloren."),
+              actions: [
+                FlatButton(
+                  child: Text("Abbrechen", style: TextStyle(color: COLOR_ADD)),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                FlatButton(
+                  child:
+                      Text("Zur Übersicht", style: TextStyle(color: COLOR_ADD)),
+                  onPressed: () => setState(() {
+                    widget.goBack();
+                    Navigator.pop(context);
+                  }),
+                ),
+              ],
+            ));
   }
 }
 

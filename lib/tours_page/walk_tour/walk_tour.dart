@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:museum_app/SizeConfig.dart';
+import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/map/map_page.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_content.dart';
@@ -37,7 +38,7 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
       padding: EdgeInsets.only(left: 15, right: 15, bottom: 9, top: topPad),
       height: verSize(13, 25) + topPad,
       decoration: BoxDecoration(
-        color: Colors.pink,
+        color: COLOR_TOUR,
         border: Border(bottom: BorderSide(color: Colors.black, width: 1.5)),
       ),
       child: Row(
@@ -109,7 +110,7 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                 ? Colors.white.withOpacity(.35)
                 : Colors.transparent),
         decoration: BoxDecoration(
-          color: Colors.pinkAccent,
+          color: COLOR_TOUR,
           border: Border.all(color: Colors.black),
           borderRadius: BorderRadius.all(Radius.circular(15)),
         ),
@@ -237,7 +238,7 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                   style: TextStyle(fontWeight: FontWeight.bold)),
               elevation: 1,
               // here: buttonColor
-              backgroundColor: Colors.pink,
+              backgroundColor: COLOR_TOUR,
               // here: textColor
               foregroundColor: Colors.white,
               onPressed: () => bbc.swap(),
@@ -263,7 +264,7 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
             ),
             bottomAppBarBody: Container(
               decoration: BoxDecoration(
-                color: Colors.pink,
+                color: COLOR_TOUR,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
                 border: Border.all(color: Colors.black, width: 1.5),
               ),

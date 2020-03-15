@@ -5,6 +5,8 @@ import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/image_carousel.dart';
 
+import '../../constants.dart';
+
 class TourExtra extends StatefulWidget {
   final int index;
   final ActualExtra extra;
@@ -43,7 +45,7 @@ class _TourExtraState extends State<TourExtra> {
             width: horSize(100, 100),
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(18)),
-                border: Border.all(color: Colors.pink, width: 2.2)),
+                border: Border.all(color: COLOR_TOUR, width: 2.2)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -109,17 +111,17 @@ class _TourExtraState extends State<TourExtra> {
                       //fit: FlexFit.loose,
                       children: [
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6),
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 7, vertical: 4),
                           alignment: Alignment.center,
                           child: widget.edit
                               ? TextField(
                                   controller: e.valA,
                                   minLines: 1,
                                   maxLines: 5,
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: "Label",
-                                  ),
+                                  maxLength: 70,
+                                  decoration:
+                                      InputDecoration(hintText: "Label"),
                                 )
                               : Text(e.valA.text),
                         ),
@@ -153,12 +155,12 @@ class _TourExtraState extends State<TourExtra> {
                         onChanged: (newVal) => setState(() => e.valB = newVal),
                         title: widget.edit
                             ? TextField(
-                          controller: e.valA,
-                          minLines: 1,
-                          maxLines: 3,
-                          maxLength: 70,
-                          decoration: InputDecoration(hintText: "Label"),
-                        )
+                                controller: e.valA,
+                                minLines: 1,
+                                maxLines: 3,
+                                maxLength: 70,
+                                decoration: InputDecoration(hintText: "Label"),
+                              )
                             : Text(e.valA.text),
                       ))
                   .toList() +
@@ -174,12 +176,12 @@ class _TourExtraState extends State<TourExtra> {
                   onChanged: (newVal) => setState(() => t.selected = id),
                   title: widget.edit
                       ? TextField(
-                    controller: e.valA,
-                    minLines: 1,
-                    maxLines: 3,
-                    maxLength: 70,
-                    decoration: InputDecoration(hintText: "Label"),
-                  )
+                          controller: e.valA,
+                          minLines: 1,
+                          maxLines: 3,
+                          maxLength: 70,
+                          decoration: InputDecoration(hintText: "Label"),
+                        )
                       : Text(e.valA.text),
                   groupValue: t.selected,
                 );

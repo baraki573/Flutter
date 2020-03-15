@@ -5,6 +5,8 @@ import 'package:museum_app/home_page/home_page.dart';
 import 'package:museum_app/profile_page/profile_page.dart';
 import 'package:museum_app/tours_page/tours_page.dart';
 
+import '../constants.dart';
+
 class BottomBarNavigationPatternExample extends StatefulWidget {
   // final int barIndex;
   // BottomBarNavigationPatternExample({Key key, @required this.barIndex}): super(key: key);
@@ -13,22 +15,22 @@ class BottomBarNavigationPatternExample extends StatefulWidget {
     BarItem(
       text: "Home",
       iconData: Icons.home,
-      color: Colors.indigo,
+      color: COLOR_HOME,
     ),
     BarItem(
       text: "Tours",
       iconData: Icons.assistant_photo,
-      color: Colors.pinkAccent,
+      color: COLOR_TOUR,
     ),
     BarItem(
       text: "Add",
       iconData: Icons.add,
-      color: Colors.yellow.shade900,
+      color: COLOR_ADD,
     ),
     BarItem(
       text: "Profile",
       iconData: Icons.person_outline,
-      color: Colors.teal,
+      color: COLOR_PROFILE,
     ),
   ];
 

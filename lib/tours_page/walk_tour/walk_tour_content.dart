@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:museum_app/SizeConfig.dart';
+import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
 import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/image_carousel.dart';
@@ -18,7 +19,7 @@ class TourWalkerContent extends StatefulWidget {
   final bool showExtras;
 
   TourWalkerContent(this.stop,
-      {Key key, this.color = Colors.pink, this.showExtras = true})
+      {Key key, this.color = COLOR_TOUR, this.showExtras = true})
       : super(key: key);
 
   @override
