@@ -178,14 +178,20 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
               /*widget.tour.tasks
                       .forEach((s, list) =>
                       list.forEach((t) => t.ctrl.clear()));*/
+              // TODO reset task CTRL
+              /*for (var stop in widget.tour.stops)
+                for (var extra in stop.extras)
+                  if (extra.task != null)
+                    for (var entry in extra.task.entries)
+                      entry.valB*/
               Navigator.pop(context);
               Navigator.pop(context);
             },
-            child: Text("Beenden"),
+            child: Text("Beenden", style: TextStyle(color: COLOR_TOUR)),
           ),
           FlatButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Tour fortsetzen"),
+            child: Text("Tour fortsetzen", style: TextStyle(color: COLOR_TOUR)),
           ),
         ],
       ),

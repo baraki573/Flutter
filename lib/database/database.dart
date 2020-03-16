@@ -416,7 +416,19 @@ class MuseumDatabase extends _$MuseumDatabase {
     return SwitchLatestStream(res);
   }
 
-  Stream<List<Stop>> getStops() => select(stops).watch();
+  Stream<List<Stop>> watchStops() => select(stops).watch();
+
+  Future<List<Stop>> getStops() => select(stops).get();
+
+  Stream<List<Stop>> stopSearch(String text) {
+    var query = select(stops).watch();
+
+    if (text.isEmpty)
+      return Stream.value(List<Stop>());
+    return query.map((list) => list
+        .where((s) => s.name.toLowerCase().startsWith(text.toLowerCase()))
+        .toList());
+  }
 
   Stream<List<Extra>> getExtrasId(int id_tour, int id_stop) {
     final contentQuery = select(extras)

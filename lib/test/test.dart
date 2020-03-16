@@ -20,7 +20,7 @@ class _State extends State<TestWidget> {
   Widget build(BuildContext context) {
     // TODO: implement build
     return StreamBuilder(
-        stream: MuseumDatabase.get().getStops(),
+        stream: MuseumDatabase.get().watchStops(),
         builder: (context, snap) {
           List<Stop> stops = snap.data ?? List<Stop>();
           return Column(

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:museum_app/add_tour/search_widget.dart';
 import 'package:museum_app/database/database.dart';
 import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_content.dart';
@@ -32,24 +33,23 @@ class _EditSingleStopState extends State<EditSingleStop> {
       child: Column(
         children: [
           Container(
-              color: COLOR_ADD,
-              height: verSize(17, 31, top: true),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: EdgeInsets.only(
-                          left: horSize(16, 9, left: true),
-                          top: verSize(3.5, 5.5, top: true)),
-                      //alignment: Alignment.center,
-                      child: Text("Zurück zur Stationsübersicht"),
-                    ),
+            color: COLOR_ADD,
+            height: verSize(17, 31, top: true),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.only(
+                        left: horSize(16, 9, left: true),
+                        top: verSize(3.5, 5.5, top: true)),
+                    //alignment: Alignment.center,
+                    child: Text("Zurück zur Stationsübersicht"),
                   ),
-                  _selecter(),
-                ],
-              ),
-
+                ),
+                _selecter(),
+              ],
+            ),
           ),
           Expanded(
             child: Row(
@@ -67,12 +67,13 @@ class _EditSingleStopState extends State<EditSingleStop> {
   }
 
   Widget _selecter() {
+
     return Container(
         color: Colors.white,
         child: StreamBuilder(
-          stream: MuseumDatabase.get().getStops(),
+          stream: MuseumDatabase.get().getCustomStop(),
           builder: (context, snap) {
-            List<Stop> list = snap.data ?? List<Stop>();
+            Stop stop = snap.data?.stop;
             /*if (widget.stop.stop == null && list.isNotEmpty) {
               widget.stop.stop = list[0];
               widget.stop.features = StopFeature(
@@ -84,6 +85,41 @@ class _EditSingleStopState extends State<EditSingleStop> {
               );
             }*/
             return DropdownButton(
+              hint: Text("  "+widget.stop.stop?.name),
+              isExpanded: true,
+              items: [
+                DropdownMenuItem(
+                  value: 0,
+                  child: Row(
+                    children: [
+                      Icon(Icons.add),
+                      Text("  Museumsobjekt auswählen  "),
+                      Icon(FontAwesomeIcons.crown),
+                    ],
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 1,
+                  child: Row(
+                    children: [
+                      Icon(Icons.add),
+                      Text("  Zwischenstation einfügen  "),
+                    ],
+                  ),
+                ),
+              ],
+              onChanged: (value) {
+                switch(value) {
+                  case 0: _action(); break;
+                  case 1: _setStop(stop); break;
+                  default:
+                }
+              },
+            );
+            /*return FlatButton(
+              onPressed: _action,
+              child: Text("Auswahl..."),
+            ) DropdownButton(
               isExpanded: true,
               hint: Text("  " + (widget.stop.stop?.name) ?? "Auswählen"),
               items: list
@@ -100,10 +136,45 @@ class _EditSingleStopState extends State<EditSingleStop> {
                   showDetails: !widget.stop.isCustom(),
                 );
               }),
-            );
+            )*/
+                ;
           },
         ));
   }
+
+  _action() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        contentPadding: EdgeInsets.only(left: 15, right: 15, top: 15),
+        content: Container(
+          height: verSize(53, 50),
+          child: MuseumSearch(_setStop),
+        ),
+        actions: [
+          FlatButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Schließen", style: TextStyle(color: COLOR_ADD)),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _setStop(Stop s) {
+    setState(() {
+      widget.stop.stop = s;
+      widget.stop.features = StopFeature(
+        id_tour: null,
+        id_stop: s.id,
+        showImages: !widget.stop.isCustom(),
+        showText: true,
+        showDetails: !widget.stop.isCustom(),
+      );
+    });
+  }
+
+  TextEditingController _ctrl = TextEditingController();
 
   // right-hand sidebar
   Widget _sideBar() {
@@ -383,20 +454,26 @@ class _EditSingleStopState extends State<EditSingleStop> {
   }
 
   void _removeExtra(ActualExtra e) {
-    showDialog(context: context, builder: (context) => AlertDialog(
-      title: Text("Warnung"),
-      content: Text("Möchten Sie das ausgewählte Extra wirklich entfernen?\nDies kann nicht rückgängig gemacht werden."),
-      actions: [
-        FlatButton(
-          child: Text("Abbrechen", style: TextStyle(color: COLOR_ADD)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        FlatButton(
-          child: Text("Extra entfernen", style: TextStyle(color: COLOR_ADD)),
-          onPressed: () => setState(
-                  () {widget.stop.extras.remove(e); Navigator.pop(context);}),
-        ),
-      ],
-    ));
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text("Warnung"),
+              content: Text(
+                  "Möchten Sie das ausgewählte Extra wirklich entfernen?\nDies kann nicht rückgängig gemacht werden."),
+              actions: [
+                FlatButton(
+                  child: Text("Abbrechen", style: TextStyle(color: COLOR_ADD)),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                FlatButton(
+                  child: Text("Extra entfernen",
+                      style: TextStyle(color: COLOR_ADD)),
+                  onPressed: () => setState(() {
+                    widget.stop.extras.remove(e);
+                    Navigator.pop(context);
+                  }),
+                ),
+              ],
+            ));
   }
 }
