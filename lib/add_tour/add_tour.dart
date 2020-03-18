@@ -258,7 +258,7 @@ class _AddTourState extends State<AddTour> {
 }
 
 Widget border(Widget w,
-    {width, height, margin, padding = const EdgeInsets.all(8)}) {
+    {width, borderColor = COLOR_ADD, height, margin, padding = const EdgeInsets.all(8)}) {
   return Container(
     width: width,
     height: height,
@@ -266,7 +266,7 @@ Widget border(Widget w,
     margin: margin,
     decoration: BoxDecoration(
         color: Colors.white,
-        border: Border.all(color: COLOR_ADD, width: 2),
+        border: Border.all(color: borderColor, width: 2),
         borderRadius: BorderRadius.all(Radius.circular(18.0)),
         boxShadow: [
           BoxShadow(

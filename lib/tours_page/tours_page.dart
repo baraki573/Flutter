@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:museum_app/add_tour/add_tour.dart';
 import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
 import 'package:museum_app/database/modelling.dart';
@@ -69,19 +71,96 @@ class _ToursState extends State<Tours> {
         });
   }
 
+  TextEditingController _ctrl = TextEditingController();
+
+  Widget _allTours() {
+    return Column(
+      children: [
+        Container(
+          margin: EdgeInsets.only(left: 16, right: 16),
+          padding: EdgeInsets.symmetric(horizontal: 15),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.black),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: TextField(
+            controller: _ctrl,
+            decoration: InputDecoration(
+              icon: Icon(Icons.search),
+              border: InputBorder.none,
+              labelText: "Tour suchen...",
+            ),
+          ),
+        ),
+        // TODO Builder connected to the server
+      ],
+    );
+  }
+
+  TextEditingController _ctrlCode = TextEditingController();
+
+  Widget _code() {
+    return Column(
+      children: [
+        Text(
+          "Tour beitreten?\nCode eingeben!",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: COLOR_TOUR, fontWeight: FontWeight.bold, fontSize: 25),
+        ),
+        border(
+          TextField(
+            controller: _ctrlCode,
+            decoration: InputDecoration(
+                icon: Icon(Icons.keyboard), border: InputBorder.none),
+          ),
+          margin: EdgeInsets.symmetric(horizontal: 24, vertical: 17),
+          padding: EdgeInsets.symmetric(horizontal: 7),
+          borderColor: COLOR_TOUR,
+        ),
+        Text(
+          "... oder einen QR-Code scannen!",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: COLOR_TOUR, fontWeight: FontWeight.bold, fontSize: 25),
+        ),
+        GestureDetector(
+          onTap: () {/*
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => QrCamera(
+                          qrCodeCallback: (value) {},
+                        )));*/
+          },
+          child: border(
+            Icon(FontAwesomeIcons.qrcode, size: 50),
+            borderColor: COLOR_TOUR,
+            margin: EdgeInsets.only(top: 17),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MuseumTabs(
-        _topInfo(),
-      {
-        // All tours
-        "Alle": _bottomInfo((_) => (tour) => true),
-        // Only the created ones
-        "Eigene": _bottomInfo((username) => (tour) => tour.tour.author == username),
-        // The rest
-        "Favoriten": _bottomInfo((username) => (tour) => tour.tour.author != username),
-      },
-        color: COLOR_TOUR,
-    );
+    return StreamBuilder(
+        stream: MuseumDatabase.get().getTourStops(),
+        builder: (context, snap) {
+          var tours = snap.data ?? List<TourWithStops>();
+          return MuseumTabs(
+            _topInfo(),
+            {
+              // All tours
+              "Alle": _allTours(), //_bottomInfo((_) => (tour) => true),
+              // Only the created ones
+              "Downloads": TourList(tours),
+              // The rest
+              "Code": _code(),
+            },
+            color: COLOR_TOUR,
+          );
+        });
   }
 }

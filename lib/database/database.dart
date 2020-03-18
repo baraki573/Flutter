@@ -82,8 +82,8 @@ class Stops extends Table {
 
   TextColumn get creator => text().withLength(min: 1, max: 15).nullable()();
 
-  TextColumn get devision =>
-      text().customConstraint("REFERENCES devisions(name)").nullable()();
+  TextColumn get division =>
+      text().customConstraint("REFERENCES divisions(name)").nullable()();
 
   TextColumn get artType => text().nullable()();
 
@@ -108,7 +108,7 @@ class TourStops extends Table {
 }
 
 // TODO typo: change to "Divisions"
-class Devisions extends Table {
+class Divisions extends Table {
   TextColumn get name => text()();
 
   IntColumn get color =>
@@ -242,7 +242,7 @@ LazyDatabase _openConnection() {
   Users,
   Badges,
   Stops,
-  Devisions,
+  Divisions,
   Tours,
   TourStops,
   Extras,
@@ -289,7 +289,7 @@ class MuseumDatabase extends _$MuseumDatabase {
     customStatement("DELETE FROM stops");
     customStatement("DELETE FROM tours");
     customStatement("DELETE FROM badges");
-    customStatement("DELETE FROM devisions");
+    customStatement("DELETE FROM divisions");
   }
 
   Stream<StopFeature> getStopFeature(int num, int stop_id, int tour_id) {
@@ -325,7 +325,6 @@ class MuseumDatabase extends _$MuseumDatabase {
   }
 
   Future addExtra(ActualExtra e, int pos_stop, int pos_extra, int tour_id, int stop_id) {
-    print(pos_stop);
     if (e.task != null) {
       var list = List<int>();
 
@@ -409,7 +408,7 @@ class MuseumDatabase extends _$MuseumDatabase {
     return into(badges).insert(bc);
   }
 
-  Stream<List<Devision>> getDevisions() => select(devisions).watch();
+  Stream<List<Division>> getDivisions() => select(divisions).watch();
 
   Stream<List<Tour>> getTours() => select(tours).watch();
 
@@ -451,30 +450,38 @@ class MuseumDatabase extends _$MuseumDatabase {
 
     List<String> input = text.split(RegExp(",|;|&"));
 
-    //print(input.length.toString() + input.toString());
-
     var query = select(stops)..where((s) => s.name.equals(customName).not());
-    //..where((s) => s.name.like("%"+text.trim()+"%"));
 
     for (var part in input) {
       part = part.trim();
+      // search for division
       if (part.startsWith(RegExp("div:?"))) {
         part = part.replaceAll(RegExp("div:?"), "").trim();
-        query.where((s) => s.devision.like(part + "%"));
-      } else if (part.startsWith(RegExp("cre:?"))) {
+        query.where((s) => s.division.like(part + "%"));
+      }
+      // search for object's creator
+      else if (part.startsWith(RegExp("cre:?"))) {
         part = part.replaceAll(RegExp("cre:?"), "").trim();
         query.where((s) => s.creator.like(part + "%"));
-      } else if (part.startsWith(RegExp("art:?"))) {
+      }
+      // search for object's art type
+      else if (part.startsWith(RegExp("art:?"))) {
         part = part.replaceAll(RegExp("art:?"), "").trim();
         query.where((s) => s.artType.like(part + "%"));
-      } else if (part.startsWith(RegExp("mat:?"))) {
+      }
+      // search for object's material
+      else if (part.startsWith(RegExp("mat:?"))) {
         part = part.replaceAll(RegExp("mat:?"), "").trim();
         query.where((s) => s.material.like(part + "%"));
-      } else if (part.startsWith(RegExp("inv:?"))) {
+      }
+      // search for object's inv number
+      else if (part.startsWith(RegExp("inv:?"))) {
         part = part.replaceAll(RegExp("inv:?"), "").trim();
         query.where((s) => s.invId.like(part + "%"));
-      } else
-        query.where((s) => s.name.like("%" + part + "%"));
+      }
+      // search in the object's name and division
+      else
+        query.where((s) => s.name.like("%" + part + "%") | s.division.like("%" + part + "%"));
     }
 
     return query.watch();
@@ -563,18 +570,18 @@ class MuseumDatabase extends _$MuseumDatabase {
         username: "Maria123_XD", imgPath: "assets/images/profile_test.png"));
   }
 
-  Future<void> demoDevisions() async {
+  Future<void> demoDivisions() async {
     await batch((batch) {
       batch.insertAll(
-          devisions,
+          divisions,
           [
-            DevisionsCompanion.insert(
+            DivisionsCompanion.insert(
                 name: "Zoologisch", color: Value(Color(0xFFFF0000))),
-            DevisionsCompanion.insert(
+            DivisionsCompanion.insert(
                 name: "Skulpturen", color: Value(Color(0xFF0000FF))),
-            DevisionsCompanion.insert(
+            DivisionsCompanion.insert(
                 name: "Bilder", color: Value(Color(0xFFFFEB3B))),
-            DevisionsCompanion.insert(
+            DivisionsCompanion.insert(
                 name: "Bonus", color: Value(Color(0xFF673AB7))),
           ],
           mode: InsertMode.insertOrReplace);
@@ -592,7 +599,7 @@ class MuseumDatabase extends _$MuseumDatabase {
                 String s = (i % 3 == 0 ? "" : "2");
                 return StopsCompanion.insert(
                   name: "Zoologisch $i",
-                  devision: Value("Zoologisch"),
+                  division: Value("Zoologisch"),
                   descr: "Description foo",
                   images: [
                     'assets/images/profile_test' + s + '.png',
@@ -611,7 +618,7 @@ class MuseumDatabase extends _$MuseumDatabase {
                   name: "Skulpturen $i",
                   descr: "More descr",
                   images: ['assets/images/profile_test' + s + '.png'],
-                  devision: Value("Skulpturen"),
+                  division: Value("Skulpturen"),
                   creator: Value("DaVinci"),
                 );
               }) +
@@ -619,7 +626,7 @@ class MuseumDatabase extends _$MuseumDatabase {
                 String s = (i % 3 == 0 ? "" : "2");
                 return StopsCompanion.insert(
                   name: "Bilder $i",
-                  devision: Value("Bilder"),
+                  division: Value("Bilder"),
                   descr: "Interessante Details",
                   images: [
                     'assets/images/profile_test' + s + '.png',
@@ -635,7 +642,7 @@ class MuseumDatabase extends _$MuseumDatabase {
                     descr:
                         "Mit dieser Tour werden Sie interessante neue Fakten kennenlernen. Sie werden das Museum so erkunden, wie es bis heute noch kein Mensch getan hat. Nebenbei werden Sie spannende Aufgaben lösen.",
                     images: ['assets/images/haupthalle_hlm_blue.png'],
-                    devision: Value("Bonus"),
+                    division: Value("Bonus"),
                     creator: Value("VanGogh"));
               }),
           mode: InsertMode.insertOrReplace);
@@ -667,7 +674,7 @@ void demo() {
   var db = MuseumDatabase.get();
   //db.clear();
   db.demoUser();
-  db.demoDevisions().catchError((_) => print("devisionError"));
+  db.demoDivisions().catchError((_) => print("divisionError"));
   db.demoStops().catchError((_) => print("stopError"));
   db.demoBadges().catchError((_) => print("badgeError"));
   //db.demoTours().catchError((_) => print("tourError"));

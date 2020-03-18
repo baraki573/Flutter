@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:moor/moor.dart';
-import 'package:museum_app/database/database.dart';
-import 'package:museum_app/onboarding/onboarding.dart';
-import 'package:provider/provider.dart';
 import 'package:museum_app/route_generator.dart';
 
 void main() => runApp(MyApp());

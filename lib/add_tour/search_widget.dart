@@ -50,7 +50,7 @@ class _MuseumSearchState extends State<MuseumSearch> {
                               },
                               trailing: Icon(Icons.arrow_forward),
                               title: Text(s.name),
-                              subtitle: Text("Abteilung " + (s.devision ?? "")),
+                              subtitle: Text("Abteilung " + (s.division ?? "")),
                             ))
                         .toList(),
                   ),

@@ -500,7 +500,7 @@ class Stop extends DataClass implements Insertable<Stop> {
   final String invId;
   final String time;
   final String creator;
-  final String devision;
+  final String division;
   final String artType;
   final String material;
   final String size;
@@ -514,7 +514,7 @@ class Stop extends DataClass implements Insertable<Stop> {
       this.invId,
       this.time,
       this.creator,
-      this.devision,
+      this.division,
       this.artType,
       this.material,
       this.size,
@@ -537,8 +537,8 @@ class Stop extends DataClass implements Insertable<Stop> {
       time: stringType.mapFromDatabaseResponse(data['${effectivePrefix}time']),
       creator:
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}creator']),
-      devision: stringType
-          .mapFromDatabaseResponse(data['${effectivePrefix}devision']),
+      division: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}division']),
       artType: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}art_type']),
       material: stringType
@@ -561,7 +561,7 @@ class Stop extends DataClass implements Insertable<Stop> {
       invId: serializer.fromJson<String>(json['invId']),
       time: serializer.fromJson<String>(json['time']),
       creator: serializer.fromJson<String>(json['creator']),
-      devision: serializer.fromJson<String>(json['devision']),
+      division: serializer.fromJson<String>(json['division']),
       artType: serializer.fromJson<String>(json['artType']),
       material: serializer.fromJson<String>(json['material']),
       size: serializer.fromJson<String>(json['size']),
@@ -580,7 +580,7 @@ class Stop extends DataClass implements Insertable<Stop> {
       'invId': serializer.toJson<String>(invId),
       'time': serializer.toJson<String>(time),
       'creator': serializer.toJson<String>(creator),
-      'devision': serializer.toJson<String>(devision),
+      'division': serializer.toJson<String>(division),
       'artType': serializer.toJson<String>(artType),
       'material': serializer.toJson<String>(material),
       'size': serializer.toJson<String>(size),
@@ -604,9 +604,9 @@ class Stop extends DataClass implements Insertable<Stop> {
       creator: creator == null && nullToAbsent
           ? const Value.absent()
           : Value(creator),
-      devision: devision == null && nullToAbsent
+      division: division == null && nullToAbsent
           ? const Value.absent()
-          : Value(devision),
+          : Value(division),
       artType: artType == null && nullToAbsent
           ? const Value.absent()
           : Value(artType),
@@ -631,7 +631,7 @@ class Stop extends DataClass implements Insertable<Stop> {
           String invId,
           String time,
           String creator,
-          String devision,
+          String division,
           String artType,
           String material,
           String size,
@@ -645,7 +645,7 @@ class Stop extends DataClass implements Insertable<Stop> {
         invId: invId ?? this.invId,
         time: time ?? this.time,
         creator: creator ?? this.creator,
-        devision: devision ?? this.devision,
+        division: division ?? this.division,
         artType: artType ?? this.artType,
         material: material ?? this.material,
         size: size ?? this.size,
@@ -662,7 +662,7 @@ class Stop extends DataClass implements Insertable<Stop> {
           ..write('invId: $invId, ')
           ..write('time: $time, ')
           ..write('creator: $creator, ')
-          ..write('devision: $devision, ')
+          ..write('division: $division, ')
           ..write('artType: $artType, ')
           ..write('material: $material, ')
           ..write('size: $size, ')
@@ -688,7 +688,7 @@ class Stop extends DataClass implements Insertable<Stop> {
                           $mrjc(
                               creator.hashCode,
                               $mrjc(
-                                  devision.hashCode,
+                                  division.hashCode,
                                   $mrjc(
                                       artType.hashCode,
                                       $mrjc(
@@ -710,7 +710,7 @@ class Stop extends DataClass implements Insertable<Stop> {
           other.invId == this.invId &&
           other.time == this.time &&
           other.creator == this.creator &&
-          other.devision == this.devision &&
+          other.division == this.division &&
           other.artType == this.artType &&
           other.material == this.material &&
           other.size == this.size &&
@@ -726,7 +726,7 @@ class StopsCompanion extends UpdateCompanion<Stop> {
   final Value<String> invId;
   final Value<String> time;
   final Value<String> creator;
-  final Value<String> devision;
+  final Value<String> division;
   final Value<String> artType;
   final Value<String> material;
   final Value<String> size;
@@ -740,7 +740,7 @@ class StopsCompanion extends UpdateCompanion<Stop> {
     this.invId = const Value.absent(),
     this.time = const Value.absent(),
     this.creator = const Value.absent(),
-    this.devision = const Value.absent(),
+    this.division = const Value.absent(),
     this.artType = const Value.absent(),
     this.material = const Value.absent(),
     this.size = const Value.absent(),
@@ -755,7 +755,7 @@ class StopsCompanion extends UpdateCompanion<Stop> {
     this.invId = const Value.absent(),
     this.time = const Value.absent(),
     this.creator = const Value.absent(),
-    this.devision = const Value.absent(),
+    this.division = const Value.absent(),
     this.artType = const Value.absent(),
     this.material = const Value.absent(),
     this.size = const Value.absent(),
@@ -772,7 +772,7 @@ class StopsCompanion extends UpdateCompanion<Stop> {
       Value<String> invId,
       Value<String> time,
       Value<String> creator,
-      Value<String> devision,
+      Value<String> division,
       Value<String> artType,
       Value<String> material,
       Value<String> size,
@@ -786,7 +786,7 @@ class StopsCompanion extends UpdateCompanion<Stop> {
       invId: invId ?? this.invId,
       time: time ?? this.time,
       creator: creator ?? this.creator,
-      devision: devision ?? this.devision,
+      division: division ?? this.division,
       artType: artType ?? this.artType,
       material: material ?? this.material,
       size: size ?? this.size,
@@ -872,13 +872,13 @@ class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
         minTextLength: 1, maxTextLength: 15);
   }
 
-  final VerificationMeta _devisionMeta = const VerificationMeta('devision');
-  GeneratedTextColumn _devision;
+  final VerificationMeta _divisionMeta = const VerificationMeta('division');
+  GeneratedTextColumn _division;
   @override
-  GeneratedTextColumn get devision => _devision ??= _constructDevision();
-  GeneratedTextColumn _constructDevision() {
-    return GeneratedTextColumn('devision', $tableName, true,
-        $customConstraints: 'REFERENCES devisions(name)');
+  GeneratedTextColumn get division => _division ??= _constructDivision();
+  GeneratedTextColumn _constructDivision() {
+    return GeneratedTextColumn('division', $tableName, true,
+        $customConstraints: 'REFERENCES divisions(name)');
   }
 
   final VerificationMeta _artTypeMeta = const VerificationMeta('artType');
@@ -952,7 +952,7 @@ class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
         invId,
         time,
         creator,
-        devision,
+        division,
         artType,
         material,
         size,
@@ -997,9 +997,9 @@ class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
       context.handle(_creatorMeta,
           creator.isAcceptableValue(d.creator.value, _creatorMeta));
     }
-    if (d.devision.present) {
-      context.handle(_devisionMeta,
-          devision.isAcceptableValue(d.devision.value, _devisionMeta));
+    if (d.division.present) {
+      context.handle(_divisionMeta,
+          division.isAcceptableValue(d.division.value, _divisionMeta));
     }
     if (d.artType.present) {
       context.handle(_artTypeMeta,
@@ -1060,8 +1060,8 @@ class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
     if (d.creator.present) {
       map['creator'] = Variable<String, StringType>(d.creator.value);
     }
-    if (d.devision.present) {
-      map['devision'] = Variable<String, StringType>(d.devision.value);
+    if (d.division.present) {
+      map['division'] = Variable<String, StringType>(d.division.value);
     }
     if (d.artType.present) {
       map['art_type'] = Variable<String, StringType>(d.artType.value);
@@ -1090,25 +1090,25 @@ class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
       StringListConverter();
 }
 
-class Devision extends DataClass implements Insertable<Devision> {
+class Division extends DataClass implements Insertable<Division> {
   final String name;
   final Color color;
-  Devision({@required this.name, @required this.color});
-  factory Devision.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+  Division({@required this.name, @required this.color});
+  factory Division.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
     final stringType = db.typeSystem.forDartType<String>();
     final intType = db.typeSystem.forDartType<int>();
-    return Devision(
+    return Division(
       name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
-      color: $DevisionsTable.$converter0.mapToDart(
+      color: $DivisionsTable.$converter0.mapToDart(
           intType.mapFromDatabaseResponse(data['${effectivePrefix}color'])),
     );
   }
-  factory Devision.fromJson(Map<String, dynamic> json,
+  factory Division.fromJson(Map<String, dynamic> json,
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
-    return Devision(
+    return Division(
       name: serializer.fromJson<String>(json['name']),
       color: serializer.fromJson<Color>(json['color']),
     );
@@ -1123,21 +1123,21 @@ class Devision extends DataClass implements Insertable<Devision> {
   }
 
   @override
-  DevisionsCompanion createCompanion(bool nullToAbsent) {
-    return DevisionsCompanion(
+  DivisionsCompanion createCompanion(bool nullToAbsent) {
+    return DivisionsCompanion(
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
       color:
           color == null && nullToAbsent ? const Value.absent() : Value(color),
     );
   }
 
-  Devision copyWith({String name, Color color}) => Devision(
+  Division copyWith({String name, Color color}) => Division(
         name: name ?? this.name,
         color: color ?? this.color,
       );
   @override
   String toString() {
-    return (StringBuffer('Devision(')
+    return (StringBuffer('Division(')
           ..write('name: $name, ')
           ..write('color: $color')
           ..write(')'))
@@ -1149,35 +1149,35 @@ class Devision extends DataClass implements Insertable<Devision> {
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
-      (other is Devision &&
+      (other is Division &&
           other.name == this.name &&
           other.color == this.color);
 }
 
-class DevisionsCompanion extends UpdateCompanion<Devision> {
+class DivisionsCompanion extends UpdateCompanion<Division> {
   final Value<String> name;
   final Value<Color> color;
-  const DevisionsCompanion({
+  const DivisionsCompanion({
     this.name = const Value.absent(),
     this.color = const Value.absent(),
   });
-  DevisionsCompanion.insert({
+  DivisionsCompanion.insert({
     @required String name,
     this.color = const Value.absent(),
   }) : name = Value(name);
-  DevisionsCompanion copyWith({Value<String> name, Value<Color> color}) {
-    return DevisionsCompanion(
+  DivisionsCompanion copyWith({Value<String> name, Value<Color> color}) {
+    return DivisionsCompanion(
       name: name ?? this.name,
       color: color ?? this.color,
     );
   }
 }
 
-class $DevisionsTable extends Devisions
-    with TableInfo<$DevisionsTable, Devision> {
+class $DivisionsTable extends Divisions
+    with TableInfo<$DivisionsTable, Division> {
   final GeneratedDatabase _db;
   final String _alias;
-  $DevisionsTable(this._db, [this._alias]);
+  $DivisionsTable(this._db, [this._alias]);
   final VerificationMeta _nameMeta = const VerificationMeta('name');
   GeneratedTextColumn _name;
   @override
@@ -1202,13 +1202,13 @@ class $DevisionsTable extends Devisions
   @override
   List<GeneratedColumn> get $columns => [name, color];
   @override
-  $DevisionsTable get asDslTable => this;
+  $DivisionsTable get asDslTable => this;
   @override
-  String get $tableName => _alias ?? 'devisions';
+  String get $tableName => _alias ?? 'divisions';
   @override
-  final String actualTableName = 'devisions';
+  final String actualTableName = 'divisions';
   @override
-  VerificationContext validateIntegrity(DevisionsCompanion d,
+  VerificationContext validateIntegrity(DivisionsCompanion d,
       {bool isInserting = false}) {
     final context = VerificationContext();
     if (d.name.present) {
@@ -1224,27 +1224,27 @@ class $DevisionsTable extends Devisions
   @override
   Set<GeneratedColumn> get $primaryKey => {name};
   @override
-  Devision map(Map<String, dynamic> data, {String tablePrefix}) {
+  Division map(Map<String, dynamic> data, {String tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Devision.fromData(data, _db, prefix: effectivePrefix);
+    return Division.fromData(data, _db, prefix: effectivePrefix);
   }
 
   @override
-  Map<String, Variable> entityToSql(DevisionsCompanion d) {
+  Map<String, Variable> entityToSql(DivisionsCompanion d) {
     final map = <String, Variable>{};
     if (d.name.present) {
       map['name'] = Variable<String, StringType>(d.name.value);
     }
     if (d.color.present) {
-      final converter = $DevisionsTable.$converter0;
+      final converter = $DivisionsTable.$converter0;
       map['color'] = Variable<int, IntType>(converter.mapToSql(d.color.value));
     }
     return map;
   }
 
   @override
-  $DevisionsTable createAlias(String alias) {
-    return $DevisionsTable(_db, alias);
+  $DivisionsTable createAlias(String alias) {
+    return $DivisionsTable(_db, alias);
   }
 
   static TypeConverter<Color, int> $converter0 = ColorConverter();
@@ -2527,8 +2527,8 @@ abstract class _$MuseumDatabase extends GeneratedDatabase {
   $BadgesTable get badges => _badges ??= $BadgesTable(this);
   $StopsTable _stops;
   $StopsTable get stops => _stops ??= $StopsTable(this);
-  $DevisionsTable _devisions;
-  $DevisionsTable get devisions => _devisions ??= $DevisionsTable(this);
+  $DivisionsTable _divisions;
+  $DivisionsTable get divisions => _divisions ??= $DivisionsTable(this);
   $ToursTable _tours;
   $ToursTable get tours => _tours ??= $ToursTable(this);
   $TourStopsTable _tourStops;
@@ -2542,5 +2542,5 @@ abstract class _$MuseumDatabase extends GeneratedDatabase {
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [users, badges, stops, devisions, tours, tourStops, extras, stopFeatures];
+      [users, badges, stops, divisions, tours, tourStops, extras, stopFeatures];
 }

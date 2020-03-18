@@ -133,7 +133,7 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
   Map<String, String> getInformation(Stop s) {
     Map<String, String> map = {
       "Inventarnummer": s.invId,
-      "Abteilung": s.devision,
+      "Abteilung": s.division,
       "Kategorie": s.artType,
       "Ersteller": s.creator,
       "Zeitraum": s.time,

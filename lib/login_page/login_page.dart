@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/bottom_navigationbar/navigationbar_pattern.dart';
 

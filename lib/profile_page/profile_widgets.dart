@@ -13,7 +13,7 @@ class FavWidget extends StatefulWidget {
 }
 
 class _FavWidgetState extends State<FavWidget> {
-  Widget _buildAbteilung(Devision d, List<Stop> list) {
+  Widget _buildAbteilung(Division d, List<Stop> list) {
     if (list.isEmpty) return Container();
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,20 +84,20 @@ class _FavWidgetState extends State<FavWidget> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-        stream: MuseumDatabase.get().getDevisions(),
+        stream: MuseumDatabase.get().getDivisions(),
         builder: (context, snapDev) {
-          var devisions = snapDev.data ?? List<Devision>();
-          //print(devisions);
+          var divisions = snapDev.data ?? List<Division>();
+          //print(divisions);
           return StreamBuilder(
               stream: MuseumDatabase.get().watchStops(),
               builder: (context, snapStop) {
                 var stops = snapStop.data ?? List<Stop>();
                 return Column(
-                  children: List.generate(devisions.length, (index) {
+                  children: List.generate(divisions.length, (index) {
                     return _buildAbteilung(
-                        devisions[index],
+                        divisions[index],
                         stops
-                            .where((e) => e.devision == devisions[index].name)
+                            .where((e) => e.division == divisions[index].name)
                             .toList());
                   }),
                 );

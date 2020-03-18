@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
 import 'package:museum_app/database/modelling.dart';
@@ -27,15 +26,6 @@ class CreateTour extends StatefulWidget {
 class _CreateTourState extends State<CreateTour> {
   int _index = 0;
   CreateType _type = CreateType.GENERAL;
-
-  //final List<ActualStop> stops = [ActualStop.custom()];
-
-  @override
-  void initState() {
-    super.initState();
-    KeyboardVisibilityNotification().addNewListener(
-        onHide: () => FocusScope.of(context).requestFocus(FocusNode()));
-  }
 
   Widget _editMultiStop() {
     return Container(
