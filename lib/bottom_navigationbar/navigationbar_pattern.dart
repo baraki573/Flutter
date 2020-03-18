@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:museum_app/add_tour/add_tour.dart';
 import 'package:museum_app/bottom_navigationbar/animated_navigationbar.dart';
-import 'package:museum_app/profile_page/profile_page.dart';
-import 'package:museum_app/test/test.dart';
-import 'package:museum_app/tours_page/tours_page.dart';
 import 'package:museum_app/home_page/home_page.dart';
+import 'package:museum_app/profile_page/profile_page.dart';
+import 'package:museum_app/tours_page/tours_page.dart';
+
+import '../constants.dart';
 
 class BottomBarNavigationPatternExample extends StatefulWidget {
   // final int barIndex;
@@ -13,22 +15,22 @@ class BottomBarNavigationPatternExample extends StatefulWidget {
     BarItem(
       text: "Home",
       iconData: Icons.home,
-      color: Colors.indigo,
+      color: COLOR_HOME,
     ),
     BarItem(
       text: "Tours",
       iconData: Icons.assistant_photo,
-      color: Colors.pinkAccent,
+      color: COLOR_TOUR,
     ),
     BarItem(
       text: "Add",
       iconData: Icons.add,
-      color: Colors.yellow.shade900,
+      color: COLOR_ADD,
     ),
     BarItem(
       text: "Profile",
       iconData: Icons.person_outline,
-      color: Colors.teal,
+      color: COLOR_PROFILE,
     ),
   ];
 
@@ -45,7 +47,7 @@ class _BottomBarNavigationPatternExampleState
   List<Widget> arr = [
     Home(),
     Tours(),
-    TestWidget(),
+    AddTour(),
     Profile(),
   ];
 

@@ -2,18 +2,19 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:flutter/material.dart' as m;
 import 'package:moor/moor.dart';
-
-//import 'package:flutter/cupertino.dart';
 import 'package:moor_ffi/moor_ffi.dart';
 import 'package:museum_app/constants.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:flutter/material.dart' as m;
+import 'package:path_provider/path_provider.dart';
+import 'package:rxdart/rxdart.dart';
 
-// assuming that your file is called filename.dart. This will give an error at first,
-// but it's needed for moor to know about the generated code
+import 'modelling.dart';
+
 part 'database.g.dart';
+
+String customName = "Individuell";
 
 class Users extends Table {
   TextColumn get username =>
@@ -46,11 +47,14 @@ class Badges extends Table {
 class Tours extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  TextColumn get name => text().withLength(min: 3, max: 30)();
+  TextColumn get name =>
+      text().withLength(min: MIN_TOURNAME, max: MAX_TOURNAME)();
 
-  TextColumn get author => text().withLength(min: 3, max: 20)();
+  TextColumn get author =>
+      text().withLength(min: MIN_USERNAME, max: MAX_USERNAME)();
 
-  RealColumn get rating => real()();
+  //TODO convert to difficulty
+  RealColumn get difficulty => real()();
 
   DateTimeColumn get creationTime => dateTime()();
 
@@ -63,12 +67,16 @@ class Tours extends Table {
 class Stops extends Table {
   IntColumn get id => integer().autoIncrement()();
 
+  //IMAGES
+  TextColumn get images => text().map(StringListConverter())();
+
   TextColumn get name => text().withLength(min: 3, max: 20)();
 
   TextColumn get descr => text()();
 
-  //IMAGES
-  TextColumn get images => text().map(StringListConverter())();
+  //TODO add Map<String, String>-Converter
+
+  TextColumn get invId => text().nullable()();
 
   TextColumn get time => text().withLength(min: 1, max: 15).nullable()();
 
@@ -92,18 +100,14 @@ class Stops extends Table {
 }
 
 class TourStops extends Table {
+  IntColumn get id => integer()();
+
   IntColumn get id_tour => integer().customConstraint("REFERENCES tours(id)")();
 
   IntColumn get id_stop => integer().customConstraint("REFERENCES stops(id)")();
 }
 
-class TourWithStops {
-  final Tour tour;
-  final List<Stop> stops;
-
-  TourWithStops(this.tour, this.stops);
-}
-
+// TODO typo: change to "Divisions"
 class Devisions extends Table {
   TextColumn get name => text()();
 
@@ -114,16 +118,41 @@ class Devisions extends Table {
   Set<Column> get primaryKey => {name};
 }
 
-class Tasks extends Table {
-  IntColumn get id => integer().autoIncrement()();
+class Extras extends Table {
+  // the extra's position on a certain page
+  IntColumn get pos_extra => integer()();
+
+  // the stop's position in the tour
+  IntColumn get pos_stop => integer()();
 
   IntColumn get id_tour => integer().customConstraint("REFERENCES tours(id)")();
 
   IntColumn get id_stop => integer().customConstraint("REFERENCES stops(id)")();
 
-  TextColumn get desc => text().withDefault(const Constant(""))();
+  TextColumn get textInfo => text()();
 
-  TextColumn get task => text()();
+  IntColumn get type => integer().map(TaskTypeConverter()).nullable()();
+
+  TextColumn get answerOpt => text().map(StringListConverter()).nullable()();
+
+  TextColumn get answerCor => text().map(IntListConverter()).nullable()();
+
+  @override
+  Set<Column> get primaryKey => {pos_stop, pos_extra, id_tour, id_stop};
+}
+
+class StopFeatures extends Table {
+  IntColumn get id => integer().customConstraint("REFERENCES tourStops(id)")();
+
+  IntColumn get id_tour => integer().customConstraint("REFERENCES tours(id)")();
+
+  IntColumn get id_stop => integer().customConstraint("REFERENCES stops(id)")();
+
+  BoolColumn get showImages => boolean().withDefault(const Constant(true))();
+
+  BoolColumn get showText => boolean().withDefault(const Constant(true))();
+
+  BoolColumn get showDetails => boolean().withDefault(const Constant(true))();
 
   @override
   Set<Column> get primaryKey => {id, id_tour, id_stop};
@@ -144,14 +173,55 @@ class ColorConverter extends TypeConverter<Color, int> {
 }
 
 class StringListConverter extends TypeConverter<List<String>, String> {
+  const StringListConverter();
+
   @override
   List<String> mapToDart(String fromDb) {
-    return fromDb.split(";");
+    if (fromDb != null && fromDb.isEmpty) return List<String>();
+    return fromDb?.split(";");
   }
 
   @override
   String mapToSql(List<String> value) {
-    return value.join(";");
+    return value?.join(";");
+  }
+}
+
+class IntListConverter extends TypeConverter<List<int>, String> {
+  const IntListConverter();
+
+  @override
+  List<int> mapToDart(String fromDb) {
+    if (fromDb != null && fromDb.isEmpty) return List<int>();
+    if (fromDb == null) return null;
+    return fromDb.split(";").map((s) {
+      var v = int.tryParse(s);
+      return v ?? 0;
+    }).toList();
+  }
+
+  @override
+  String mapToSql(List<int> value) {
+    return value?.join(";");
+  }
+}
+
+class TaskTypeConverter extends TypeConverter<ExtraType, int> {
+  const TaskTypeConverter();
+
+  @override
+  ExtraType mapToDart(int fromDb) {
+    if (fromDb == null) return null;
+    var values = ExtraType.values;
+    if (0 <= fromDb && fromDb < values.length) return values[fromDb];
+    print("NOT FOUND");
+    return ExtraType.TEXT;
+  }
+
+  @override
+  int mapToSql(ExtraType value) {
+    if (value == null) return null;
+    return value.index;
   }
 }
 
@@ -168,9 +238,19 @@ LazyDatabase _openConnection() {
 
 // this annotation tells moor to prepare a database class that uses both of the
 // tables we just defined. We'll see how to use that database class in a moment.
-@UseMoor(tables: [Users, Badges, Stops, Devisions, Tours, TourStops, Tasks])
+@UseMoor(tables: [
+  Users,
+  Badges,
+  Stops,
+  Devisions,
+  Tours,
+  TourStops,
+  Extras,
+  StopFeatures
+])
 class MuseumDatabase extends _$MuseumDatabase {
   static MuseumDatabase _db;
+  static int customID = 0;
 
   static MuseumDatabase get() {
     _db ??= MuseumDatabase();
@@ -180,9 +260,11 @@ class MuseumDatabase extends _$MuseumDatabase {
   MuseumDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
-  Stream<User> getUser() => select(users).watchSingle();
+  Stream<User> watchUser() => select(users).watchSingle();
+
+  Future<User> getUser() => select(users).getSingle();
 
   Future setUser(UsersCompanion uc) {
     customStatement("DELETE FROM users");
@@ -193,7 +275,7 @@ class MuseumDatabase extends _$MuseumDatabase {
     return update(users).write(UsersCompanion(username: Value(name)));
   }
 
-  Future updateOnboard(bool b){
+  Future updateOnboard(bool b) {
     return update(users).write(UsersCompanion(onboardEnd: Value(b)));
   }
 
@@ -210,6 +292,117 @@ class MuseumDatabase extends _$MuseumDatabase {
     customStatement("DELETE FROM devisions");
   }
 
+  Stream<StopFeature> getStopFeature(int num, int stop_id, int tour_id) {
+    //TODO PART1
+    /*if (stop_id == customID)
+      return Stream.value(StopFeature(
+          id_tour: tour_id,
+          id_stop: stop_id,
+          showImages: false,
+          showText: true,
+          showDetails: false));*/
+    final query = select(stopFeatures)
+      ..where((f) => f.id.equals(num))
+      ..where((f) => f.id_stop.equals(stop_id))
+      ..where((f) => f.id_tour.equals(tour_id));
+
+    return query.watchSingle();
+  }
+
+  Future<void> updateStopFeatures(int stop_id, int tour_id,
+      {images, text, details}) {
+    if (stop_id != customID)
+      update(stopFeatures).replace(
+        StopFeature(
+          id_stop: stop_id,
+          id_tour: tour_id,
+          showImages: images,
+          showText: text,
+          showDetails: details,
+          id: null,
+        ).createCompanion(true),
+      );
+  }
+
+  Future addExtra(ActualExtra e, int pos_stop, int pos_extra, int tour_id, int stop_id) {
+    print(pos_stop);
+    if (e.task != null) {
+      var list = List<int>();
+
+      if (e.type == ExtraType.TASK_MULTI)
+        for (int i = 0; i < e.task.entries.length; i++)
+          if (e.task.entries[i].valB == true) list.add(i);
+
+      if (e.type == ExtraType.TASK_SINGLE) list.add(e.task.selected);
+
+      return into(extras).insert(
+          ExtrasCompanion.insert(
+              pos_extra: pos_extra,
+              pos_stop: pos_stop,
+              id_tour: tour_id,
+              id_stop: stop_id,
+              textInfo: e.textInfo.text,
+              type: Value(e.type),
+              answerOpt: Value(
+                  e.task.entries.map((e) => e.valA.text as String).toList()),
+              answerCor: Value(list)),
+          mode: InsertMode.insertOrReplace);
+    }
+    return into(extras).insert(
+        ExtrasCompanion.insert(
+            pos_extra: pos_extra,
+            pos_stop: pos_stop,
+            id_tour: tour_id,
+            id_stop: stop_id,
+            type: Value(e.type),
+            textInfo: e.textInfo.text),
+        mode: InsertMode.insertOrReplace);
+  }
+
+  Stream<ActualStop> getActualStop(int pos_stop, int tour_id, int stop_id) {
+    final stop = select(stops)
+      ..where((s) => s.id.equals(stop_id));
+
+    final feature = getStopFeature(pos_stop, stop_id, tour_id);
+
+    return CombineLatestStream.combine3(
+        stop.watchSingle(),
+        feature,
+        getExtras(pos_stop, tour_id, stop_id),
+        (Stop s, StopFeature f, List<ActualExtra> l) => ActualStop(s, f, l));
+  }
+
+  Stream<List<ActualExtra>> getExtras(int pos_stop, int tour_id, int stop_id) {
+    final query = select(extras)
+      ..where((t) => t.pos_stop.equals(pos_stop))
+      //..where((t) => t.pos_extra.equals(pos_extra))
+      ..where((t) => t.id_tour.equals(tour_id))
+      ..where((t) => t.id_stop.equals(stop_id));
+
+    return query.watch().map((rows) => rows
+        .map((e) => ActualExtra(e.type,
+            text: e.textInfo, sel: e.answerOpt, correct: e.answerCor?.toSet()))
+        .toList());
+  }
+
+  Stream<Tour> getDBTour(TourWithStops t) {
+    var query = select(tours)
+      ..where((tour) => tour.name.equals(t.name.text))
+      ..where((tour) => tour.author.equals(t.author))
+      ..where((tour) => tour.creationTime.equals(t.creationTime));
+
+    return query.watchSingle();
+  }
+
+  Future<void> removeTour(int id) async {
+    await batch((batch) {
+      batch.deleteWhere(tours, (t) => t.id.equals(id));
+      batch.deleteWhere(tourStops, (t) => t.id_tour.equals(id));
+      batch.deleteWhere(extras, (t) => t.id_tour.equals(id));
+      batch.deleteWhere(stopFeatures, (t) => t.id_tour.equals(id));
+    });
+  }
+
   Stream<List<Badge>> getBadges() => select(badges).watch();
 
   Future<int> addBadge(BadgesCompanion bc) {
@@ -220,24 +413,88 @@ class MuseumDatabase extends _$MuseumDatabase {
 
   Stream<List<Tour>> getTours() => select(tours).watch();
 
-  Stream<List<Stop>> getStops() => select(stops).watch();
+  Stream<List<TourWithStops>> getTourStops() {
+    final tour_ids = select(tours, distinct: true).map((t) => t.id).watch();
 
-  Stream<List<Task>> getTasksId(int id_tour, int id_stop) {
-    final contentQuery = select(tasks)
-        //.join([innerJoin(stops, stops.id.equalsExp(tourStops.id_stop))])
-      ..where((t) => t.id_tour.equals(id_tour))
-      ..where((t) => t.id_stop.equals(id_stop));
+    var t = tour_ids.map((list) => list.map((id) => getTour(id)).toList());
+
+    return SwitchLatestStream(t.map((list) => CombineLatestStream.list(list)));
+  }
+
+  Stream<TourWithStops> getTour(int tour_id) {
+    final tour = select(tours)..where((t) => t.id.equals(tour_id));
+
+    final stop_ids = (select(tourStops, distinct: true)
+          ..where((ts) => ts.id_tour.equals(tour_id)))
+        .map((t) => Tuple(t.id, t.id_stop))
+        .watch();
+
+    var l2 = stop_ids.map((list) => list
+        .map((stop_id) => getActualStop(stop_id.valA, tour_id, stop_id.valB))
+        .toList());
+
+    var res = CombineLatestStream.combine2(tour.watchSingle(), l2,
+        (Tour t, List<Stream<ActualStop>> a) {
+      Stream<List<ActualStop>> s = CombineLatestStream.list(a);
+      return s.map((list) => TourWithStops(t, list.sublist(0)));
+    });
+
+    return SwitchLatestStream(res);
+  }
+
+  Stream<List<Stop>> watchStops() => select(stops).watch();
+
+  Future<List<Stop>> getStops() => select(stops).get();
+
+  Stream<List<Stop>> stopSearch(String text) {
+    if (text.isEmpty) return Stream.value(List<Stop>());
+
+    List<String> input = text.split(RegExp(",|;|&"));
+
+    //print(input.length.toString() + input.toString());
+
+    var query = select(stops)..where((s) => s.name.equals(customName).not());
+    //..where((s) => s.name.like("%"+text.trim()+"%"));
+
+    for (var part in input) {
+      part = part.trim();
+      if (part.startsWith(RegExp("div:?"))) {
+        part = part.replaceAll(RegExp("div:?"), "").trim();
+        query.where((s) => s.devision.like(part + "%"));
+      } else if (part.startsWith(RegExp("cre:?"))) {
+        part = part.replaceAll(RegExp("cre:?"), "").trim();
+        query.where((s) => s.creator.like(part + "%"));
+      } else if (part.startsWith(RegExp("art:?"))) {
+        part = part.replaceAll(RegExp("art:?"), "").trim();
+        query.where((s) => s.artType.like(part + "%"));
+      } else if (part.startsWith(RegExp("mat:?"))) {
+        part = part.replaceAll(RegExp("mat:?"), "").trim();
+        query.where((s) => s.material.like(part + "%"));
+      } else if (part.startsWith(RegExp("inv:?"))) {
+        part = part.replaceAll(RegExp("inv:?"), "").trim();
+        query.where((s) => s.invId.like(part + "%"));
+      } else
+        query.where((s) => s.name.like("%" + part + "%"));
+    }
+
+    return query.watch();
+    /*if (text.isEmpty)
+      return Stream.value(List<Stop>());
+    return query.map((list) => list
+        .where((s) => s.name.toLowerCase().startsWith(text.toLowerCase()))
+        .toList());*/
+  }
+
+  Stream<List<Extra>> getExtrasId(int id_tour, int id_stop) {
+    final contentQuery = select(extras)
+      //.join([innerJoin(stops, stops.id.equalsExp(tourStops.id_stop))])
+      ..where((e) => e.id_tour.equals(id_tour))
+      ..where((e) => e.id_stop.equals(id_stop));
 
     return contentQuery.watch();
   }
 
-  Future<int> addTask(TasksCompanion tc) {
-    return into(tasks).insert(tc);
-  }
-
   Stream<List<Stop>> getStopsId(int id) {
-    //final tourQuery = select(tours)..where((t) => t.id.equals(id));
-
     final contentQuery = select(tourStops)
         .join([innerJoin(stops, stops.id.equalsExp(tourStops.id_stop))])
           ..where(tourStops.id_tour.equals(id));
@@ -248,38 +505,55 @@ class MuseumDatabase extends _$MuseumDatabase {
         .map((rows) => rows.map((row) => row.readTable(stops)).toList());
 
     return contentStream;
+  }
 
-    /*var t = (select(tours)..where((t) => t.name.equals(name)));
-    var t2 = t.join([
-      leftOuterJoin(tourStops, tours.id.equalsExp(tourStops.id_tour)),
-      leftOuterJoin(stops, tourStops.id_stop.equalsExp(stops.id))
-    ]);
-    return t2.watch().map((rows) => rows.map((row) => row.readTable(stops)));
-    //return (select(tours)..where((t) => t.name.equals(name))).join(
-    //  [leftOuterJoin(stops, tours.id.equalsExp(stops.tour_id))]);
-    //customStatement(
-    //  "SELECT * FROM tours t, stops s, tourStops ts WHERE t.name=? AND t.id=ts.id_tour AND s.id=ts.id_stop");
-  */
+  Stream<ActualStop> getCustomStop() {
+    final query = select(stops)..where((stop) => stop.name.equals(customName));
+    return query.watchSingle().map((stop) => ActualStop(
+        stop,
+        StopFeature(
+            id: null,
+            id_tour: null,
+            id_stop: stop.id,
+            showImages: false,
+            showText: true,
+            showDetails: false),
+        <ActualExtra>[]));
   }
 
   Future<void> writeTourStops(TourWithStops entry) {
     return transaction(() async {
-      final tour = entry.tour.createCompanion(true);
+      final tour = entry.createToursCompanion(true);
 
       var id = await into(tours).insert(tour, orReplace: true);
 
-      await //INSERT STOPSjolk
-
-          await (delete(tourStops)..where((e) => e.id_tour.equals(id))).go();
+      await (delete(tourStops)..where((e) => e.id_tour.equals(id))).go();
 
       await batch((batch) {
         batch.insertAll(
             tourStops,
             entry.stops
-                .map((s) => TourStop(id_tour: id, id_stop: s.id))
+                .where((s) => s.stop != null)
+                .map((s) => TourStopsCompanion.insert(
+                    id: entry.stops.indexOf(s),
+                    id_tour: id,
+                    id_stop: s.stop.id))
+                .toList(),
+            mode: InsertMode.insertOrReplace);
+        batch.insertAll(
+            stopFeatures,
+            entry.stops
+                .where((s) => s.features != null)
+                .map((s) => s.features
+                    .copyWith(id: entry.stops.indexOf(s), id_tour: id)
+                    .createCompanion(true))
                 .toList(),
             mode: InsertMode.insertOrReplace);
       });
+
+      for (var stop in entry.stops)
+        for (var extra in stop.extras)
+          addExtra(extra, entry.stops.indexOf(stop), stop.extras.indexOf(extra), id, stop.stop.id);
     });
   }
 
@@ -290,7 +564,6 @@ class MuseumDatabase extends _$MuseumDatabase {
   }
 
   Future<void> demoDevisions() async {
-    //customStatement("DELETE FROM devisions");
     await batch((batch) {
       batch.insertAll(
           devisions,
@@ -310,6 +583,8 @@ class MuseumDatabase extends _$MuseumDatabase {
 
   Future<void> demoStops() async {
     //customStatement("DELETE FROM stops");
+    customID = await into(stops).insert(
+        StopsCompanion.insert(images: <String>[], name: customName, descr: ""));
     await batch((batch) {
       batch.insertAll(
           stops,
@@ -382,59 +657,6 @@ class MuseumDatabase extends _$MuseumDatabase {
             current: Value(i.roundToDouble()),
           ),
         ),
-        mode: InsertMode.insertOrReplace,
-      );
-    });
-  }
-
-  Future<void> demoTourStops() async {
-    //customStatement("DELETE FROM tourStops");
-    await batch((batch) {
-      batch.insertAll(
-        tourStops,
-        List.generate(
-              8,
-              (i) => TourStopsCompanion.insert(id_tour: 1, id_stop: i + 1),
-            ) +
-            List.generate(
-              5,
-              (i) => TourStopsCompanion.insert(id_tour: 2, id_stop: i + 2),
-            ) +
-            List.generate(
-              3,
-              (i) => TourStopsCompanion.insert(id_tour: 3, id_stop: i + 3),
-            ),
-        mode: InsertMode.insertOrReplace,
-      );
-    });
-  }
-
-  Future<void> demoTours() async {
-    //customStatement("DELETE FROM tours");
-    await batch((batch) {
-      batch.insertAll(
-        tours,
-        [
-          ToursCompanion.insert(
-              name: "Test Tour",
-              author: "Maria123_XD",
-              rating: 4.6,
-              creationTime: DateTime.now(),
-              desc: "Diese Beschreibung ist zum Glück nicht so lang."),
-          ToursCompanion.insert(
-              name: "Meine erste Tour",
-              author: "1412",
-              rating: 1.2,
-              creationTime: DateTime.parse("2020-02-05"),
-              desc:
-                  "Einen Roman schreiben die User hier bestimmt nicht hin. Und wenn doch, muss ich mir dafür etwas einfallen lassen."),
-          ToursCompanion.insert(
-              name: "Zoologische Tour mit int",
-              author: "MyBestUser",
-              rating: 2.6,
-              creationTime: DateTime.parse("1983-05-14"),
-              desc: "Diese Tour ist sehr lehrreich."),
-        ],
         mode: InsertMode.insertOrReplace,
       );
     });

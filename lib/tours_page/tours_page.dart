@@ -1,11 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:museum_app/SizeConfig.dart';
+import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
+import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/map/map_page.dart';
 import 'package:museum_app/museum_tabs.dart';
 import 'package:museum_app/tours_page/tours_widgets.dart';
+
+import '../SizeConfig.dart';
 
 class Tours extends StatefulWidget {
   Tours({Key key}) : super(key: key);
@@ -29,8 +32,8 @@ class _ToursState extends State<Tours> {
             ),
           ),
           Positioned(
-            right: 5,
-            top: 4,
+            left: SizeConfig.blockSizeHorizontal * 2,
+            top: SizeConfig.blockSizeVertical * 2,
             child: FlatButton(
               padding: EdgeInsets.all(3),
               shape: CircleBorder(),
@@ -52,14 +55,14 @@ class _ToursState extends State<Tours> {
 
   Widget _bottomInfo(funct) {
     return StreamBuilder(
-        stream: MuseumDatabase.get().getUser(),
+        stream: MuseumDatabase.get().watchUser(),
         builder: (context, snapU) {
           var username =
               (snapU.data ?? User(username: "", imgPath: "")).username;
           return StreamBuilder(
-              stream: MuseumDatabase.get().getTours(),
+              stream: MuseumDatabase.get().getTourStops(),
               builder: (context, snapTs) {
-                var tours = snapTs.data ?? List<Tour>();
+                var tours = snapTs.data ?? List<TourWithStops>();
                 tours = tours.where(funct(username)).toList();
                 return TourList(tours);
               });
@@ -70,16 +73,15 @@ class _ToursState extends State<Tours> {
   Widget build(BuildContext context) {
     return MuseumTabs(
         _topInfo(),
-        ["Alle", "Eigene", "Favoriten"],
-        [
-          // All tours
-          _bottomInfo((_) => (tour) => true),
-          // Only the created ones
-          _bottomInfo((username) => (tour) => tour.author == username),
-          // The rest
-          _bottomInfo((username) => (tour) => tour.author != username),
-        ],
-        Colors.pink,
+      {
+        // All tours
+        "Alle": _bottomInfo((_) => (tour) => true),
+        // Only the created ones
+        "Eigene": _bottomInfo((username) => (tour) => tour.tour.author == username),
+        // The rest
+        "Favoriten": _bottomInfo((username) => (tour) => tour.tour.author != username),
+      },
+        color: COLOR_TOUR,
     );
   }
 }

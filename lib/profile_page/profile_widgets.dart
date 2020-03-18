@@ -89,7 +89,7 @@ class _FavWidgetState extends State<FavWidget> {
           var devisions = snapDev.data ?? List<Devision>();
           //print(devisions);
           return StreamBuilder(
-              stream: MuseumDatabase.get().getStops(),
+              stream: MuseumDatabase.get().watchStops(),
               builder: (context, snapStop) {
                 var stops = snapStop.data ?? List<Stop>();
                 return Column(

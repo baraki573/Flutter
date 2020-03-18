@@ -1,160 +1,51 @@
 import 'dart:math';
 
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-
 import 'package:museum_app/SizeConfig.dart';
+import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
-import 'package:museum_app/tours_page/walk_tour/walk_tour_tasks.dart';
-import 'package:photo_view/photo_view.dart';
+import 'package:museum_app/database/modelling.dart';
+import 'package:museum_app/image_carousel.dart';
+import 'package:museum_app/tours_page/walk_tour/walk_tour_extras.dart';
 
 class TourWalkerContent extends StatefulWidget {
-  final int tour_id;
-  final Stop stop;
+  //final int tour_id;
+  //final Stop stop;
+  final ActualStop stop;
+  final Color color;
+  final bool showExtras;
 
-  TourWalkerContent(this.stop, this.tour_id, {Key key}) : super(key: key);
+  TourWalkerContent(this.stop,
+      {Key key, this.color = COLOR_TOUR, this.showExtras = true})
+      : super(key: key);
 
   @override
   _TourWalkerContentState createState() => _TourWalkerContentState();
 }
 
 class _TourWalkerContentState extends State<TourWalkerContent> {
-  int _currentImage = 0;
 
   @override
   Widget build(BuildContext context) {
+    var feat = widget.stop.features ??
+        StopFeature(
+            id_tour: 1,
+            id_stop: 1,
+            showImages: false,
+            showDetails: false,
+            showText: false);
     return Column(
       //shrinkWrap: true,
       //padding: EdgeInsets.all(0),
       children: [
         // Images
-        CarouselSlider(
-          //enlargeCenterPage: true,
-          onPageChanged: (index) => setState(() => _currentImage = index),
-          viewportFraction: 1.0,
-          height: verSize(52, 68.5),
-          enableInfiniteScroll: false,
-          items: widget.stop.images
-              .map(
-                (img) => GestureDetector(
-                  onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => _ImageDetail("A", AssetImage(img)))),
-                  //_ImageDetail("A", img))),
-                  //onTap: () => _imagePopup(widget.stop.imgs[_currentImage]),
-                  child: Container(
-                    //color: Colors.green,
-                    //height: verSize(52, 68.5),
-                    //margin: EdgeInsets.symmetric(horizontal: 16),
-                    //height: SizeConfig.safeBlockVertical * 40,
-                    //width: SizeConfig.safeBlockHorizontal * 100,
-                    //decoration: BoxDecoration(
-                    //borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                    //border: Border.all(color: Colors.black),
-                    //image: DecorationImage(image: img, fit: BoxFit.cover),
-                    //),
-                    child: Hero(
-                      transitionOnUserGestures: true,
-                      child: Image(
-                          //height: verSize(57, 68.5),
-                          width: horSize(100, 100),
-                          image: AssetImage(img),
-                          fit: BoxFit.cover),
-                      tag: "A",
-                    ),
-                  ),
-                  /*Positioned(
-                      top: 7,
-                      right: 23,
-                      height: SizeConfig.safeBlockVertical * 6,
-                      width: SizeConfig.safeBlockVertical * 6,
-                      child: FlatButton(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        padding: EdgeInsets.all(0),
-                        color: Colors.black.withOpacity(0.3),
-                        child: Icon(Icons.zoom_out_map,
-                            color: Colors.white, size: 30),
-                        onPressed: () {
-                          _imagePopup(widget.stop.imgs[_currentImage]);
-                        },
-                      ),*/
-                ),
-              )
-              .toList(),
-        ),
-        // Dot Indicator
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            widget.stop.images.length,
-            (index) => Container(
-              width: 8.0,
-              height: 8.0,
-              margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _currentImage == index
-                    ? Colors.black
-                    : Colors.grey.withOpacity(0.75),
-              ),
-            ),
-          ),
-        ),
-        _information(),
+        feat.showImages ? ImageCaroussel.fromStrings(widget.stop.stop.images) : Container(height: 16),
+        _information(feat.showText, feat.showDetails),
         //TourWalkerTasks(widget.),
       ],
-    );
-  }
-
-  void _imagePopup(final ImageProvider img) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => GestureDetector(
-          onVerticalDragEnd: (det) {
-            //if (det.primaryVelocity < 0) Navigator.pop(context);
-          },
-          //print(det.velocity.toString()),
-          onPanUpdate: (details) {
-            if (details.delta.dy > 0) {
-              // swiping in right direction
-              print("J");
-            }
-          },
-          child: Stack(
-            children: [
-              PhotoView(
-                heroAttributes: PhotoViewHeroAttributes(tag: _currentImage),
-                imageProvider: img,
-                maxScale: 3.0,
-                minScale: PhotoViewComputedScale.contained,
-                backgroundDecoration: const BoxDecoration(
-                  color: Colors.black,
-                ),
-              ),
-              Positioned(
-                top: 35,
-                left: 7,
-                height: SizeConfig.safeBlockVertical * 6,
-                width: SizeConfig.safeBlockVertical * 6,
-                child: FlatButton(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  padding: EdgeInsets.all(0),
-                  color: Colors.black.withOpacity(0.3),
-                  child: Icon(Icons.arrow_back, color: Colors.white, size: 32),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -176,61 +67,72 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
         ),
       );
 
-  Widget _information() {
+  Widget _information(showText, showDetails) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            widget.stop.name,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.pink,
-            ),
-          ),
-          ExpandableNotifier(
-            child: Expandable(
-              theme: ExpandableThemeData(
-                tapBodyToCollapse: true,
-                tapBodyToExpand: true,
-              ),
-              collapsed: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.stop.descr,
-                    maxLines: 5,
-                    textAlign: TextAlign.justify,
-                    style: TextStyle(fontSize: 18),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  _expButton("Mehr anzeigen"),
-                ],
-              ),
-              expanded: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.stop.descr,
-                    textAlign: TextAlign.justify,
-                    style: TextStyle(fontSize: 18),
-                  ),
-                  _expButton("Weniger anzeigen"),
-                ],
-              ),
-            ),
-          ),
-          _informationTable(widget.stop),
-          //TourWalkerTasks(widget.tour_id, widget.stop.id),
+          showText ? _text(widget.stop.stop) : Container(),
+          showDetails ? _informationTable(widget.stop.stop) : Container(),
+          widget.showExtras ? _extras(widget.stop.extras) : Container(),
         ],
       ),
     );
   }
 
+  Widget _text(Stop stop) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SelectableText(
+          stop.name,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: widget.color,
+          ),
+        ),
+        stop.descr.isNotEmpty ?
+        ExpandableNotifier(
+          child: Expandable(
+            theme: ExpandableThemeData(
+              tapBodyToCollapse: true,
+              tapBodyToExpand: true,
+            ),
+            collapsed: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  stop.descr,
+                  maxLines: 5,
+                  textAlign: TextAlign.justify,
+                  style: TextStyle(fontSize: 18),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                _expButton("Mehr anzeigen"),
+              ],
+            ),
+            expanded: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SelectableText(
+                  stop.descr,
+                  textAlign: TextAlign.justify,
+                  style: TextStyle(fontSize: 18),
+                ),
+                _expButton("Weniger anzeigen"),
+              ],
+            ),
+          ),
+        ) : Container(),
+      ],
+    );
+  }
+
   Map<String, String> getInformation(Stop s) {
     Map<String, String> map = {
+      "Inventarnummer": s.invId,
       "Abteilung": s.devision,
       "Kategorie": s.artType,
       "Ersteller": s.creator,
@@ -246,8 +148,8 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
   }
 
   Widget _informationTable(Stop s) {
-    //if (!(item is Exhibit)) return Container();
     var info = getInformation(s);
+    if (info.isEmpty) return Container();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -255,7 +157,7 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
           margin: EdgeInsets.only(top: 10, bottom: 5),
           child: Text(
             "Weitere Informationen",
-            style: TextStyle(fontSize: 22, color: Colors.pinkAccent),
+            style: TextStyle(fontSize: 22, color: widget.color),
           ),
         ),
         Container(
@@ -302,49 +204,20 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
       ],
     );
   }
-}
 
-class _ImageDetail extends StatelessWidget {
-  ImageProvider _img;
-  var _tag;
+  Widget _extras(List<ActualExtra> extras) {
+    if (extras == null || extras.length < 1) return Container();
+    List<ActualExtra> tasks = extras.where((e) => e.task != null).toList();
+    return Container(
+      margin: EdgeInsets.only(top: 13),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children:
+            extras
+            // TODO Numerierung nur mit actualTask
+                .map((t) => TourExtra(tasks.indexOf(t) + 1, t))
+                .toList(),),
 
-  _ImageDetail(this._tag, this._img);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: GestureDetector(
-        onTap: () => Navigator.pop(context),
-        //onVerticalDragEnd: (a)=>print(a.primaryVelocity),
-        child: Stack(
-          children: [
-            PhotoView(
-              heroAttributes: const PhotoViewHeroAttributes(
-                  tag: "A", transitionOnUserGestures: true),
-              imageProvider: _img,
-              maxScale: 3.0,
-              minScale: PhotoViewComputedScale.contained,
-              backgroundDecoration: const BoxDecoration(
-                color: Colors.black,
-              ),
-            ),
-            Positioned(
-              top: 35,
-              left: 7,
-              height: SizeConfig.safeBlockVertical * 6,
-              width: SizeConfig.safeBlockVertical * 6,
-              child: FlatButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-                padding: EdgeInsets.all(0),
-                color: Colors.black.withOpacity(0.3),
-                child: Icon(Icons.arrow_back, color: Colors.white, size: 32),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -3,18 +3,14 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:intl/intl.dart';
-import 'package:moor/moor.dart' as moor;
 import 'package:museum_app/SizeConfig.dart';
-import 'package:museum_app/tours_page/tours_page.dart';
+import 'package:museum_app/constants.dart';
+import 'package:museum_app/database/database.dart';
+import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour.dart';
 
-//import 'package:museum_app/Models.dart';
-import 'package:museum_app/database/database.dart';
-
 class TourList extends StatefulWidget {
-  final List<Tour> tours;
+  final List<TourWithStops> tours;
 
   TourList(this.tours, {Key key}) : super(key: key);
 
@@ -23,32 +19,28 @@ class TourList extends StatefulWidget {
 }
 
 class _TourListState extends State<TourList> {
-  Widget _pictureLeft(Tour t, Size s, {margin = const EdgeInsets.all(0)}) =>
-      StreamBuilder(
-          stream: MuseumDatabase.get().getStopsId(t.id),
-          builder: (context, snap) {
-            var stops = snap.data ??
-                [Stop(images: ["assets/images/profile_test.png"])];
-            return Container(
-              margin: margin,
-              width: SizeConfig.safeBlockHorizontal * s.width,
-              height: SizeConfig.safeBlockVertical * s.height,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black),
-                borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                image: DecorationImage(
-                    image: AssetImage(stops[0].images[0]), fit: BoxFit.cover),
-              ),
-            );
-          });
+  Widget _pictureLeft(ActualStop stop, Size s,
+      {margin = const EdgeInsets.all(0)}) {
+    return Container(
+      margin: margin,
+      width: SizeConfig.safeBlockHorizontal * s.width,
+      height: SizeConfig.safeBlockVertical * s.height,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.black),
+        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+        image: DecorationImage(
+            image: AssetImage(stop.stop.images.isNotEmpty ? stop.stop.images[0] : "assets/images/profile_test.png"), fit: BoxFit.cover),
+      ),
+    );
+  }
 
-  Widget _infoRight(Tour t) => Container(
+  Widget _infoRight(TourWithStops t) => Container(
         width: horSize(51, 55),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _textBox(
-              t.name,
+              t.name.text,
               Size(size(50, 80), size(6, 11)),
               margin: EdgeInsets.only(bottom: 3),
               fontSize: 22.0,
@@ -68,17 +60,17 @@ class _TourListState extends State<TourList> {
               height: verSize(4, 5),
               child: Row(
                 children: [
-                  getRating(t,
-                      color: Colors.pink,
+                  t.getRating(
+                      color: COLOR_TOUR,
                       color2: Colors.grey,
-                      size: horSize(4.5, 3.5)),
-                  Container(width: horSize(2, 3)),
-                  _buildTime(t.creationTime),
+                      size: horSize(5, 3.5)),
+                  //Container(width: horSize(1, 3)),
+                  t.buildTime(),
                 ],
               ),
             ),
             _textBox(
-              t.desc,
+              t.descr.text,
               Size(size(50, 80), size(7, 18)),
               textAlign: TextAlign.justify,
               fontSize: size(13, 15),
@@ -88,7 +80,7 @@ class _TourListState extends State<TourList> {
             FlatButton(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10.0)),
-              color: Colors.pinkAccent,
+              color: COLOR_TOUR,
               child: Text("Anzeigen ",
                   style:
                       TextStyle(fontSize: size(14, 17), color: Colors.white)),
@@ -123,20 +115,8 @@ class _TourListState extends State<TourList> {
       );
 
   // TODO move these to the tour class
-  Widget _tourRating(Tour t) => Container(
-        margin: EdgeInsets.only(top: 3.5, bottom: 3.5, right: 8),
-        child: RatingBarIndicator(
-          rating: min(max(t.rating, 0), 5),
-          itemSize: horSize(4.5, 3.5),
-          itemBuilder: (BuildContext context, int index) => Icon(
-            Icons.star,
-            color: Colors.pinkAccent,
-          ),
-          unratedColor: Colors.grey.withAlpha(50),
-        ),
-      );
 
-  Widget _tourButtons(Tour t) => ButtonBar(
+  Widget _tourButtons(TourWithStops t) => ButtonBar(
         buttonPadding: EdgeInsets.symmetric(horizontal: size(5, 9)),
         alignment: MainAxisAlignment.start,
         buttonMinWidth: horSize(22, 19),
@@ -152,7 +132,7 @@ class _TourListState extends State<TourList> {
         ],
       );
 
-  Widget _buildTour(Tour t) => Container(
+  Widget _buildTour(TourWithStops t) => Container(
         margin: EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -168,7 +148,7 @@ class _TourListState extends State<TourList> {
         ),
         child: Row(
           children: [
-            _pictureLeft(t, Size(31, size(28, 63)),
+            _pictureLeft(t.stops[0], Size(31, size(28, 63)),
                 margin:
                     EdgeInsets.only(left: 10, right: 10, top: 15, bottom: 15)),
             _infoRight(t),
@@ -184,57 +164,22 @@ class _TourListState extends State<TourList> {
         padding: EdgeInsets.symmetric(horizontal: 30, vertical: 2),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-              colors: [Colors.pink[300], Colors.pink],
+              colors: [COLOR_TOUR.shade200, COLOR_ADD],
               tileMode: TileMode.clamp,
               begin: Alignment.topRight,
               stops: [0.0, 1.0],
               end: Alignment.bottomLeft),
         ),
-        child: _buildTime(time),
+        //child: _buildTime(time),
       ),
     );
   }
 
-  Widget _buildTime(DateTime time,
-      {color = Colors.pink, color2 = Colors.black, scale = 1.0}) {
-    if (time == null) return Container();
-    /*var day = time.day;
-    var month = time.month;
-    var year = time.year;
-    var dur = time.difference(DateTime.now());
-    var d = dur.inDays;
-    var h = dur.inHours;
-    String s = "noch\n" +
-        (d != 0
-            ? d.toString() + (d > 1 ? " Tage" : "Tag")
-            : h.toString() + (h > 1 ? " Stunden" : " Stunde"));*/
-    //TODO used package is not MIT
-    String s = DateFormat('dd.MM.yyyy').format(time);
-    return Row(
-      //crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Icon(
-          Icons.date_range,
-          color: color,
-          size: size(21, 25) * scale,
-        ),
-        Container(
-          padding: EdgeInsets.only(left: 4, top: 2),
-          child: Text(
-            s,
-            style: TextStyle(
-                fontSize: size(13, 14) * scale,
-                fontWeight: FontWeight.bold,
-                color: color2),
-          ),
-        ),
-      ],
-    );
-  }
 
   //TODO schöner machen -> soll animiert sein
-  void _showTour(Tour t) {
+  void _showTour(TourWithStops t) {
     //SizeConfig().init(context);
+    var tours = widget.tours;
     showGeneralDialog(
       barrierColor: Colors.grey.withOpacity(0.7),
       barrierDismissible: true,
@@ -248,18 +193,18 @@ class _TourListState extends State<TourList> {
           child: SimpleDialog(
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(10))),
-            backgroundColor: Colors.pinkAccent,
+            backgroundColor: COLOR_TOUR,
             contentPadding: EdgeInsets.all(16),
             children: [
               // Picture
               _pictureLeft(
-                t,
+                t.stops[0],
                 Size(85, size(30, 55)),
                 margin: EdgeInsets.only(bottom: 16),
               ),
               // Titel
               Text(
-                t.name,
+                t.name.text,
                 maxLines: 2,
                 style: TextStyle(
                   color: Colors.white,
@@ -281,18 +226,18 @@ class _TourListState extends State<TourList> {
               Container(
                   margin: EdgeInsets.symmetric(vertical: 3.5),
                   child: Row(children: [
-                    getRating(t,
+                    t.getRating(
                         color: Colors.white,
-                        color2: Colors.pink,
+                        color2: COLOR_TOUR,
                         size: horSize(7, 3.5)),
                     Container(width: 8),
-                    _buildTime(t.creationTime,
+                    t.buildTime(
                         color: Colors.white, color2: Colors.white, scale: 1.2),
                   ])),
 
               // Description
               Text(
-                t.desc,
+                t.descr.text,
                 textAlign: TextAlign.justify,
                 maxLines: 5,
                 overflow: TextOverflow.ellipsis,
@@ -304,20 +249,34 @@ class _TourListState extends State<TourList> {
                 buttonPadding: EdgeInsets.all(12),
                 //buttonHeight: SizeConfig.safeBlockVertical * 12,
                 children: [
-                  FlatButton(
-                    splashColor: Colors.pink[100],
-                    color: Colors.white,
-                    shape: CircleBorder(side: BorderSide(color: Colors.black)),
-                    child: Icon(
-                      Icons.file_download,
-                      color: Colors.black,
-                      size: 31,
-                    ),
-                    onPressed: () {},
-                  ),
+                  StreamBuilder(
+                      stream: MuseumDatabase.get().getDBTour(t),
+                      builder: (context, snap) {
+                        var id = snap.data?.id ?? -1;
+                        return FlatButton(
+                          splashColor: COLOR_TOUR.shade100,
+                          color: Colors.white,
+                          shape: CircleBorder(side: BorderSide(color: Colors.black)),
+                          child: Icon(
+                            Icons.file_download,
+                            color: Colors.black,
+                            size: 31,
+                          ),
+                          onPressed: () => setState(() {
+                            // TODO confirmation dialog
+                            if (id != -1) {
+                              tours.remove(t);
+                              MuseumDatabase.get().removeTour(id);
+                              Navigator.pop(context);
+                            }
+                          }
+                          ),
+                        );
+                      }),
+
                   FlatButton(
                     padding: EdgeInsets.all(9),
-                    splashColor: Colors.pink[100],
+                    splashColor: COLOR_TOUR.shade100,
                     color: Colors.white,
                     shape: CircleBorder(side: BorderSide(color: Colors.black)),
                     child: Icon(
@@ -333,7 +292,7 @@ class _TourListState extends State<TourList> {
                     },
                   ),
                   FlatButton(
-                    splashColor: Colors.pink[100],
+                    splashColor: COLOR_TOUR.shade100,
                     color: Colors.white,
                     shape: CircleBorder(side: BorderSide(color: Colors.black)),
                     child: Icon(
@@ -353,17 +312,6 @@ class _TourListState extends State<TourList> {
     );
   }
 
-  Widget getRating(Tour t,
-          {color = Colors.black, color2 = Colors.white, size = 40.0}) =>
-      RatingBarIndicator(
-        rating: min(max(t.rating, 0), 5),
-        itemSize: size,
-        itemBuilder: (BuildContext context, int index) => Icon(
-          Icons.star,
-          color: color,
-        ),
-        unratedColor: color2.withOpacity(.5),
-      );
 
   @override
   Widget build(BuildContext context) {
