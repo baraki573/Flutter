@@ -166,6 +166,7 @@ class _EditSingleStopState extends State<EditSingleStop> {
     setState(() {
       widget.stop.stop = s;
       widget.stop.features = StopFeature(
+        id: null,
         id_tour: null,
         id_stop: s.id,
         showImages: !widget.stop.isCustom(),

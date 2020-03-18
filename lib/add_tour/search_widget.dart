@@ -4,7 +4,7 @@ import 'package:museum_app/database/database.dart';
 
 class MuseumSearch extends StatefulWidget {
   final Function funct;
-  static TextEditingController ctrl = TextEditingController(text: "A");
+  static TextEditingController ctrl = TextEditingController();
 
   const MuseumSearch(this.funct, {Key key}) : super(key: key);
 
@@ -42,8 +42,7 @@ class _MuseumSearchState extends State<MuseumSearch> {
                 }
                 return Scrollbar(
                   child: ListView(
-                    children:
-                    lst
+                    children: lst
                         .map((s) => ListTile(
                               onTap: () {
                                 widget.funct(s);

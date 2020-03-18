@@ -85,7 +85,7 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        SelectableText(
           stop.name,
           style: TextStyle(
             fontSize: 24,
@@ -116,7 +116,7 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
             expanded: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                SelectableText(
                   stop.descr,
                   textAlign: TextAlign.justify,
                   style: TextStyle(fontSize: 18),
@@ -132,6 +132,7 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
 
   Map<String, String> getInformation(Stop s) {
     Map<String, String> map = {
+      "Inventarnummer": s.invId,
       "Abteilung": s.devision,
       "Kategorie": s.artType,
       "Ersteller": s.creator,
@@ -147,7 +148,6 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
   }
 
   Widget _informationTable(Stop s) {
-    //if (!(item is Exhibit)) return Container();
     var info = getInformation(s);
     if (info.isEmpty) return Container();
     return Column(

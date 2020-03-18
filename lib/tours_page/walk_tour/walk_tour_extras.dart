@@ -51,7 +51,7 @@ class _TourExtraState extends State<TourExtra> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                SelectableText(
                   "Aufgabe " + widget.index.toString() + ":",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -66,7 +66,7 @@ class _TourExtraState extends State<TourExtra> {
                         maxLength: TextField.noMaxLength,
                         style: TextStyle(fontSize: 20.0),
                       )
-                    : Text(
+                    : SelectableText(
                         widget.extra.textInfo.text +
                             (widget.extra.task?.correct)?.toString(),
                         style: TextStyle(fontSize: 20.0),
@@ -90,7 +90,7 @@ class _TourExtraState extends State<TourExtra> {
               maxLength: TextField.noMaxLength,
               style: TextStyle(fontSize: 18),
             )
-          : Text(
+          : SelectableText(
               widget.extra.textInfo.text,
               textAlign: TextAlign.justify,
               style: TextStyle(fontSize: 18),
@@ -119,7 +119,7 @@ class _TourExtraState extends State<TourExtra> {
                       children: [
                         Container(
                           padding:
-                              EdgeInsets.symmetric(horizontal: 7, vertical: 6),
+                              EdgeInsets.symmetric(horizontal: 7, vertical: 13),
                           alignment: Alignment.center,
                           child: widget.edit
                               ? TextField(
@@ -130,7 +130,7 @@ class _TourExtraState extends State<TourExtra> {
                                   decoration:
                                       InputDecoration(hintText: "Label"),
                                 )
-                              : Text(e.valA.text),
+                              : SelectableText(e.valA.text),
                         ),
                         Container(
                           alignment: Alignment.center,
@@ -145,7 +145,7 @@ class _TourExtraState extends State<TourExtra> {
                                     hintText: "....",
                                   ),
                                 )
-                              : Text(e.valB.text),
+                              : SelectableText(e.valB.text),
                         ),
                       ],
                     ),
@@ -174,7 +174,7 @@ class _TourExtraState extends State<TourExtra> {
                           decoration: InputDecoration(hintText: "Label"),
                         )
                       : Row(children: [
-                          Expanded(child: Text(e.valA.text)),
+                          Expanded(child: SelectableText(e.valA.text)),
                           widget.result
                               ? Padding(padding: EdgeInsets.only(left: 5), child: Icon(t.isCorrect(id) ? Icons.check : Icons.stop))
                               : Container()
@@ -205,7 +205,7 @@ class _TourExtraState extends State<TourExtra> {
                           widget.result
                               ? Padding(padding: EdgeInsets.only(right: 5), child: Icon(t.isCorrect(id) ? Icons.check : Icons.stop))
                               : Container(),
-                    Expanded(child: Text(e.valA.text)),
+                    Expanded(child: SelectableText(e.valA.text)),
                         ]),
                   groupValue: t.selected,
                 );

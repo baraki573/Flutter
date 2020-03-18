@@ -52,11 +52,15 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
               alignment: Alignment.centerLeft,
               width: horSize(17, 10),
               //TODO info-icon for non "Stops"
-              child: _currentItem < length ? Text(
-                "Station\n" + (_currentItem + 1).toString() + " / $length",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 17, color: colorNav),
-              ) : Icon(FontAwesomeIcons.crown, color: Colors.white)),
+              child: _currentItem < length
+                  ? Text(
+                      "Station\n" +
+                          (_currentItem + 1).toString() +
+                          " / $length",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 17, color: colorNav),
+                    )
+                  : Icon(FontAwesomeIcons.crown, color: Colors.white)),
           Spacer(),
           Container(
             //color: Colors.red,
@@ -178,8 +182,7 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
               // clear the input
               for (var stop in widget.tour.stops)
                 for (var extra in stop.extras)
-                  if (extra.task != null)
-                    extra.task.reset();
+                  if (extra.task != null) extra.task.reset();
               Navigator.pop(context);
               Navigator.pop(context);
             },
@@ -309,22 +312,24 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
           body: Column(
             children: [
               _navigator(stops),
-              Container(
-                alignment: Alignment.topCenter,
-                padding: EdgeInsets.all(0),
-                height: verSize(83, 76),
-                child: ListView(
+              Expanded(
+                child: Container(
+                  alignment: Alignment.topCenter,
                   padding: EdgeInsets.all(0),
-                  children: [
-                    _currentItem < stops.length
-                        ? TourWalkerContent(stops[_currentItem])
-                        : _results(),
-                    /*TourWalkerTasks(widget
+                  //height: verSize(83, 75),
+                  child: ListView(
+                    padding: EdgeInsets.all(0),
+                    children: [
+                      _currentItem < stops.length
+                          ? TourWalkerContent(stops[_currentItem])
+                          : _results(),
+                      /*TourWalkerTasks(widget
                         .tour.tasks[widget.tour.stops[_currentItem].name]),*/
-                    Container(
-                        height: bottomOff == 0 ? verSize(11, 21) : bottomOff),
-                    //_content(),
-                  ],
+                      Container(
+                          height: bottomOff == 0 ? verSize(11, 21) : bottomOff),
+                      //_content(),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -335,43 +340,49 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
   }
 
   Widget _results() {
+    // only use stops having at least one task
+    List<ActualStop> stops = widget.tour.stops
+        .where((s) => s.extras.fold(false, (p, e) => p || e.task != null))
+        .toList();
     return Column(
       children: <Widget>[
             Padding(
                 padding: EdgeInsets.only(bottom: 6, top: 5),
                 child: Text(
-              "Aufgabenergebnisse",
-              style: TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.bold,
-              ),
-            ))
+                  "Aufgabenergebnisse",
+                  style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ))
           ] +
-          widget.tour.stops
-              .map((s) {
-                int id = widget.tour.stops.indexOf(s);
-                List<ActualExtra> tasks = s.extras.where((e) => e.task != null).toList();
-                return Container(
-                    //margin: EdgeInsets.symmetric(vertical: 5),
-                    padding: EdgeInsets.only(left: 16, right: 16, top: 12),
-                    decoration: id == 0 ? null : BoxDecoration(
-                        border: Border(top: BorderSide(color: Colors.black))),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                            Text(
-                              "Station: "+s.stop.name,
-                              style: TextStyle(
-                                  fontSize: 20, decoration: TextDecoration.underline),
-                            )
-                          ] +
-                          tasks.map((e) {
-                            int id = tasks.indexOf(e) + 1;
-                            return TourExtra(id, e, result: true);
-                          }).toList(),
-                    ),
-                  );})
-              .toList(),
+          stops.map((s) {
+            int id = stops.indexOf(s);
+            List<ActualExtra> tasks =
+                s.extras.where((e) => e.task != null).toList();
+            return Container(
+              //margin: EdgeInsets.symmetric(vertical: 5),
+              padding: EdgeInsets.only(left: 16, right: 16, top: 12),
+              decoration: id == 0
+                  ? null
+                  : BoxDecoration(
+                      border: Border(top: BorderSide(color: Colors.black))),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                      Text(
+                        "Station: " + s.stop.name,
+                        style: TextStyle(
+                            fontSize: 20, decoration: TextDecoration.underline),
+                      )
+                    ] +
+                    tasks.map((e) {
+                      int id = tasks.indexOf(e) + 1;
+                      return TourExtra(id, e, result: true);
+                    }).toList(),
+              ),
+            );
+          }).toList(),
     );
   }
 }

@@ -100,6 +100,8 @@ class Stops extends Table {
 }
 
 class TourStops extends Table {
+  IntColumn get id => integer()();
+
   IntColumn get id_tour => integer().customConstraint("REFERENCES tours(id)")();
 
   IntColumn get id_stop => integer().customConstraint("REFERENCES stops(id)")();
@@ -117,7 +119,11 @@ class Devisions extends Table {
 }
 
 class Extras extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  // the extra's position on a certain page
+  IntColumn get pos_extra => integer()();
+
+  // the stop's position in the tour
+  IntColumn get pos_stop => integer()();
 
   IntColumn get id_tour => integer().customConstraint("REFERENCES tours(id)")();
 
@@ -132,10 +138,12 @@ class Extras extends Table {
   TextColumn get answerCor => text().map(IntListConverter()).nullable()();
 
   @override
-  Set<Column> get primaryKey => {id, id_tour, id_stop};
+  Set<Column> get primaryKey => {pos_stop, pos_extra, id_tour, id_stop};
 }
 
 class StopFeatures extends Table {
+  IntColumn get id => integer().customConstraint("REFERENCES tourStops(id)")();
+
   IntColumn get id_tour => integer().customConstraint("REFERENCES tours(id)")();
 
   IntColumn get id_stop => integer().customConstraint("REFERENCES stops(id)")();
@@ -145,6 +153,9 @@ class StopFeatures extends Table {
   BoolColumn get showText => boolean().withDefault(const Constant(true))();
 
   BoolColumn get showDetails => boolean().withDefault(const Constant(true))();
+
+  @override
+  Set<Column> get primaryKey => {id, id_tour, id_stop};
 }
 
 class ColorConverter extends TypeConverter<Color, int> {
@@ -281,15 +292,17 @@ class MuseumDatabase extends _$MuseumDatabase {
     customStatement("DELETE FROM devisions");
   }
 
-  Stream<StopFeature> getStopFeatures(int stop_id, int tour_id) {
-    if (stop_id == customID)
+  Stream<StopFeature> getStopFeature(int num, int stop_id, int tour_id) {
+    //TODO PART1
+    /*if (stop_id == customID)
       return Stream.value(StopFeature(
           id_tour: tour_id,
           id_stop: stop_id,
           showImages: false,
           showText: true,
-          showDetails: false));
+          showDetails: false));*/
     final query = select(stopFeatures)
+      ..where((f) => f.id.equals(num))
       ..where((f) => f.id_stop.equals(stop_id))
       ..where((f) => f.id_tour.equals(tour_id));
 
@@ -306,11 +319,13 @@ class MuseumDatabase extends _$MuseumDatabase {
           showImages: images,
           showText: text,
           showDetails: details,
+          id: null,
         ).createCompanion(true),
       );
   }
 
-  Future addExtra(ActualExtra e, int tour_id, int stop_id) {
+  Future addExtra(ActualExtra e, int pos_stop, int pos_extra, int tour_id, int stop_id) {
+    print(pos_stop);
     if (e.task != null) {
       var list = List<int>();
 
@@ -322,6 +337,8 @@ class MuseumDatabase extends _$MuseumDatabase {
 
       return into(extras).insert(
           ExtrasCompanion.insert(
+              pos_extra: pos_extra,
+              pos_stop: pos_stop,
               id_tour: tour_id,
               id_stop: stop_id,
               textInfo: e.textInfo.text,
@@ -333,6 +350,8 @@ class MuseumDatabase extends _$MuseumDatabase {
     }
     return into(extras).insert(
         ExtrasCompanion.insert(
+            pos_extra: pos_extra,
+            pos_stop: pos_stop,
             id_tour: tour_id,
             id_stop: stop_id,
             type: Value(e.type),
@@ -340,20 +359,23 @@ class MuseumDatabase extends _$MuseumDatabase {
         mode: InsertMode.insertOrReplace);
   }
 
-  Stream<ActualStop> getActualStop(int tour_id, int stop_id) {
-    final stop = select(stops)..where((s) => s.id.equals(stop_id));
+  Stream<ActualStop> getActualStop(int pos_stop, int tour_id, int stop_id) {
+    final stop = select(stops)
+      ..where((s) => s.id.equals(stop_id));
 
-    final feature = getStopFeatures(stop_id, tour_id);
+    final feature = getStopFeature(pos_stop, stop_id, tour_id);
 
     return CombineLatestStream.combine3(
         stop.watchSingle(),
         feature,
-        getExtras(tour_id, stop_id),
+        getExtras(pos_stop, tour_id, stop_id),
         (Stop s, StopFeature f, List<ActualExtra> l) => ActualStop(s, f, l));
   }
 
-  Stream<List<ActualExtra>> getExtras(int tour_id, int stop_id) {
+  Stream<List<ActualExtra>> getExtras(int pos_stop, int tour_id, int stop_id) {
     final query = select(extras)
+      ..where((t) => t.pos_stop.equals(pos_stop))
+      //..where((t) => t.pos_extra.equals(pos_extra))
       ..where((t) => t.id_tour.equals(tour_id))
       ..where((t) => t.id_stop.equals(stop_id));
 
@@ -404,11 +426,12 @@ class MuseumDatabase extends _$MuseumDatabase {
 
     final stop_ids = (select(tourStops, distinct: true)
           ..where((ts) => ts.id_tour.equals(tour_id)))
-        .map((t) => t.id_stop)
+        .map((t) => Tuple(t.id, t.id_stop))
         .watch();
 
-    var l2 = stop_ids
-        .map((list) => list.map((i) => getActualStop(tour_id, i)).toList());
+    var l2 = stop_ids.map((list) => list
+        .map((stop_id) => getActualStop(stop_id.valA, tour_id, stop_id.valB))
+        .toList());
 
     var res = CombineLatestStream.combine2(tour.watchSingle(), l2,
         (Tour t, List<Stream<ActualStop>> a) {
@@ -424,43 +447,35 @@ class MuseumDatabase extends _$MuseumDatabase {
   Future<List<Stop>> getStops() => select(stops).get();
 
   Stream<List<Stop>> stopSearch(String text) {
-    if (text.isEmpty)
-      return Stream.value(List<Stop>());
+    if (text.isEmpty) return Stream.value(List<Stop>());
 
     List<String> input = text.split(RegExp(",|;|&"));
 
     //print(input.length.toString() + input.toString());
 
-    var query = select(stops)
-      ..where((s) => s.name.equals(customName).not());
-      //..where((s) => s.name.like("%"+text.trim()+"%"));
+    var query = select(stops)..where((s) => s.name.equals(customName).not());
+    //..where((s) => s.name.like("%"+text.trim()+"%"));
 
     for (var part in input) {
       part = part.trim();
       if (part.startsWith(RegExp("div:?"))) {
         part = part.replaceAll(RegExp("div:?"), "").trim();
-        query.where((s) => s.devision.like(part+ "%"));
-      }
-      else if (part.startsWith(RegExp("cre:?"))) {
+        query.where((s) => s.devision.like(part + "%"));
+      } else if (part.startsWith(RegExp("cre:?"))) {
         part = part.replaceAll(RegExp("cre:?"), "").trim();
-        query.where((s) => s.creator.like(part+ "%"));
-      }
-      else if (part.startsWith(RegExp("art:?"))) {
+        query.where((s) => s.creator.like(part + "%"));
+      } else if (part.startsWith(RegExp("art:?"))) {
         part = part.replaceAll(RegExp("art:?"), "").trim();
-        query.where((s) => s.artType.like(part+ "%"));
-      }
-      else if (part.startsWith(RegExp("mat:?"))) {
+        query.where((s) => s.artType.like(part + "%"));
+      } else if (part.startsWith(RegExp("mat:?"))) {
         part = part.replaceAll(RegExp("mat:?"), "").trim();
-        query.where((s) => s.material.like(part+ "%"));
-      }
-      else if (part.startsWith(RegExp("inv:?"))) {
+        query.where((s) => s.material.like(part + "%"));
+      } else if (part.startsWith(RegExp("inv:?"))) {
         part = part.replaceAll(RegExp("inv:?"), "").trim();
-        query.where((s) => s.invId.like(part+ "%"));
-      }
-      else
-        query.where((s) => s.name.like("%"+part+"%"));
+        query.where((s) => s.invId.like(part + "%"));
+      } else
+        query.where((s) => s.name.like("%" + part + "%"));
     }
-
 
     return query.watch();
     /*if (text.isEmpty)
@@ -497,6 +512,7 @@ class MuseumDatabase extends _$MuseumDatabase {
     return query.watchSingle().map((stop) => ActualStop(
         stop,
         StopFeature(
+            id: null,
             id_tour: null,
             id_stop: stop.id,
             showImages: false,
@@ -518,20 +534,26 @@ class MuseumDatabase extends _$MuseumDatabase {
             tourStops,
             entry.stops
                 .where((s) => s.stop != null)
-                .map((s) => TourStop(id_tour: id, id_stop: s.stop.id))
+                .map((s) => TourStopsCompanion.insert(
+                    id: entry.stops.indexOf(s),
+                    id_tour: id,
+                    id_stop: s.stop.id))
                 .toList(),
             mode: InsertMode.insertOrReplace);
         batch.insertAll(
             stopFeatures,
             entry.stops
-                .where((s) => s.features != null && !s.isCustom())
-                .map((s) => s.features.copyWith(id_tour: id))
+                .where((s) => s.features != null)
+                .map((s) => s.features
+                    .copyWith(id: entry.stops.indexOf(s), id_tour: id)
+                    .createCompanion(true))
                 .toList(),
             mode: InsertMode.insertOrReplace);
       });
 
       for (var stop in entry.stops)
-        for (var extra in stop.extras) addExtra(extra, id, stop.stop.id);
+        for (var extra in stop.extras)
+          addExtra(extra, entry.stops.indexOf(stop), stop.extras.indexOf(extra), id, stop.stop.id);
     });
   }
 

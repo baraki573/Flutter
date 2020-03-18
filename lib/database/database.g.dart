@@ -1585,14 +1585,16 @@ class $ToursTable extends Tours with TableInfo<$ToursTable, Tour> {
 }
 
 class TourStop extends DataClass implements Insertable<TourStop> {
+  final int id;
   final int id_tour;
   final int id_stop;
-  TourStop({@required this.id_tour, @required this.id_stop});
+  TourStop({@required this.id, @required this.id_tour, @required this.id_stop});
   factory TourStop.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     return TourStop(
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
       id_tour:
           intType.mapFromDatabaseResponse(data['${effectivePrefix}id_tour']),
       id_stop:
@@ -1603,6 +1605,7 @@ class TourStop extends DataClass implements Insertable<TourStop> {
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return TourStop(
+      id: serializer.fromJson<int>(json['id']),
       id_tour: serializer.fromJson<int>(json['id_tour']),
       id_stop: serializer.fromJson<int>(json['id_stop']),
     );
@@ -1611,6 +1614,7 @@ class TourStop extends DataClass implements Insertable<TourStop> {
   Map<String, dynamic> toJson({ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
       'id_tour': serializer.toJson<int>(id_tour),
       'id_stop': serializer.toJson<int>(id_stop),
     };
@@ -1619,6 +1623,7 @@ class TourStop extends DataClass implements Insertable<TourStop> {
   @override
   TourStopsCompanion createCompanion(bool nullToAbsent) {
     return TourStopsCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       id_tour: id_tour == null && nullToAbsent
           ? const Value.absent()
           : Value(id_tour),
@@ -1628,13 +1633,15 @@ class TourStop extends DataClass implements Insertable<TourStop> {
     );
   }
 
-  TourStop copyWith({int id_tour, int id_stop}) => TourStop(
+  TourStop copyWith({int id, int id_tour, int id_stop}) => TourStop(
+        id: id ?? this.id,
         id_tour: id_tour ?? this.id_tour,
         id_stop: id_stop ?? this.id_stop,
       );
   @override
   String toString() {
     return (StringBuffer('TourStop(')
+          ..write('id: $id, ')
           ..write('id_tour: $id_tour, ')
           ..write('id_stop: $id_stop')
           ..write(')'))
@@ -1642,29 +1649,37 @@ class TourStop extends DataClass implements Insertable<TourStop> {
   }
 
   @override
-  int get hashCode => $mrjf($mrjc(id_tour.hashCode, id_stop.hashCode));
+  int get hashCode =>
+      $mrjf($mrjc(id.hashCode, $mrjc(id_tour.hashCode, id_stop.hashCode)));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is TourStop &&
+          other.id == this.id &&
           other.id_tour == this.id_tour &&
           other.id_stop == this.id_stop);
 }
 
 class TourStopsCompanion extends UpdateCompanion<TourStop> {
+  final Value<int> id;
   final Value<int> id_tour;
   final Value<int> id_stop;
   const TourStopsCompanion({
+    this.id = const Value.absent(),
     this.id_tour = const Value.absent(),
     this.id_stop = const Value.absent(),
   });
   TourStopsCompanion.insert({
+    @required int id,
     @required int id_tour,
     @required int id_stop,
-  })  : id_tour = Value(id_tour),
+  })  : id = Value(id),
+        id_tour = Value(id_tour),
         id_stop = Value(id_stop);
-  TourStopsCompanion copyWith({Value<int> id_tour, Value<int> id_stop}) {
+  TourStopsCompanion copyWith(
+      {Value<int> id, Value<int> id_tour, Value<int> id_stop}) {
     return TourStopsCompanion(
+      id: id ?? this.id,
       id_tour: id_tour ?? this.id_tour,
       id_stop: id_stop ?? this.id_stop,
     );
@@ -1676,6 +1691,18 @@ class $TourStopsTable extends TourStops
   final GeneratedDatabase _db;
   final String _alias;
   $TourStopsTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
+  GeneratedIntColumn _id;
+  @override
+  GeneratedIntColumn get id => _id ??= _constructId();
+  GeneratedIntColumn _constructId() {
+    return GeneratedIntColumn(
+      'id',
+      $tableName,
+      false,
+    );
+  }
+
   final VerificationMeta _id_tourMeta = const VerificationMeta('id_tour');
   GeneratedIntColumn _id_tour;
   @override
@@ -1695,7 +1722,7 @@ class $TourStopsTable extends TourStops
   }
 
   @override
-  List<GeneratedColumn> get $columns => [id_tour, id_stop];
+  List<GeneratedColumn> get $columns => [id, id_tour, id_stop];
   @override
   $TourStopsTable get asDslTable => this;
   @override
@@ -1706,6 +1733,11 @@ class $TourStopsTable extends TourStops
   VerificationContext validateIntegrity(TourStopsCompanion d,
       {bool isInserting = false}) {
     final context = VerificationContext();
+    if (d.id.present) {
+      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
     if (d.id_tour.present) {
       context.handle(_id_tourMeta,
           id_tour.isAcceptableValue(d.id_tour.value, _id_tourMeta));
@@ -1732,6 +1764,9 @@ class $TourStopsTable extends TourStops
   @override
   Map<String, Variable> entityToSql(TourStopsCompanion d) {
     final map = <String, Variable>{};
+    if (d.id.present) {
+      map['id'] = Variable<int, IntType>(d.id.value);
+    }
     if (d.id_tour.present) {
       map['id_tour'] = Variable<int, IntType>(d.id_tour.value);
     }
@@ -1748,7 +1783,8 @@ class $TourStopsTable extends TourStops
 }
 
 class Extra extends DataClass implements Insertable<Extra> {
-  final int id;
+  final int pos_extra;
+  final int pos_stop;
   final int id_tour;
   final int id_stop;
   final String textInfo;
@@ -1756,7 +1792,8 @@ class Extra extends DataClass implements Insertable<Extra> {
   final List<String> answerOpt;
   final List<int> answerCor;
   Extra(
-      {@required this.id,
+      {@required this.pos_extra,
+      @required this.pos_stop,
       @required this.id_tour,
       @required this.id_stop,
       @required this.textInfo,
@@ -1769,7 +1806,10 @@ class Extra extends DataClass implements Insertable<Extra> {
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     return Extra(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      pos_extra:
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}pos_extra']),
+      pos_stop:
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}pos_stop']),
       id_tour:
           intType.mapFromDatabaseResponse(data['${effectivePrefix}id_tour']),
       id_stop:
@@ -1788,7 +1828,8 @@ class Extra extends DataClass implements Insertable<Extra> {
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return Extra(
-      id: serializer.fromJson<int>(json['id']),
+      pos_extra: serializer.fromJson<int>(json['pos_extra']),
+      pos_stop: serializer.fromJson<int>(json['pos_stop']),
       id_tour: serializer.fromJson<int>(json['id_tour']),
       id_stop: serializer.fromJson<int>(json['id_stop']),
       textInfo: serializer.fromJson<String>(json['textInfo']),
@@ -1801,7 +1842,8 @@ class Extra extends DataClass implements Insertable<Extra> {
   Map<String, dynamic> toJson({ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
+      'pos_extra': serializer.toJson<int>(pos_extra),
+      'pos_stop': serializer.toJson<int>(pos_stop),
       'id_tour': serializer.toJson<int>(id_tour),
       'id_stop': serializer.toJson<int>(id_stop),
       'textInfo': serializer.toJson<String>(textInfo),
@@ -1814,7 +1856,12 @@ class Extra extends DataClass implements Insertable<Extra> {
   @override
   ExtrasCompanion createCompanion(bool nullToAbsent) {
     return ExtrasCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      pos_extra: pos_extra == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pos_extra),
+      pos_stop: pos_stop == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pos_stop),
       id_tour: id_tour == null && nullToAbsent
           ? const Value.absent()
           : Value(id_tour),
@@ -1835,7 +1882,8 @@ class Extra extends DataClass implements Insertable<Extra> {
   }
 
   Extra copyWith(
-          {int id,
+          {int pos_extra,
+          int pos_stop,
           int id_tour,
           int id_stop,
           String textInfo,
@@ -1843,7 +1891,8 @@ class Extra extends DataClass implements Insertable<Extra> {
           List<String> answerOpt,
           List<int> answerCor}) =>
       Extra(
-        id: id ?? this.id,
+        pos_extra: pos_extra ?? this.pos_extra,
+        pos_stop: pos_stop ?? this.pos_stop,
         id_tour: id_tour ?? this.id_tour,
         id_stop: id_stop ?? this.id_stop,
         textInfo: textInfo ?? this.textInfo,
@@ -1854,7 +1903,8 @@ class Extra extends DataClass implements Insertable<Extra> {
   @override
   String toString() {
     return (StringBuffer('Extra(')
-          ..write('id: $id, ')
+          ..write('pos_extra: $pos_extra, ')
+          ..write('pos_stop: $pos_stop, ')
           ..write('id_tour: $id_tour, ')
           ..write('id_stop: $id_stop, ')
           ..write('textInfo: $textInfo, ')
@@ -1867,20 +1917,23 @@ class Extra extends DataClass implements Insertable<Extra> {
 
   @override
   int get hashCode => $mrjf($mrjc(
-      id.hashCode,
+      pos_extra.hashCode,
       $mrjc(
-          id_tour.hashCode,
+          pos_stop.hashCode,
           $mrjc(
-              id_stop.hashCode,
+              id_tour.hashCode,
               $mrjc(
-                  textInfo.hashCode,
-                  $mrjc(type.hashCode,
-                      $mrjc(answerOpt.hashCode, answerCor.hashCode)))))));
+                  id_stop.hashCode,
+                  $mrjc(
+                      textInfo.hashCode,
+                      $mrjc(type.hashCode,
+                          $mrjc(answerOpt.hashCode, answerCor.hashCode))))))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is Extra &&
-          other.id == this.id &&
+          other.pos_extra == this.pos_extra &&
+          other.pos_stop == this.pos_stop &&
           other.id_tour == this.id_tour &&
           other.id_stop == this.id_stop &&
           other.textInfo == this.textInfo &&
@@ -1890,7 +1943,8 @@ class Extra extends DataClass implements Insertable<Extra> {
 }
 
 class ExtrasCompanion extends UpdateCompanion<Extra> {
-  final Value<int> id;
+  final Value<int> pos_extra;
+  final Value<int> pos_stop;
   final Value<int> id_tour;
   final Value<int> id_stop;
   final Value<String> textInfo;
@@ -1898,7 +1952,8 @@ class ExtrasCompanion extends UpdateCompanion<Extra> {
   final Value<List<String>> answerOpt;
   final Value<List<int>> answerCor;
   const ExtrasCompanion({
-    this.id = const Value.absent(),
+    this.pos_extra = const Value.absent(),
+    this.pos_stop = const Value.absent(),
     this.id_tour = const Value.absent(),
     this.id_stop = const Value.absent(),
     this.textInfo = const Value.absent(),
@@ -1907,18 +1962,22 @@ class ExtrasCompanion extends UpdateCompanion<Extra> {
     this.answerCor = const Value.absent(),
   });
   ExtrasCompanion.insert({
-    this.id = const Value.absent(),
+    @required int pos_extra,
+    @required int pos_stop,
     @required int id_tour,
     @required int id_stop,
     @required String textInfo,
     this.type = const Value.absent(),
     this.answerOpt = const Value.absent(),
     this.answerCor = const Value.absent(),
-  })  : id_tour = Value(id_tour),
+  })  : pos_extra = Value(pos_extra),
+        pos_stop = Value(pos_stop),
+        id_tour = Value(id_tour),
         id_stop = Value(id_stop),
         textInfo = Value(textInfo);
   ExtrasCompanion copyWith(
-      {Value<int> id,
+      {Value<int> pos_extra,
+      Value<int> pos_stop,
       Value<int> id_tour,
       Value<int> id_stop,
       Value<String> textInfo,
@@ -1926,7 +1985,8 @@ class ExtrasCompanion extends UpdateCompanion<Extra> {
       Value<List<String>> answerOpt,
       Value<List<int>> answerCor}) {
     return ExtrasCompanion(
-      id: id ?? this.id,
+      pos_extra: pos_extra ?? this.pos_extra,
+      pos_stop: pos_stop ?? this.pos_stop,
       id_tour: id_tour ?? this.id_tour,
       id_stop: id_stop ?? this.id_stop,
       textInfo: textInfo ?? this.textInfo,
@@ -1941,13 +2001,28 @@ class $ExtrasTable extends Extras with TableInfo<$ExtrasTable, Extra> {
   final GeneratedDatabase _db;
   final String _alias;
   $ExtrasTable(this._db, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
-  GeneratedIntColumn _id;
+  final VerificationMeta _pos_extraMeta = const VerificationMeta('pos_extra');
+  GeneratedIntColumn _pos_extra;
   @override
-  GeneratedIntColumn get id => _id ??= _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
-        hasAutoIncrement: true, declaredAsPrimaryKey: true);
+  GeneratedIntColumn get pos_extra => _pos_extra ??= _constructPosExtra();
+  GeneratedIntColumn _constructPosExtra() {
+    return GeneratedIntColumn(
+      'pos_extra',
+      $tableName,
+      false,
+    );
+  }
+
+  final VerificationMeta _pos_stopMeta = const VerificationMeta('pos_stop');
+  GeneratedIntColumn _pos_stop;
+  @override
+  GeneratedIntColumn get pos_stop => _pos_stop ??= _constructPosStop();
+  GeneratedIntColumn _constructPosStop() {
+    return GeneratedIntColumn(
+      'pos_stop',
+      $tableName,
+      false,
+    );
   }
 
   final VerificationMeta _id_tourMeta = const VerificationMeta('id_tour');
@@ -2017,8 +2092,16 @@ class $ExtrasTable extends Extras with TableInfo<$ExtrasTable, Extra> {
   }
 
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, id_tour, id_stop, textInfo, type, answerOpt, answerCor];
+  List<GeneratedColumn> get $columns => [
+        pos_extra,
+        pos_stop,
+        id_tour,
+        id_stop,
+        textInfo,
+        type,
+        answerOpt,
+        answerCor
+      ];
   @override
   $ExtrasTable get asDslTable => this;
   @override
@@ -2029,8 +2112,17 @@ class $ExtrasTable extends Extras with TableInfo<$ExtrasTable, Extra> {
   VerificationContext validateIntegrity(ExtrasCompanion d,
       {bool isInserting = false}) {
     final context = VerificationContext();
-    if (d.id.present) {
-      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    if (d.pos_extra.present) {
+      context.handle(_pos_extraMeta,
+          pos_extra.isAcceptableValue(d.pos_extra.value, _pos_extraMeta));
+    } else if (isInserting) {
+      context.missing(_pos_extraMeta);
+    }
+    if (d.pos_stop.present) {
+      context.handle(_pos_stopMeta,
+          pos_stop.isAcceptableValue(d.pos_stop.value, _pos_stopMeta));
+    } else if (isInserting) {
+      context.missing(_pos_stopMeta);
     }
     if (d.id_tour.present) {
       context.handle(_id_tourMeta,
@@ -2057,7 +2149,8 @@ class $ExtrasTable extends Extras with TableInfo<$ExtrasTable, Extra> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id, id_tour, id_stop};
+  Set<GeneratedColumn> get $primaryKey =>
+      {pos_stop, pos_extra, id_tour, id_stop};
   @override
   Extra map(Map<String, dynamic> data, {String tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
@@ -2067,8 +2160,11 @@ class $ExtrasTable extends Extras with TableInfo<$ExtrasTable, Extra> {
   @override
   Map<String, Variable> entityToSql(ExtrasCompanion d) {
     final map = <String, Variable>{};
-    if (d.id.present) {
-      map['id'] = Variable<int, IntType>(d.id.value);
+    if (d.pos_extra.present) {
+      map['pos_extra'] = Variable<int, IntType>(d.pos_extra.value);
+    }
+    if (d.pos_stop.present) {
+      map['pos_stop'] = Variable<int, IntType>(d.pos_stop.value);
     }
     if (d.id_tour.present) {
       map['id_tour'] = Variable<int, IntType>(d.id_tour.value);
@@ -2108,13 +2204,15 @@ class $ExtrasTable extends Extras with TableInfo<$ExtrasTable, Extra> {
 }
 
 class StopFeature extends DataClass implements Insertable<StopFeature> {
+  final int id;
   final int id_tour;
   final int id_stop;
   final bool showImages;
   final bool showText;
   final bool showDetails;
   StopFeature(
-      {@required this.id_tour,
+      {@required this.id,
+      @required this.id_tour,
       @required this.id_stop,
       @required this.showImages,
       @required this.showText,
@@ -2125,6 +2223,7 @@ class StopFeature extends DataClass implements Insertable<StopFeature> {
     final intType = db.typeSystem.forDartType<int>();
     final boolType = db.typeSystem.forDartType<bool>();
     return StopFeature(
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
       id_tour:
           intType.mapFromDatabaseResponse(data['${effectivePrefix}id_tour']),
       id_stop:
@@ -2141,6 +2240,7 @@ class StopFeature extends DataClass implements Insertable<StopFeature> {
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return StopFeature(
+      id: serializer.fromJson<int>(json['id']),
       id_tour: serializer.fromJson<int>(json['id_tour']),
       id_stop: serializer.fromJson<int>(json['id_stop']),
       showImages: serializer.fromJson<bool>(json['showImages']),
@@ -2152,6 +2252,7 @@ class StopFeature extends DataClass implements Insertable<StopFeature> {
   Map<String, dynamic> toJson({ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
       'id_tour': serializer.toJson<int>(id_tour),
       'id_stop': serializer.toJson<int>(id_stop),
       'showImages': serializer.toJson<bool>(showImages),
@@ -2163,6 +2264,7 @@ class StopFeature extends DataClass implements Insertable<StopFeature> {
   @override
   StopFeaturesCompanion createCompanion(bool nullToAbsent) {
     return StopFeaturesCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       id_tour: id_tour == null && nullToAbsent
           ? const Value.absent()
           : Value(id_tour),
@@ -2182,12 +2284,14 @@ class StopFeature extends DataClass implements Insertable<StopFeature> {
   }
 
   StopFeature copyWith(
-          {int id_tour,
+          {int id,
+          int id_tour,
           int id_stop,
           bool showImages,
           bool showText,
           bool showDetails}) =>
       StopFeature(
+        id: id ?? this.id,
         id_tour: id_tour ?? this.id_tour,
         id_stop: id_stop ?? this.id_stop,
         showImages: showImages ?? this.showImages,
@@ -2197,6 +2301,7 @@ class StopFeature extends DataClass implements Insertable<StopFeature> {
   @override
   String toString() {
     return (StringBuffer('StopFeature(')
+          ..write('id: $id, ')
           ..write('id_tour: $id_tour, ')
           ..write('id_stop: $id_stop, ')
           ..write('showImages: $showImages, ')
@@ -2208,15 +2313,18 @@ class StopFeature extends DataClass implements Insertable<StopFeature> {
 
   @override
   int get hashCode => $mrjf($mrjc(
-      id_tour.hashCode,
+      id.hashCode,
       $mrjc(
-          id_stop.hashCode,
-          $mrjc(showImages.hashCode,
-              $mrjc(showText.hashCode, showDetails.hashCode)))));
+          id_tour.hashCode,
+          $mrjc(
+              id_stop.hashCode,
+              $mrjc(showImages.hashCode,
+                  $mrjc(showText.hashCode, showDetails.hashCode))))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is StopFeature &&
+          other.id == this.id &&
           other.id_tour == this.id_tour &&
           other.id_stop == this.id_stop &&
           other.showImages == this.showImages &&
@@ -2225,12 +2333,14 @@ class StopFeature extends DataClass implements Insertable<StopFeature> {
 }
 
 class StopFeaturesCompanion extends UpdateCompanion<StopFeature> {
+  final Value<int> id;
   final Value<int> id_tour;
   final Value<int> id_stop;
   final Value<bool> showImages;
   final Value<bool> showText;
   final Value<bool> showDetails;
   const StopFeaturesCompanion({
+    this.id = const Value.absent(),
     this.id_tour = const Value.absent(),
     this.id_stop = const Value.absent(),
     this.showImages = const Value.absent(),
@@ -2238,20 +2348,24 @@ class StopFeaturesCompanion extends UpdateCompanion<StopFeature> {
     this.showDetails = const Value.absent(),
   });
   StopFeaturesCompanion.insert({
+    @required int id,
     @required int id_tour,
     @required int id_stop,
     this.showImages = const Value.absent(),
     this.showText = const Value.absent(),
     this.showDetails = const Value.absent(),
-  })  : id_tour = Value(id_tour),
+  })  : id = Value(id),
+        id_tour = Value(id_tour),
         id_stop = Value(id_stop);
   StopFeaturesCompanion copyWith(
-      {Value<int> id_tour,
+      {Value<int> id,
+      Value<int> id_tour,
       Value<int> id_stop,
       Value<bool> showImages,
       Value<bool> showText,
       Value<bool> showDetails}) {
     return StopFeaturesCompanion(
+      id: id ?? this.id,
       id_tour: id_tour ?? this.id_tour,
       id_stop: id_stop ?? this.id_stop,
       showImages: showImages ?? this.showImages,
@@ -2266,6 +2380,15 @@ class $StopFeaturesTable extends StopFeatures
   final GeneratedDatabase _db;
   final String _alias;
   $StopFeaturesTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
+  GeneratedIntColumn _id;
+  @override
+  GeneratedIntColumn get id => _id ??= _constructId();
+  GeneratedIntColumn _constructId() {
+    return GeneratedIntColumn('id', $tableName, false,
+        $customConstraints: 'REFERENCES tourStops(id)');
+  }
+
   final VerificationMeta _id_tourMeta = const VerificationMeta('id_tour');
   GeneratedIntColumn _id_tour;
   @override
@@ -2315,7 +2438,7 @@ class $StopFeaturesTable extends StopFeatures
 
   @override
   List<GeneratedColumn> get $columns =>
-      [id_tour, id_stop, showImages, showText, showDetails];
+      [id, id_tour, id_stop, showImages, showText, showDetails];
   @override
   $StopFeaturesTable get asDslTable => this;
   @override
@@ -2326,6 +2449,11 @@ class $StopFeaturesTable extends StopFeatures
   VerificationContext validateIntegrity(StopFeaturesCompanion d,
       {bool isInserting = false}) {
     final context = VerificationContext();
+    if (d.id.present) {
+      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
     if (d.id_tour.present) {
       context.handle(_id_tourMeta,
           id_tour.isAcceptableValue(d.id_tour.value, _id_tourMeta));
@@ -2354,7 +2482,7 @@ class $StopFeaturesTable extends StopFeatures
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  Set<GeneratedColumn> get $primaryKey => {id, id_tour, id_stop};
   @override
   StopFeature map(Map<String, dynamic> data, {String tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
@@ -2364,6 +2492,9 @@ class $StopFeaturesTable extends StopFeatures
   @override
   Map<String, Variable> entityToSql(StopFeaturesCompanion d) {
     final map = <String, Variable>{};
+    if (d.id.present) {
+      map['id'] = Variable<int, IntType>(d.id.value);
+    }
     if (d.id_tour.present) {
       map['id_tour'] = Variable<int, IntType>(d.id_tour.value);
     }

@@ -153,18 +153,21 @@ class ActualTask {
   factory ActualTask(type, {answerNames = const [""], correct}) {
     var w;
     switch (type) {
-      case ExtraType.TASK_TEXT: w = TextEditingController(); break;
+      case ExtraType.TASK_TEXT: return ActualTask.text(answerNames, correct: correct);
       case ExtraType.TASK_MULTI:
-      case ExtraType.TASK_SINGLE: w = false; break;
+      case ExtraType.TASK_SINGLE: return ActualTask.bool(answerNames, correct: correct);
       default: return null;
     }
-
-    return ActualTask.create(answerNames, w, correct: correct);
   }
 
-  ActualTask.create(names, start, {this.correct = const <int>{}}) : entries = <Tuple>[] {
+  ActualTask.text(names, {this.correct = const <int>{}}) : entries = <Tuple>[] {
     for (String s in names)
-      addLabel(s, start);
+      addLabel(s, TextEditingController());
+  }
+
+  ActualTask.bool(names, {this.correct = const <int>{}}) : entries = <Tuple>[] {
+    for (String s in names)
+      addLabel(s, false);
   }
 
   addLabel(String label, value) {
@@ -183,7 +186,13 @@ class ActualTask {
   bool isCorrect(int id) {
     if (id < 0 || entries.length <= id) return false;
     var t = entries[id];
-    return (correct.contains(id) && selected == id) || (!correct.contains(id) && selected != id) || (correct.contains(id) && t.valB == true) || (!correct.contains(id) && t.valB != true) ;
+
+    // SINGLE task
+    if (selected != null)
+      return (correct.contains(id) && selected == id) || (!correct.contains(id) && selected != id);
+
+    // MULTI task
+    return (correct.contains(id) && t.valB == true) || (!correct.contains(id) && t.valB != true);
   }
 
   reset() {
