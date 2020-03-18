@@ -91,6 +91,7 @@ class _EditSingleStopState extends State<EditSingleStop> {
                 DropdownMenuItem(
                   value: 0,
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Icon(Icons.add),
                       Text("  Museumsobjekt auswählen  "),

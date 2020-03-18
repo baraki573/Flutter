@@ -186,4 +186,14 @@ class ActualTask {
     return (correct.contains(id) && selected == id) || (!correct.contains(id) && selected != id) || (correct.contains(id) && t.valB == true) || (!correct.contains(id) && t.valB != true) ;
   }
 
+  reset() {
+    selected = null;
+    for (var e in entries) {
+      if (e.valB == true)
+        e.valB = false;
+      else if (e.valB is TextEditingController)
+        e.valB.text = "";
+    }
+  }
+
 }

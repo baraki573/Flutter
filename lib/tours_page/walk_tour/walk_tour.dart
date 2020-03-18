@@ -175,15 +175,11 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
         actions: [
           FlatButton(
             onPressed: () {
-              /*widget.tour.tasks
-                      .forEach((s, list) =>
-                      list.forEach((t) => t.ctrl.clear()));*/
-              // TODO reset task CTRL
-              /*for (var stop in widget.tour.stops)
+              // clear the input
+              for (var stop in widget.tour.stops)
                 for (var extra in stop.extras)
                   if (extra.task != null)
-                    for (var entry in extra.task.entries)
-                      entry.valB*/
+                    extra.task.reset();
               Navigator.pop(context);
               Navigator.pop(context);
             },

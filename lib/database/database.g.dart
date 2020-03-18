@@ -497,6 +497,7 @@ class Stop extends DataClass implements Insertable<Stop> {
   final List<String> images;
   final String name;
   final String descr;
+  final String invId;
   final String time;
   final String creator;
   final String devision;
@@ -510,6 +511,7 @@ class Stop extends DataClass implements Insertable<Stop> {
       @required this.images,
       @required this.name,
       @required this.descr,
+      this.invId,
       this.time,
       this.creator,
       this.devision,
@@ -530,6 +532,8 @@ class Stop extends DataClass implements Insertable<Stop> {
       name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
       descr:
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}descr']),
+      invId:
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}inv_id']),
       time: stringType.mapFromDatabaseResponse(data['${effectivePrefix}time']),
       creator:
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}creator']),
@@ -554,6 +558,7 @@ class Stop extends DataClass implements Insertable<Stop> {
       images: serializer.fromJson<List<String>>(json['images']),
       name: serializer.fromJson<String>(json['name']),
       descr: serializer.fromJson<String>(json['descr']),
+      invId: serializer.fromJson<String>(json['invId']),
       time: serializer.fromJson<String>(json['time']),
       creator: serializer.fromJson<String>(json['creator']),
       devision: serializer.fromJson<String>(json['devision']),
@@ -572,6 +577,7 @@ class Stop extends DataClass implements Insertable<Stop> {
       'images': serializer.toJson<List<String>>(images),
       'name': serializer.toJson<String>(name),
       'descr': serializer.toJson<String>(descr),
+      'invId': serializer.toJson<String>(invId),
       'time': serializer.toJson<String>(time),
       'creator': serializer.toJson<String>(creator),
       'devision': serializer.toJson<String>(devision),
@@ -592,6 +598,8 @@ class Stop extends DataClass implements Insertable<Stop> {
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
       descr:
           descr == null && nullToAbsent ? const Value.absent() : Value(descr),
+      invId:
+          invId == null && nullToAbsent ? const Value.absent() : Value(invId),
       time: time == null && nullToAbsent ? const Value.absent() : Value(time),
       creator: creator == null && nullToAbsent
           ? const Value.absent()
@@ -620,6 +628,7 @@ class Stop extends DataClass implements Insertable<Stop> {
           List<String> images,
           String name,
           String descr,
+          String invId,
           String time,
           String creator,
           String devision,
@@ -633,6 +642,7 @@ class Stop extends DataClass implements Insertable<Stop> {
         images: images ?? this.images,
         name: name ?? this.name,
         descr: descr ?? this.descr,
+        invId: invId ?? this.invId,
         time: time ?? this.time,
         creator: creator ?? this.creator,
         devision: devision ?? this.devision,
@@ -649,6 +659,7 @@ class Stop extends DataClass implements Insertable<Stop> {
           ..write('images: $images, ')
           ..write('name: $name, ')
           ..write('descr: $descr, ')
+          ..write('invId: $invId, ')
           ..write('time: $time, ')
           ..write('creator: $creator, ')
           ..write('devision: $devision, ')
@@ -671,19 +682,23 @@ class Stop extends DataClass implements Insertable<Stop> {
               $mrjc(
                   descr.hashCode,
                   $mrjc(
-                      time.hashCode,
+                      invId.hashCode,
                       $mrjc(
-                          creator.hashCode,
+                          time.hashCode,
                           $mrjc(
-                              devision.hashCode,
+                              creator.hashCode,
                               $mrjc(
-                                  artType.hashCode,
+                                  devision.hashCode,
                                   $mrjc(
-                                      material.hashCode,
+                                      artType.hashCode,
                                       $mrjc(
-                                          size.hashCode,
-                                          $mrjc(location.hashCode,
-                                              interContext.hashCode))))))))))));
+                                          material.hashCode,
+                                          $mrjc(
+                                              size.hashCode,
+                                              $mrjc(
+                                                  location.hashCode,
+                                                  interContext
+                                                      .hashCode)))))))))))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -692,6 +707,7 @@ class Stop extends DataClass implements Insertable<Stop> {
           other.images == this.images &&
           other.name == this.name &&
           other.descr == this.descr &&
+          other.invId == this.invId &&
           other.time == this.time &&
           other.creator == this.creator &&
           other.devision == this.devision &&
@@ -707,6 +723,7 @@ class StopsCompanion extends UpdateCompanion<Stop> {
   final Value<List<String>> images;
   final Value<String> name;
   final Value<String> descr;
+  final Value<String> invId;
   final Value<String> time;
   final Value<String> creator;
   final Value<String> devision;
@@ -720,6 +737,7 @@ class StopsCompanion extends UpdateCompanion<Stop> {
     this.images = const Value.absent(),
     this.name = const Value.absent(),
     this.descr = const Value.absent(),
+    this.invId = const Value.absent(),
     this.time = const Value.absent(),
     this.creator = const Value.absent(),
     this.devision = const Value.absent(),
@@ -734,6 +752,7 @@ class StopsCompanion extends UpdateCompanion<Stop> {
     @required List<String> images,
     @required String name,
     @required String descr,
+    this.invId = const Value.absent(),
     this.time = const Value.absent(),
     this.creator = const Value.absent(),
     this.devision = const Value.absent(),
@@ -750,6 +769,7 @@ class StopsCompanion extends UpdateCompanion<Stop> {
       Value<List<String>> images,
       Value<String> name,
       Value<String> descr,
+      Value<String> invId,
       Value<String> time,
       Value<String> creator,
       Value<String> devision,
@@ -763,6 +783,7 @@ class StopsCompanion extends UpdateCompanion<Stop> {
       images: images ?? this.images,
       name: name ?? this.name,
       descr: descr ?? this.descr,
+      invId: invId ?? this.invId,
       time: time ?? this.time,
       creator: creator ?? this.creator,
       devision: devision ?? this.devision,
@@ -818,6 +839,18 @@ class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
       'descr',
       $tableName,
       false,
+    );
+  }
+
+  final VerificationMeta _invIdMeta = const VerificationMeta('invId');
+  GeneratedTextColumn _invId;
+  @override
+  GeneratedTextColumn get invId => _invId ??= _constructInvId();
+  GeneratedTextColumn _constructInvId() {
+    return GeneratedTextColumn(
+      'inv_id',
+      $tableName,
+      true,
     );
   }
 
@@ -916,6 +949,7 @@ class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
         images,
         name,
         descr,
+        invId,
         time,
         creator,
         devision,
@@ -950,6 +984,10 @@ class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
           _descrMeta, descr.isAcceptableValue(d.descr.value, _descrMeta));
     } else if (isInserting) {
       context.missing(_descrMeta);
+    }
+    if (d.invId.present) {
+      context.handle(
+          _invIdMeta, invId.isAcceptableValue(d.invId.value, _invIdMeta));
     }
     if (d.time.present) {
       context.handle(
@@ -1012,6 +1050,9 @@ class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
     }
     if (d.descr.present) {
       map['descr'] = Variable<String, StringType>(d.descr.value);
+    }
+    if (d.invId.present) {
+      map['inv_id'] = Variable<String, StringType>(d.invId.value);
     }
     if (d.time.present) {
       map['time'] = Variable<String, StringType>(d.time.value);

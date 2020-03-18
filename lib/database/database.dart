@@ -76,6 +76,8 @@ class Stops extends Table {
 
   //TODO add Map<String, String>-Converter
 
+  TextColumn get invId => text().nullable()();
+
   TextColumn get time => text().withLength(min: 1, max: 15).nullable()();
 
   TextColumn get creator => text().withLength(min: 1, max: 15).nullable()();
@@ -103,6 +105,7 @@ class TourStops extends Table {
   IntColumn get id_stop => integer().customConstraint("REFERENCES stops(id)")();
 }
 
+// TODO typo: change to "Divisions"
 class Devisions extends Table {
   TextColumn get name => text()();
 
@@ -421,13 +424,50 @@ class MuseumDatabase extends _$MuseumDatabase {
   Future<List<Stop>> getStops() => select(stops).get();
 
   Stream<List<Stop>> stopSearch(String text) {
-    var query = select(stops).watch();
-
     if (text.isEmpty)
+      return Stream.value(List<Stop>());
+
+    List<String> input = text.split(RegExp(",|;|&"));
+
+    //print(input.length.toString() + input.toString());
+
+    var query = select(stops)
+      ..where((s) => s.name.equals(customName).not());
+      //..where((s) => s.name.like("%"+text.trim()+"%"));
+
+    for (var part in input) {
+      part = part.trim();
+      if (part.startsWith(RegExp("div:?"))) {
+        part = part.replaceAll(RegExp("div:?"), "").trim();
+        query.where((s) => s.devision.like(part+ "%"));
+      }
+      else if (part.startsWith(RegExp("cre:?"))) {
+        part = part.replaceAll(RegExp("cre:?"), "").trim();
+        query.where((s) => s.creator.like(part+ "%"));
+      }
+      else if (part.startsWith(RegExp("art:?"))) {
+        part = part.replaceAll(RegExp("art:?"), "").trim();
+        query.where((s) => s.artType.like(part+ "%"));
+      }
+      else if (part.startsWith(RegExp("mat:?"))) {
+        part = part.replaceAll(RegExp("mat:?"), "").trim();
+        query.where((s) => s.material.like(part+ "%"));
+      }
+      else if (part.startsWith(RegExp("inv:?"))) {
+        part = part.replaceAll(RegExp("inv:?"), "").trim();
+        query.where((s) => s.invId.like(part+ "%"));
+      }
+      else
+        query.where((s) => s.name.like("%"+part+"%"));
+    }
+
+
+    return query.watch();
+    /*if (text.isEmpty)
       return Stream.value(List<Stop>());
     return query.map((list) => list
         .where((s) => s.name.toLowerCase().startsWith(text.toLowerCase()))
-        .toList());
+        .toList());*/
   }
 
   Stream<List<Extra>> getExtrasId(int id_tour, int id_stop) {

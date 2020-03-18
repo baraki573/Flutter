@@ -37,12 +37,13 @@ class _MuseumSearchState extends State<MuseumSearch> {
                 if (lst.isEmpty) {
                   var text = MuseumSearch.ctrl.text.isEmpty
                       ? "Gib einen Begriff oben ein, um die Suche zu starten."
-                      : "Leider konnte kein passendes Objekt zu dieser Suchanfrage gefunden werden.";
+                      : "Leider konnte kein passendes Objekt zu dieser Suchanfrage gefunden werden.\nVersuche es mit einem anderen Begriff erneut!";
                   return Center(child: Text(text, textAlign: TextAlign.center));
                 }
                 return Scrollbar(
                   child: ListView(
-                    children: lst
+                    children:
+                    lst
                         .map((s) => ListTile(
                               onTap: () {
                                 widget.funct(s);
@@ -50,7 +51,7 @@ class _MuseumSearchState extends State<MuseumSearch> {
                               },
                               trailing: Icon(Icons.arrow_forward),
                               title: Text(s.name),
-                              subtitle: Text("Abteilung " + s.devision),
+                              subtitle: Text("Abteilung " + (s.devision ?? "")),
                             ))
                         .toList(),
                   ),
