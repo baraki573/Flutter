@@ -99,59 +99,69 @@ class _TourExtraState extends State<TourExtra> {
   }
 
   Widget _makeAnswers(ExtraType type, ActualTask t) {
+    var label = (e) => widget.edit
+        ? TextField(
+            controller: e.valA,
+            minLines: 1,
+            maxLines: 3,
+            maxLength: 70,
+            decoration: InputDecoration(hintText: "Label"),
+          )
+        : SelectableText(e.valA.text);
     switch (type) {
       case ExtraType.TASK_TEXT:
+        var text = (e) => !widget.result
+            ? TextField(
+                controller: e.valB,
+                minLines: 1,
+                maxLines: 10,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  prefixIcon: Icon(Icons.create),
+                  hintText: "....",
+                ),
+              )
+            : SelectableText(e.valB.text);
         return Column(
           children: [
-            Table(
-              //width: horSize(80, 100),
-              //padding: EdgeInsets.only(left: 7, right: 4),
-              //decoration: BoxDecoration(border: Border.all(color: Colors.black)),
-              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-              columnWidths: {0: FixedColumnWidth(horSize(30, 20))},
-              border: TableBorder.all(
-                  color:
-                      t.entries.isNotEmpty ? Colors.black : Colors.transparent),
-              children: t.entries
-                  .map(
-                    (e) => TableRow(
-                      //fit: FlexFit.loose,
-                      children: [
-                        Container(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 7, vertical: 13),
-                          alignment: Alignment.center,
-                          child: widget.edit
-                              ? TextField(
-                                  controller: e.valA,
-                                  minLines: 1,
-                                  maxLines: 5,
-                                  maxLength: 70,
-                                  decoration:
-                                      InputDecoration(hintText: "Label"),
-                                )
-                              : SelectableText(e.valA.text),
-                        ),
-                        Container(
-                          alignment: Alignment.center,
-                          child: !widget.result
-                              ? TextField(
-                                  controller: e.valB,
-                                  minLines: 1,
-                                  maxLines: 10,
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    prefixIcon: Icon(Icons.create),
-                                    hintText: "....",
+            t.entries.length == 0
+                ? Container()
+                : t.entries.length == 1
+                    ? Container(
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.black)),
+                        child: text(t.entries[0]),
+                      )
+                    : Table(
+                        //width: horSize(80, 100),
+                        //padding: EdgeInsets.only(left: 7, right: 4),
+                        //decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+                        defaultVerticalAlignment:
+                            TableCellVerticalAlignment.middle,
+                        columnWidths: {0: FixedColumnWidth(horSize(30, 20))},
+                        border: TableBorder.all(color: Colors.black),
+                        children: t.entries
+                            .map(
+                              (e) => TableRow(
+                                //fit: FlexFit.loose,
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 7,
+                                        vertical: widget.edit ? 4 : 13),
+                                    alignment: Alignment.center,
+                                    child: label(e),
                                   ),
-                                )
-                              : SelectableText(e.valB.text),
-                        ),
-                      ],
-                    ),
-                  )
-                  .toList(),
-            ),
+                                  Container(
+                                    alignment: Alignment.center,
+                                    child: text(e),
+                                  ),
+                                ],
+                              ),
+                            )
+                            .toList(),
+                      ),
             widget.edit ? _addLine(t, TextEditingController()) : Container(),
           ],
         );
@@ -165,20 +175,13 @@ class _TourExtraState extends State<TourExtra> {
                   onChanged: widget.result
                       ? null
                       : (newVal) => setState(() => e.valB = newVal),
-                  title: widget.edit
-                      ? TextField(
-                          controller: e.valA,
-                          minLines: 1,
-                          maxLines: 3,
-                          maxLength: 70,
-                          decoration: InputDecoration(hintText: "Label"),
-                        )
-                      : Row(children: [
-                          Expanded(child: SelectableText(e.valA.text)),
-                          widget.result
-                              ? Padding(padding: EdgeInsets.only(left: 5), child: Icon(t.isCorrect(id) ? Icons.check : Icons.stop))
-                              : Container()
-                        ]),
+                  title: label(e),
+                  secondary: widget.result
+                      ? Padding(
+                          padding: EdgeInsets.only(left: 5),
+                          child:
+                              Icon(t.isCorrect(id) ? Icons.check : Icons.stop))
+                      : null,
                 );
               }).toList() +
               [widget.edit ? _addLine(t, false) : Container()],
@@ -189,26 +192,18 @@ class _TourExtraState extends State<TourExtra> {
               t.entries.map((e) {
                 int id = t.entries.indexOf(e);
                 return RadioListTile(
-                  value: id,
-                  onChanged: widget.result
-                      ? null
-                      : (newVal) => setState(() => t.selected = id),
-                  title: widget.edit
-                      ? TextField(
-                          controller: e.valA,
-                          minLines: 1,
-                          maxLines: 3,
-                          maxLength: 70,
-                          decoration: InputDecoration(hintText: "Label"),
-                        )
-                      : Row(children: [
-                          widget.result
-                              ? Padding(padding: EdgeInsets.only(right: 5), child: Icon(t.isCorrect(id) ? Icons.check : Icons.stop))
-                              : Container(),
-                    Expanded(child: SelectableText(e.valA.text)),
-                        ]),
-                  groupValue: t.selected,
-                );
+                    value: id,
+                    onChanged: widget.result
+                        ? null
+                        : (newVal) => setState(() => t.selected = id),
+                    title: label(e),
+                    groupValue: t.selected,
+                    secondary: widget.result
+                        ? Padding(
+                            padding: EdgeInsets.only(left: 5),
+                            child: Icon(
+                                t.isCorrect(id) ? Icons.check : Icons.stop))
+                        : null);
               }).toList() +
               [widget.edit ? _addLine(t, false) : Container()],
         );
