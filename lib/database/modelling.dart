@@ -12,15 +12,15 @@ class TourWithStops {
   //Tour tour;
   final TextEditingController name = TextEditingController();
   final TextEditingController descr = TextEditingController();
-  String author;
+  final String author;
   double difficulty;
   DateTime creationTime;
-  List<ActualStop> stops;
+  final int id;
+  final List<ActualStop> stops;
 
-  TourWithStops(Tour t, this.stops) {
+  TourWithStops(Tour t, this.stops) : id = t.id, author = t.author {
     this.name.text = t.name;
     this.descr.text = t.desc;
-    author = t.author;
     difficulty = t.difficulty;
     creationTime = t.creationTime;
   }

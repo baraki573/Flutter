@@ -14,7 +14,6 @@ class Profile extends StatefulWidget {
 
 enum InfoType { fav, badge, stat }
 
-
 class _ProfileState extends State<Profile> {
   InfoType _type = InfoType.fav;
 
@@ -76,7 +75,6 @@ class _ProfileState extends State<Profile> {
                 ],
               ),
               // Option Button
-
             ],
           );
         });
@@ -86,8 +84,11 @@ class _ProfileState extends State<Profile> {
   Widget build(BuildContext context) {
     return MuseumTabs(
       _topInfo(),
-      {"Favoriten": FavWidget(), "Erfolge": BadgeWidget(), "Statistik": StatWidget()},
-      staticScroll: [2],
+      {
+        "Favoriten": FavWidget(),
+        "Erfolge": BadgeWidget(),
+        "Statistik": StatWidget(),
+      },
       color: COLOR_PROFILE,
     );
   }

@@ -64,11 +64,11 @@ class UserClass {
       this.tours});
 }
 
-class Devision {
+class Division {
   String name;
   Color color;
 
-  Devision(this.name, this.color);
+  Division(this.name, this.color);
 }
 
 enum SubmitMode { TEXT, PHOTO, SOUND }
@@ -93,7 +93,7 @@ class Stop {
 class Exhibit extends Stop {
   //String name;
   //List<ImageProvider> imgs;
-  Devision dev;
+  Division dev;
   String year;
   String artType;
   String creator;
@@ -134,11 +134,11 @@ class Exhibit extends Stop {
   }
 }
 
-List<Devision> devisions = [
-  Devision("Zoologisch", Colors.red),
-  Devision("Skulpturen", Colors.blue),
-  Devision("Bilder", Colors.yellow),
-  Devision("Bonus", Colors.deepPurple)
+List<Division> divisions = [
+  Division("Zoologisch", Colors.red),
+  Division("Skulpturen", Colors.blue),
+  Division("Bilder", Colors.yellow),
+  Division("Bonus", Colors.deepPurple)
 ];
 
 UserClass getUser() {
@@ -157,7 +157,7 @@ UserClass getUser() {
           String s = (index % 3 == 0 ? "" : "2");
           return Exhibit(
             "Zoologisch $index",
-            devisions[0],
+            divisions[0],
             "Description foo",
             [AssetImage('assets/images/profile_test' + s + '.png')],
             creator: "Me",
@@ -167,7 +167,7 @@ UserClass getUser() {
           String s = (index % 2 == 0 ? "" : "2");
           return Exhibit(
             "Skulpturen $index",
-            devisions[1],
+            divisions[1],
             "More Descriptions",
             [AssetImage('assets/images/profile_test' + s + '.png')],
             creator: "DaVinci",
@@ -177,7 +177,7 @@ UserClass getUser() {
           String s = (index % 3 == 0 ? "" : "2");
           return Exhibit(
             "Bilder $index",
-            devisions[2],
+            divisions[2],
             "Interessante Details",
             [AssetImage('assets/images/profile_test' + s + '.png')],
             creator: "Artist",
@@ -186,7 +186,7 @@ UserClass getUser() {
         List.generate(1, (index) {
           return Exhibit(
             "Bonus $index",
-            devisions[3],
+            divisions[3],
             "To be written",
             [AssetImage('assets/images/haupthalle_hlm_blue.png')],
             creator: "VanGogh",
@@ -208,7 +208,7 @@ UserClass getUser() {
                 String s = (index % 3 == 0 ? "" : "2");
                 return Exhibit(
                   "Zoologisch $index",
-                  devisions[0],
+                  divisions[0],
                   "Hier kann man sein gesamtes Herzblut reinstecken und dem User viele wertvolle Informationen präsentieren. Idealerweise wird hier jedoch nicht zu viel geschrieben. Es ist jedoch möglich, hier sehr lange und detailierte Beschreibungen einzugeben, die korrekt angezeigt werden können.",
                   List.generate(
                       (index % 3) + 1,
@@ -242,7 +242,7 @@ UserClass getUser() {
         List.generate(4, (index) {
           return Exhibit(
             "Zoologisch $index",
-            devisions[0],
+            divisions[0],
             "",
             [AssetImage('assets/images/profile_test.png')],
             //creator: "Unknown",
@@ -267,7 +267,7 @@ UserClass getUser() {
             List.generate(4, (index) {
               return Exhibit(
                 "Zoologisch $index",
-                devisions[0],
+                divisions[0],
                 "Ich weiß nicht, was ich hier rein schreiben soll.",
                 [AssetImage('assets/images/profile_test.png')],
                 creator: "null",

@@ -9,18 +9,17 @@ class MuseumTabs extends StatefulWidget {
   final Widget top;
   final Color color;
   final Map<String, Widget> tabs;
-  final List<int> staticScroll;
   final bool showSetting;
 
   //final List<String> names;
   //final List<Widget> tabs;
 
   MuseumTabs(this.top, this.tabs,
-      {this.staticScroll = const <int>[], this.color = Colors.black, this.showSetting=true, Key key})
+      {this.color = Colors.black, this.showSetting=true, Key key})
       : super(key: key);
 
   MuseumTabs.single(this.top, widget,
-      {this.staticScroll = const <int>[], this.color = Colors.black, this.showSetting=true, Key key})
+      {this.color = Colors.black, this.showSetting=true, Key key})
       : tabs = {"Single": widget},
         super(key: key);
 

@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:museum_app/SizeConfig.dart';
+import 'package:museum_app/add_tour/add_tour.dart';
 import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
 import 'package:museum_app/database/modelling.dart';
@@ -12,7 +13,9 @@ import 'package:museum_app/tours_page/walk_tour/walk_tour.dart';
 class TourList extends StatefulWidget {
   final List<TourWithStops> tours;
 
-  TourList(this.tours, {Key key}) : super(key: key);
+  TourList.fromList(this.tours, {Key key}) : super(key: key);
+
+  TourList.downloaded() : tours = null;
 
   @override
   _TourListState createState() => _TourListState();
@@ -29,13 +32,16 @@ class _TourListState extends State<TourList> {
         border: Border.all(color: Colors.black),
         borderRadius: BorderRadius.all(Radius.circular(10.0)),
         image: DecorationImage(
-            image: AssetImage(stop.stop.images.isNotEmpty ? stop.stop.images[0] : "assets/images/profile_test.png"), fit: BoxFit.cover),
+            image: AssetImage(stop.stop.images.isNotEmpty
+                ? stop.stop.images[0]
+                : "assets/images/profile_test.png"),
+            fit: BoxFit.cover),
       ),
     );
   }
 
-  Widget _infoRight(TourWithStops t) => Container(
-        width: horSize(51, 55),
+  Widget _infoRight(TourWithStops t) => Expanded(
+        //width: horSize(50, 55),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -175,7 +181,6 @@ class _TourListState extends State<TourList> {
     );
   }
 
-
   //TODO schöner machen -> soll animiert sein
   void _showTour(TourWithStops t) {
     //SizeConfig().init(context);
@@ -249,31 +254,24 @@ class _TourListState extends State<TourList> {
                 buttonPadding: EdgeInsets.all(12),
                 //buttonHeight: SizeConfig.safeBlockVertical * 12,
                 children: [
-                  StreamBuilder(
-                      stream: MuseumDatabase.get().getDBTour(t),
-                      builder: (context, snap) {
-                        var id = snap.data?.id ?? -1;
-                        return FlatButton(
-                          splashColor: COLOR_TOUR.shade100,
-                          color: Colors.white,
-                          shape: CircleBorder(side: BorderSide(color: Colors.black)),
-                          child: Icon(
-                            Icons.file_download,
-                            color: Colors.black,
-                            size: 31,
-                          ),
-                          onPressed: () => setState(() {
+                  FlatButton(
+                      splashColor: COLOR_TOUR.shade100,
+                      color: Colors.white,
+                      shape:
+                          CircleBorder(side: BorderSide(color: Colors.black)),
+                      child: Icon(
+                        Icons.file_download,
+                        color: Colors.black,
+                        size: 31,
+                      ),
+                      onPressed: () => setState(() {
                             // TODO confirmation dialog
-                            if (id != -1) {
-                              tours.remove(t);
-                              MuseumDatabase.get().removeTour(id);
+                            if (t.id != null) {
+                              tours?.remove(t);
+                              MuseumDatabase.get().removeTour(t.id);
                               Navigator.pop(context);
                             }
-                          }
-                          ),
-                        );
-                      }),
-
+                          })),
                   FlatButton(
                     padding: EdgeInsets.all(9),
                     splashColor: COLOR_TOUR.shade100,
@@ -312,6 +310,23 @@ class _TourListState extends State<TourList> {
     );
   }
 
+  Widget _toursFromList(List<TourWithStops> list) {
+    return Column(
+      children: list
+          .map((t) => border(
+                Row(
+                  children: [
+                    _pictureLeft(t.stops[0], Size(30, size(26, 57)),
+                        margin: EdgeInsets.only(right: 10)),
+                    _infoRight(t),
+                  ],
+                ),
+                margin: EdgeInsets.only(left: 16, right: 16, bottom: 16),
+                borderColor: COLOR_TOUR,
+              ))
+          .toList(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -322,9 +337,14 @@ class _TourListState extends State<TourList> {
         var tours = snap.data ?? List<Tour>();
     },*/
     //UserClass u = getUser();
-    var list = widget.tours.map(_buildTour).toList();
-    return Column(
-      children: list,
-    );
+    //var list = ;
+    if (widget.tours != null) return _toursFromList(widget.tours);
+
+    return StreamBuilder(
+        stream: MuseumDatabase.get().getTourStops(),
+        builder: (context, snap) {
+          var tours = snap.data ?? List<TourWithStops>();
+          return _toursFromList(tours);
+        });
   }
 }
