@@ -66,7 +66,7 @@ class _ToursState extends State<Tours> {
               builder: (context, snapTs) {
                 var tours = snapTs.data ?? List<TourWithStops>();
                 tours = tours.where(funct(username)).toList();
-                return TourList(tours);
+                return TourList.fromList(tours);
               });
         });
   }
@@ -125,7 +125,8 @@ class _ToursState extends State<Tours> {
               color: COLOR_TOUR, fontWeight: FontWeight.bold, fontSize: 25),
         ),
         GestureDetector(
-          onTap: () {/*
+          onTap: () {
+            /*
             Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -145,22 +146,17 @@ class _ToursState extends State<Tours> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-        stream: MuseumDatabase.get().getTourStops(),
-        builder: (context, snap) {
-          var tours = snap.data ?? List<TourWithStops>();
-          return MuseumTabs(
-            _topInfo(),
-            {
-              // All tours
-              "Alle": _allTours(), //_bottomInfo((_) => (tour) => true),
-              // Only the created ones
-              "Downloads": TourList(tours),
-              // The rest
-              "Code": _code(),
-            },
-            color: COLOR_TOUR,
-          );
-        });
+    return MuseumTabs(
+      _topInfo(),
+      {
+        // All tours
+        "Alle": _allTours(), //_bottomInfo((_) => (tour) => true),
+        // Only the created ones
+        "Downloads": TourList.downloaded(),
+        // The rest
+        "Code": _code(),
+      },
+      color: COLOR_TOUR,
+    );
   }
 }

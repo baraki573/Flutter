@@ -13,7 +13,9 @@ import 'package:museum_app/tours_page/walk_tour/walk_tour.dart';
 class TourList extends StatefulWidget {
   final List<TourWithStops> tours;
 
-  TourList(this.tours, {Key key}) : super(key: key);
+  TourList.fromList(this.tours, {Key key}) : super(key: key);
+
+  TourList.downloaded() : tours = null;
 
   @override
   _TourListState createState() => _TourListState();
@@ -252,30 +254,24 @@ class _TourListState extends State<TourList> {
                 buttonPadding: EdgeInsets.all(12),
                 //buttonHeight: SizeConfig.safeBlockVertical * 12,
                 children: [
-                  StreamBuilder(
-                      stream: MuseumDatabase.get().getDBTour(t),
-                      builder: (context, snap) {
-                        var id = snap.data?.id ?? -1;
-                        return FlatButton(
-                          splashColor: COLOR_TOUR.shade100,
-                          color: Colors.white,
-                          shape: CircleBorder(
-                              side: BorderSide(color: Colors.black)),
-                          child: Icon(
-                            Icons.file_download,
-                            color: Colors.black,
-                            size: 31,
-                          ),
-                          onPressed: () => setState(() {
+                  FlatButton(
+                      splashColor: COLOR_TOUR.shade100,
+                      color: Colors.white,
+                      shape:
+                          CircleBorder(side: BorderSide(color: Colors.black)),
+                      child: Icon(
+                        Icons.file_download,
+                        color: Colors.black,
+                        size: 31,
+                      ),
+                      onPressed: () => setState(() {
                             // TODO confirmation dialog
-                            if (id != -1) {
-                              tours.remove(t);
-                              MuseumDatabase.get().removeTour(id);
+                            if (t.id != null) {
+                              tours?.remove(t);
+                              MuseumDatabase.get().removeTour(t.id);
                               Navigator.pop(context);
                             }
-                          }),
-                        );
-                      }),
+                          })),
                   FlatButton(
                     padding: EdgeInsets.all(9),
                     splashColor: COLOR_TOUR.shade100,
@@ -314,18 +310,9 @@ class _TourListState extends State<TourList> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    SizeConfig().init(context);
-    /*StreamBuilder(
-      stream: MuseumDatabase.get().getTours(),
-    builder: (context, snap) {
-        var tours = snap.data ?? List<Tour>();
-    },*/
-    //UserClass u = getUser();
-    //var list = ;
+  Widget _toursFromList(List<TourWithStops> list) {
     return Column(
-      children: widget.tours
+      children: list
           .map((t) => border(
                 Row(
                   children: [
@@ -339,5 +326,25 @@ class _TourListState extends State<TourList> {
               ))
           .toList(),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    SizeConfig().init(context);
+    /*StreamBuilder(
+      stream: MuseumDatabase.get().getTours(),
+    builder: (context, snap) {
+        var tours = snap.data ?? List<Tour>();
+    },*/
+    //UserClass u = getUser();
+    //var list = ;
+    if (widget.tours != null) return _toursFromList(widget.tours);
+
+    return StreamBuilder(
+        stream: MuseumDatabase.get().getTourStops(),
+        builder: (context, snap) {
+          var tours = snap.data ?? List<TourWithStops>();
+          return _toursFromList(tours);
+        });
   }
 }
