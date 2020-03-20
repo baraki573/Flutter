@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'SizeConfig.dart';
 import 'constants.dart';
 import 'database/database.dart';
+import 'image_dialog.dart';
 
 class MuseumTabs extends StatefulWidget {
   final Widget top;
@@ -12,11 +13,11 @@ class MuseumTabs extends StatefulWidget {
   final bool showSetting;
 
   MuseumTabs(this.top, this.tabs,
-      {this.color = Colors.black, this.showSetting=true, Key key})
+      {this.color = Colors.black, this.showSetting = true, Key key})
       : super(key: key);
 
   MuseumTabs.single(this.top, widget,
-      {this.color = Colors.black, this.showSetting=true, Key key})
+      {this.color = Colors.black, this.showSetting = true, Key key})
       : tabs = {"Single": widget},
         super(key: key);
 
@@ -29,8 +30,7 @@ class _MuseumTabsState extends State<MuseumTabs> with TickerProviderStateMixin {
 
   void initState() {
     super.initState();
-    if (widget.tabs.length >= 1)
-      _currentTab = widget.tabs.keys.toList()[0];
+    if (widget.tabs.length >= 1) _currentTab = widget.tabs.keys.toList()[0];
   }
 
   List<Widget> _customButtons() {
@@ -88,11 +88,13 @@ class _MuseumTabsState extends State<MuseumTabs> with TickerProviderStateMixin {
               height: verSize(80, 30),
             ),
           ),
-          widget.showSetting ? Positioned(
-            right: horSize(2, 2, right: true),
-            top: verSize(1, 1),
-            child: MuseumSettings(),
-          ) : Container(),
+          widget.showSetting
+              ? Positioned(
+                  right: horSize(2, 2, right: true),
+                  top: verSize(1, 1),
+                  child: MuseumSettings(),
+                )
+              : Container(),
         ]),
         _bottomInfo(),
       ],
@@ -100,7 +102,7 @@ class _MuseumTabsState extends State<MuseumTabs> with TickerProviderStateMixin {
   }
 }
 
-enum _OptionType { editUs, editPw, editPp, about }
+enum _OptionType { EDIT_US, EDIT_PW, EDIT_IMG, ABOUT, clear, demo }
 
 class MuseumSettings extends StatelessWidget {
   PopupMenuItem _myPopUpItem(String s, IconData i, _OptionType t) {
@@ -146,19 +148,22 @@ class MuseumSettings extends StatelessWidget {
   void _select(val, BuildContext context) {
     switch (val) {
       // TODO build own about dialog in german. Maybe general dialog, val determines content
-      case _OptionType.about:
-        showAboutDialog(context: context);
+      case _OptionType.EDIT_IMG:
+        showDialog(context: context, builder: (_) => ImageDialog());
         break;
-      case _OptionType.editUs:
+      case _OptionType.EDIT_US:
         showDialog(context: context, builder: _editUS);
         break;
-      case _OptionType.editPw:
+      case _OptionType.ABOUT:
+        showAboutDialog(context: context);
+        break;
+      case _OptionType.clear:
+        MuseumDatabase.get().clear();
+        break;
+      case _OptionType.demo:
         demo();
         break;
-      case _OptionType.editPp:
-        MuseumDatabase.get().clear();
-        //showDialog(context: context, builder: _editPp);
-        break;
+      default:
     }
   }
 
@@ -166,10 +171,13 @@ class MuseumSettings extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopupMenuButton(
       itemBuilder: (context) => [
-        _myPopUpItem("Profilbild ändern", Icons.image, _OptionType.editPp),
-        _myPopUpItem("Username ändern", Icons.person, _OptionType.editUs),
-        _myPopUpItem("Passwort ändern", Icons.fiber_pin, _OptionType.editPw),
-        _myPopUpItem("Über diese App", Icons.info, _OptionType.about),
+        _myPopUpItem("Profilbild ändern", Icons.image, _OptionType.EDIT_IMG),
+        _myPopUpItem("Username ändern", Icons.person, _OptionType.EDIT_US),
+        _myPopUpItem("Passwort ändern", Icons.fiber_pin, _OptionType.EDIT_PW),
+        _myPopUpItem("Über diese App", Icons.info, _OptionType.ABOUT),
+        _myPopUpItem(
+            "DEBUG clear", Icons.restore_from_trash, _OptionType.clear),
+        _myPopUpItem("DEBUG demo", Icons.play_arrow, _OptionType.demo),
       ],
       onSelected: (result) => _select(result, context),
       /*onPressed: () {

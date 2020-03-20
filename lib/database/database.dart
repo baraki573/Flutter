@@ -275,6 +275,10 @@ class MuseumDatabase extends _$MuseumDatabase {
     return update(users).write(UsersCompanion(username: Value(name)));
   }
 
+  Future updateImage(String imgPath) {
+    return update(users).write(UsersCompanion(imgPath: Value(imgPath)));
+  }
+
   Future updateOnboard(bool b) {
     return update(users).write(UsersCompanion(onboardEnd: Value(b)));
   }
