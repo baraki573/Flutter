@@ -15,26 +15,6 @@ class Profile extends StatefulWidget {
 enum InfoType { fav, badge, stat }
 
 class _ProfileState extends State<Profile> {
-  InfoType _type = InfoType.fav;
-
-  /* StreamBuilder<List<User>> _builder() {
-    final db = MuseumDatabase.get();
-    return StreamBuilder(
-      stream: db.getUser(),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        final list = snapshot.data ?? User(username: "HELP", imgPath: "KJ");
-        print(list);
-        return Text(
-          list[0].username,
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 25,
-          ),
-        );
-      },
-    );
-  }*/
 
   Widget _topInfo() {
     return StreamBuilder(

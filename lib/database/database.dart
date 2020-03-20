@@ -20,9 +20,9 @@ class Users extends Table {
   TextColumn get username =>
       text().withLength(min: MIN_USERNAME, max: MAX_USERNAME)();
 
-  TextColumn get imgPath => text()();
+  TextColumn get imgPath => text().named("imgPath")();
 
-  BoolColumn get onboardEnd => boolean().withDefault(const Constant(false))();
+  BoolColumn get onboardEnd => boolean().withDefault(const Constant(false)).named("onboardEnd")();
 
   @override
   Set<Column> get primaryKey => {username};
@@ -277,6 +277,14 @@ class MuseumDatabase extends _$MuseumDatabase {
 
   Future updateOnboard(bool b) {
     return update(users).write(UsersCompanion(onboardEnd: Value(b)));
+  }
+
+  Future<bool> onboardEnd() {
+    return select(users).map((u) => u.onboardEnd).getSingle();
+  }
+
+  Future initUser() {
+    customStatement("INSERT INTO users (username, imgPath, onboardEnd) SELECT 'Test', '', false WHERE NOT EXISTS (SELECT * FROM users)");
   }
 
   Future reset(UsersCompanion uc) {

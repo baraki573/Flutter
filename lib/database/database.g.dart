@@ -23,10 +23,10 @@ class User extends DataClass implements Insertable<User> {
     return User(
       username: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}username']),
-      imgPath: stringType
-          .mapFromDatabaseResponse(data['${effectivePrefix}img_path']),
+      imgPath:
+          stringType.mapFromDatabaseResponse(data['${effectivePrefix}imgPath']),
       onboardEnd: boolType
-          .mapFromDatabaseResponse(data['${effectivePrefix}onboard_end']),
+          .mapFromDatabaseResponse(data['${effectivePrefix}onboardEnd']),
     );
   }
   factory User.fromJson(Map<String, dynamic> json,
@@ -137,7 +137,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   GeneratedTextColumn get imgPath => _imgPath ??= _constructImgPath();
   GeneratedTextColumn _constructImgPath() {
     return GeneratedTextColumn(
-      'img_path',
+      'imgPath',
       $tableName,
       false,
     );
@@ -148,7 +148,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   GeneratedBoolColumn get onboardEnd => _onboardEnd ??= _constructOnboardEnd();
   GeneratedBoolColumn _constructOnboardEnd() {
-    return GeneratedBoolColumn('onboard_end', $tableName, false,
+    return GeneratedBoolColumn('onboardEnd', $tableName, false,
         defaultValue: const Constant(false));
   }
 
@@ -198,10 +198,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       map['username'] = Variable<String, StringType>(d.username.value);
     }
     if (d.imgPath.present) {
-      map['img_path'] = Variable<String, StringType>(d.imgPath.value);
+      map['imgPath'] = Variable<String, StringType>(d.imgPath.value);
     }
     if (d.onboardEnd.present) {
-      map['onboard_end'] = Variable<bool, BoolType>(d.onboardEnd.value);
+      map['onboardEnd'] = Variable<bool, BoolType>(d.onboardEnd.value);
     }
     return map;
   }

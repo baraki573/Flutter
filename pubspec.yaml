@@ -49,6 +49,12 @@ dev_dependencies:
     sdk: flutter
   moor_generator: ^2.4.0 # use the latest version
   build_runner: ^1.7.3
+  flutter_launcher_icons: ^0.7.3
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/AppIcon_G_vernetzt.png.png"
 
 
 # For information on the generic Dart part of this file, see the
