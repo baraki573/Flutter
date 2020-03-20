@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -22,8 +20,7 @@ class TourList extends StatefulWidget {
 }
 
 class _TourListState extends State<TourList> {
-  Widget _pictureLeft(ActualStop stop, Size s,
-      {margin = const EdgeInsets.all(0)}) {
+  Widget _pictureLeft(ActualStop stop, Size s, {margin = EdgeInsets.zero}) {
     return Container(
       margin: margin,
       width: SizeConfig.safeBlockHorizontal * s.width,
@@ -120,196 +117,6 @@ class _TourListState extends State<TourList> {
         ),
       );
 
-  // TODO move these to the tour class
-
-  Widget _tourButtons(TourWithStops t) => ButtonBar(
-        buttonPadding: EdgeInsets.symmetric(horizontal: size(5, 9)),
-        alignment: MainAxisAlignment.start,
-        buttonMinWidth: horSize(22, 19),
-        buttonHeight: verSize(6, 10),
-        children: [
-          FlatButton(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0)),
-            color: Colors.pinkAccent,
-            child: Text("Anzeigen", style: TextStyle(fontSize: size(14, 17))),
-            onPressed: () => _showTour(t),
-          ),
-        ],
-      );
-
-  Widget _buildTour(TourWithStops t) => Container(
-        margin: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.all(Radius.circular(17.0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.8),
-              spreadRadius: 1,
-              blurRadius: 2,
-              offset: Offset.fromDirection(pi / 2),
-            )
-          ],
-        ),
-        child: Row(
-          children: [
-            _pictureLeft(t.stops[0], Size(31, size(28, 63)),
-                margin:
-                    EdgeInsets.only(left: 10, right: 10, top: 15, bottom: 15)),
-            _infoRight(t),
-          ],
-        ),
-      );
-
-  Widget _buildBanner(DateTime time) {
-    if (time == null) return Container();
-    return Transform.rotate(
-      angle: -pi / 4,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 2),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-              colors: [COLOR_TOUR.shade200, COLOR_ADD],
-              tileMode: TileMode.clamp,
-              begin: Alignment.topRight,
-              stops: [0.0, 1.0],
-              end: Alignment.bottomLeft),
-        ),
-        //child: _buildTime(time),
-      ),
-    );
-  }
-
-  //TODO schöner machen -> soll animiert sein
-  void _showTour(TourWithStops t) {
-    //SizeConfig().init(context);
-    var tours = widget.tours;
-    showGeneralDialog(
-      barrierColor: Colors.grey.withOpacity(0.7),
-      barrierDismissible: true,
-      barrierLabel: '',
-      transitionDuration: Duration(milliseconds: 270),
-      context: context,
-      transitionBuilder: (context, a1, a2, widget) => Transform.scale(
-        scale: a1.value,
-        child: Opacity(
-          opacity: a1.value,
-          child: SimpleDialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(10))),
-            backgroundColor: COLOR_TOUR,
-            contentPadding: EdgeInsets.all(16),
-            children: [
-              // Picture
-              _pictureLeft(
-                t.stops[0],
-                Size(85, size(30, 55)),
-                margin: EdgeInsets.only(bottom: 16),
-              ),
-              // Titel
-              Text(
-                t.name.text,
-                maxLines: 2,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              // Autor
-              Text(
-                "von " + t.author,
-                maxLines: 1,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-              // Stars
-              Container(
-                  margin: EdgeInsets.symmetric(vertical: 3.5),
-                  child: Row(children: [
-                    t.getRating(
-                        color: Colors.white,
-                        color2: COLOR_TOUR,
-                        size: horSize(7, 3.5)),
-                    Container(width: 8),
-                    t.buildTime(
-                        color: Colors.white, color2: Colors.white, scale: 1.2),
-                  ])),
-
-              // Description
-              Text(
-                t.descr.text,
-                textAlign: TextAlign.justify,
-                maxLines: 5,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 18, color: Colors.white),
-              ),
-              // Buttons
-              ButtonBar(
-                alignment: MainAxisAlignment.center,
-                buttonPadding: EdgeInsets.all(12),
-                //buttonHeight: SizeConfig.safeBlockVertical * 12,
-                children: [
-                  FlatButton(
-                      splashColor: COLOR_TOUR.shade100,
-                      color: Colors.white,
-                      shape:
-                          CircleBorder(side: BorderSide(color: Colors.black)),
-                      child: Icon(
-                        Icons.file_download,
-                        color: Colors.black,
-                        size: 31,
-                      ),
-                      onPressed: () => setState(() {
-                            // TODO confirmation dialog
-                            if (t.id != null) {
-                              tours?.remove(t);
-                              MuseumDatabase.get().removeTour(t.id);
-                              Navigator.pop(context);
-                            }
-                          })),
-                  FlatButton(
-                    padding: EdgeInsets.all(9),
-                    splashColor: COLOR_TOUR.shade100,
-                    color: Colors.white,
-                    shape: CircleBorder(side: BorderSide(color: Colors.black)),
-                    child: Icon(
-                      Icons.play_arrow,
-                      color: Colors.black,
-                      size: 44,
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => TourWalker(tour: t)));
-                    },
-                  ),
-                  FlatButton(
-                    splashColor: COLOR_TOUR.shade100,
-                    color: Colors.white,
-                    shape: CircleBorder(side: BorderSide(color: Colors.black)),
-                    child: Icon(
-                      Icons.favorite,
-                      color: Colors.black,
-                      size: 31,
-                    ),
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-      pageBuilder: (context, animation1, animation2) {},
-    );
-  }
-
   Widget _toursFromList(List<TourWithStops> list) {
     return Column(
       children: list
@@ -328,23 +135,170 @@ class _TourListState extends State<TourList> {
     );
   }
 
+  //TODO schöner machen -> soll animiert sein
+  void _showTour(TourWithStops t) {
+    showGeneralDialog(
+      barrierColor: Colors.grey.withOpacity(0.7),
+      barrierDismissible: true,
+      barrierLabel: '',
+      transitionDuration: Duration(milliseconds: 270),
+      context: context,
+      transitionBuilder: (context, a1, a2, widget) => Transform.scale(
+        scale: a1.value,
+        child: Opacity(
+          opacity: a1.value,
+          child: _tourPopUp(t),
+        ),
+      ),
+      pageBuilder: (context, animation1, animation2) {},
+    );
+  }
+
+  Widget _tourPopUp(TourWithStops t) {
+    return SimpleDialog(
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10))),
+      backgroundColor: COLOR_TOUR,
+      contentPadding: EdgeInsets.all(16),
+      children: [
+        // Picture
+        _pictureLeft(
+          t.stops[0],
+          Size(85, size(30, 55)),
+          margin: EdgeInsets.only(bottom: 16),
+        ),
+        // Titel
+        Text(
+          t.name.text,
+          maxLines: 2,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        // Autor
+        Text(
+          "von " + t.author,
+          maxLines: 1,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+        // Stars
+        Container(
+            margin: EdgeInsets.symmetric(vertical: 3.5),
+            child: Row(children: [
+              t.getRating(
+                  color: Colors.white,
+                  color2: COLOR_TOUR,
+                  size: horSize(7, 3.5)),
+              Container(width: 8),
+              t.buildTime(
+                  color: Colors.white, color2: Colors.white, scale: 1.2),
+            ])),
+        // Description
+        Text(
+          t.descr.text,
+          textAlign: TextAlign.justify,
+          maxLines: 5,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 18, color: Colors.white),
+        ),
+        // Buttons
+        ButtonBar(
+          alignment: MainAxisAlignment.center,
+          buttonPadding: EdgeInsets.all(12),
+          //buttonHeight: SizeConfig.safeBlockVertical * 12,
+          children: [
+            FlatButton(
+                splashColor: COLOR_TOUR.shade100,
+                color: Colors.white,
+                shape: CircleBorder(side: BorderSide(color: Colors.black)),
+                child: Icon(
+                  Icons.file_download,
+                  color: Colors.black,
+                  size: 31,
+                ),
+                onPressed: () => setState(() {
+                  // TODO confirmation dialog
+                  if (t.id != null) {
+                    showDialog(
+                        context: context,
+                        builder: (contextPop) => AlertDialog(
+                          title: Text("Warnung"),
+                          content: Text(
+                              "Möchten Sie die ausgewählte Tour wirklich entfernen?\nDies kann nicht rückgängig gemacht werden."),
+                          actions: [
+                            FlatButton(
+                              child: Text("Abbrechen",
+                                  style: TextStyle(color: COLOR_TOUR)),
+                              onPressed: () => Navigator.pop(contextPop),
+                            ),
+                            FlatButton(
+                              child: Text("Tour entfernen",
+                                  style: TextStyle(color: COLOR_TOUR)),
+                              onPressed: () => setState(() {
+                                widget.tours?.remove(t);
+                                MuseumDatabase.get().removeTour(t.id);
+                                Navigator.pop(contextPop);
+                                Navigator.pop(contextPop);
+                                Scaffold.of(context).showSnackBar(SnackBar(
+                                  content: Text("Tour entfernt!"),
+                                ));
+                              }),
+                            ),
+                          ],
+                        ));
+                  }
+                })),
+            FlatButton(
+              padding: EdgeInsets.all(9),
+              splashColor: COLOR_TOUR.shade100,
+              color: Colors.white,
+              shape: CircleBorder(side: BorderSide(color: Colors.black)),
+              child: Icon(
+                Icons.play_arrow,
+                color: Colors.black,
+                size: 44,
+              ),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => TourWalker(tour: t)));
+              },
+            ),
+            FlatButton(
+              splashColor: COLOR_TOUR.shade100,
+              color: Colors.white,
+              shape: CircleBorder(side: BorderSide(color: Colors.black)),
+              child: Icon(
+                Icons.favorite,
+                color: Colors.black,
+                size: 31,
+              ),
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-    /*StreamBuilder(
-      stream: MuseumDatabase.get().getTours(),
-    builder: (context, snap) {
-        var tours = snap.data ?? List<Tour>();
-    },*/
-    //UserClass u = getUser();
-    //var list = ;
     if (widget.tours != null) return _toursFromList(widget.tours);
 
     return StreamBuilder(
-        stream: MuseumDatabase.get().getTourStops(),
-        builder: (context, snap) {
-          var tours = snap.data ?? List<TourWithStops>();
-          return _toursFromList(tours);
-        });
+      stream: MuseumDatabase.get().getTourStops(),
+      builder: (context, snap) {
+        List<TourWithStops> tours = snap.data ?? List<TourWithStops>();
+        return _toursFromList(tours);
+      },
+    );
   }
 }

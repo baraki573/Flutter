@@ -65,7 +65,7 @@ class _ProfileState extends State<Profile> {
                     ),
                   ),
                   Text(
-                    user.username,
+                    user.username + "\nOnboardEnd: "+ user.onboardEnd.toString(),
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,

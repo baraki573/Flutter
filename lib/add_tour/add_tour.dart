@@ -28,18 +28,12 @@ class _AddTourState extends State<AddTour> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-    //print(_tour==null);
     switch (_type) {
       case AddType.CREATE:
         return StreamBuilder(
           stream: MuseumDatabase.get().watchUser(),
           builder: (context, snap) {
             var name = snap.data?.username ?? "";
-            //print("Tour Null: "+(_tour == null).toString());
-            //print("Tour Author: " + (_tour?.author != name).toString());
-            //print("Author: "+((_tour?.author) ?? "NULL") +" Name: "+name.toString());
-            //print("----------------");
-
             return StreamBuilder(
               stream: MuseumDatabase.get().getCustomStop(),
               builder: (context, snap) {
@@ -116,21 +110,23 @@ class _AddTourState extends State<AddTour> {
                   children: [
                     Container(
                       width: horSize(23, 23),
-                      child: Icon(Icons.video_library, color: COLOR_ADD, size: size(60, 74)),
+                      child: Icon(Icons.video_library,
+                          color: COLOR_ADD, size: size(60, 74)),
                     ),
                     Container(
                       width: horSize(57, 60),
                       child: Text(
                         "Noch Fragen?\nSchau Dir ein Erklärvideo zur Tour-Erstellung an!",
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: size(18, 20)),
+                            fontWeight: FontWeight.bold,
+                            fontSize: size(18, 20)),
                       ),
                     )
                   ],
                 ),
               ),
               margin: margin,
-          padding: EdgeInsets.all(15))
+              padding: EdgeInsets.all(15))
         ],
       ),
     );
@@ -143,8 +139,8 @@ class _AddTourState extends State<AddTour> {
         Container(
           width: horSize(34, 38),
           height: verSize(18, 45),
-          decoration:
-              BoxDecoration(image: DecorationImage(
+          decoration: BoxDecoration(
+              image: DecorationImage(
                   //fit: BoxFit.contain,
                   image: AssetImage(img))),
         ),
@@ -155,7 +151,8 @@ class _AddTourState extends State<AddTour> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: size(18, 20))),
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: size(18, 20))),
               Text(descr, style: TextStyle(fontSize: size(14, 16))),
               FlatButton(
                 onPressed: action,
@@ -174,83 +171,89 @@ class _AddTourState extends State<AddTour> {
   }
 
   Widget _editList(List<TourWithStops> tours) {
-    return MuseumTabs.single(
-      Stack(children: [
-        Center(
-          child: Container(
-            height: verSize(25, 20),
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(
-                    "assets/images/undraw_detailed_analysis_flipped.png"),
+    return WillPopScope(
+      onWillPop: () {
+        setState(() => _type = AddType.CHOOSE);
+        return Future.value(false);
+      },
+      child: MuseumTabs.single(
+        Stack(children: [
+          Center(
+            child: Container(
+              height: verSize(25, 20),
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(
+                      "assets/images/undraw_detailed_analysis_flipped.png"),
+                ),
               ),
             ),
           ),
-        ),
-        Positioned(
-            left: horSize(2, 2, left: true),
-            top: verSize(1, 1),
-            child: Container(
-              width: horSize(25, 4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  IconButton(
-                    onPressed: () => setState(() => _type = AddType.CHOOSE),
-                    icon: Icon(Icons.arrow_back),
-                    iconSize: 30,
-                  ),
-                  Text("Übersicht"),
-                ],
-              ),
-            ))
-      ]),
-      Padding(
-        padding: EdgeInsets.only(left: 16, right: 16, top: 15),
-        child: Column(
-          children: tours
-              .map((t) => border(
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Container(
-                        width: horSize(100, 100),
-                        child: Text(
-                          t.name.text,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 20),
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Expanded(
-                            child: t.getRating(
-                              color2: Colors.black.withOpacity(.5),
-                              size: horSize(7.5, 4),
-                            ),
+          Positioned(
+              left: horSize(2, 2, left: true),
+              top: verSize(1, 1),
+              child: Container(
+                width: horSize(25, 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    IconButton(
+                      onPressed: () => setState(() => _type = AddType.CHOOSE),
+                      icon: Icon(Icons.arrow_back),
+                      iconSize: 30,
+                    ),
+                    Text("Übersicht"),
+                  ],
+                ),
+              ))
+        ]),
+        Padding(
+          padding: EdgeInsets.only(left: 16, right: 16, top: 15),
+          child: Column(
+            children: tours
+                .map((t) => border(
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Container(
+                          width: horSize(100, 100),
+                          child: Text(
+                            t.name.text,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 20),
                           ),
-                          t.buildTime(color: Colors.black, scale: 1.2)
-                        ],
-                      ),
-                      FlatButton(
-                        color: COLOR_ADD,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(9)),
-                        onPressed: () => setState(() {
-                          _tour = t;
-                          _type = AddType.CREATE;
-                        }),
-                        child: Text("Bearbeiten",
-                            style: TextStyle(color: Colors.white)),
-                      )
-                    ],
-                  ),
-                  width: horSize(100, 100),
-                  height: verSize(19, 10),
-                  padding: EdgeInsets.only(left: 16, right: 16, top: 8),
-                  margin: EdgeInsets.only(bottom: 19)))
-              .toList(),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              child: t.getRating(
+                                color2: Colors.black.withOpacity(.5),
+                                size: horSize(7.5, 4),
+                              ),
+                            ),
+                            t.buildTime(color: Colors.black, scale: 1.2)
+                          ],
+                        ),
+                        FlatButton(
+                          color: COLOR_ADD,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(9)),
+                          onPressed: () => setState(() {
+                            _tour = t;
+                            _type = AddType.CREATE;
+                          }),
+                          child: Text("Bearbeiten",
+                              style: TextStyle(color: Colors.white)),
+                        )
+                      ],
+                    ),
+                    width: horSize(100, 100),
+                    height: verSize(19, 10),
+                    padding: EdgeInsets.only(left: 16, right: 16, top: 8),
+                    margin: EdgeInsets.only(bottom: 19)))
+                .toList(),
+          ),
         ),
       ),
     );
@@ -258,7 +261,11 @@ class _AddTourState extends State<AddTour> {
 }
 
 Widget border(Widget w,
-    {width, borderColor = COLOR_ADD, height, margin, padding = const EdgeInsets.all(8)}) {
+    {width,
+    borderColor = COLOR_ADD,
+    height,
+    margin,
+    padding = const EdgeInsets.all(8)}) {
   return Container(
     width: width,
     height: height,

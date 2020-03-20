@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:museum_app/add_tour/add_tour.dart';
 import 'package:museum_app/bottom_navigationbar/navigationbar_pattern.dart';
 import 'package:museum_app/home_page/tutorials.dart';
+import 'package:museum_app/login_page/login_page.dart';
 import 'package:museum_app/onboarding/onboarding.dart';
 
 
@@ -12,14 +12,14 @@ class RouteGenerator {
     final args = settings.arguments;
 
     switch (settings.name) {
-      case '/':
+      case '/onboard':
         return MaterialPageRoute(builder: (_) => Onboarding());
-      case '/profile':
+      case '/login':
+        return MaterialPageRoute(builder: (_) => LogIn());
+      case '/':
         return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample());
       case '/tutorials':
         return MaterialPageRoute(builder: (_) => Tutorials());
-      case '/addTour':
-        return MaterialPageRoute(builder: (_) => AddTour());
       // case '/second':
       //   // Validation of correct data type
       //   if (args is String) {

@@ -207,22 +207,7 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
     bbc.close();
 
     var bottomOff = MediaQuery.of(context).viewInsets.bottom;
-    var stops = widget.tour.stops ??
-        <ActualStop>[
-          /*ActualStop(
-              Stop(
-                  name: "",
-                  descr: "",
-                  images: ["assets/images/profile_test.png"],
-                  id: -1),
-              StopFeature(
-                  id_tour: -1,
-                  id_stop: -1,
-                  showImages: false,
-                  showText: false,
-                  showDetails: false),
-              [])*/
-        ];
+    var stops = widget.tour.stops ?? <ActualStop>[];
     int length = stops.length;
     return WillPopScope(
       onWillPop: () {

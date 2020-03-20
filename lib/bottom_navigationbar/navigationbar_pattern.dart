@@ -9,9 +9,12 @@ import 'package:museum_app/tours_page/tours_page.dart';
 import '../constants.dart';
 
 class BottomBarNavigationPatternExample extends StatefulWidget {
-  // final int barIndex;
-  // BottomBarNavigationPatternExample({Key key, @required this.barIndex}): super(key: key);
-  
+  final int startIndex;
+
+  BottomBarNavigationPatternExample.fromIndex(this.startIndex, {Key key}): super(key: key);
+
+  BottomBarNavigationPatternExample({Key key}) : this.fromIndex(0, key: key);
+
   final List<BarItem> barItems = [
     BarItem(
       text: "Home",
@@ -37,13 +40,14 @@ class BottomBarNavigationPatternExample extends StatefulWidget {
 
   @override
   _BottomBarNavigationPatternExampleState createState() =>
-      _BottomBarNavigationPatternExampleState();
+      _BottomBarNavigationPatternExampleState(startIndex);
 }
 
 class _BottomBarNavigationPatternExampleState
     extends State<BottomBarNavigationPatternExample> {
-  
-  int selectedBarIndex = 0;
+  int selectedBarIndex;
+
+  _BottomBarNavigationPatternExampleState(this.selectedBarIndex);
 
   @override
   void initState() {
@@ -70,15 +74,8 @@ class _BottomBarNavigationPatternExampleState
       bottomNavigationBar: AnimatedBottomBar(
           barItems: widget.barItems,
           animationDuration: const Duration(milliseconds: 150),
-          barStyle: BarStyle(
-            fontSize: 16.0,
-            iconSize: 25.0
-          ),
-          onBarTap: (index) {
-            setState(() {
-              selectedBarIndex = index;
-            });
-          }),
+          barStyle: BarStyle(fontSize: 16.0, iconSize: 25.0),
+          onBarTap: (index) => setState(() => selectedBarIndex = index)),
     );
   }
 }

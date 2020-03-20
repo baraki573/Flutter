@@ -17,8 +17,6 @@ class CreateTour extends StatefulWidget {
 
   CreateTour(this.goBack, this.tour, {Key key}) : super(key: key);
 
-  //CreateTour.empty(goBack, String name, {Key key}) : this(goBack, TourWithStops.empty(name), key: key);
-
   @override
   _CreateTourState createState() => _CreateTourState();
 }
@@ -38,11 +36,8 @@ class _CreateTourState extends State<CreateTour> {
             child: Container(
               width: horSize(100, 100),
               child: ReorderableWrap(
-                //alignment: WrapAlignment.center,
-                //crossAxisAlignment: WrapCrossAlignment.center,
                 needsLongPressDraggable: true,
                 alignment: WrapAlignment.center,
-                //padding: EdgeInsets.only(top: 30, right: horPad, left: horPad),
                 buildDraggableFeedback: (contexta, constraints, widget) =>
                     Material(child: widget, color: Colors.transparent),
                 //spacing: 50.0,
@@ -100,8 +95,6 @@ class _CreateTourState extends State<CreateTour> {
   }
 
   Widget _navigator() {
-    //var topPad = MediaQuery.of(context).padding.top;
-
     String tourName = widget.tour.name.text.trim();
     if (tourName.isEmpty) tourName = "NEUE TOUR";
     String tourAuthor = widget.tour.author.trim();
@@ -112,8 +105,6 @@ class _CreateTourState extends State<CreateTour> {
       height: verSize(13, 23, top: true),
       color: COLOR_ADD,
       child: Row(
-        //mainAxisAlignment: MainAxisAlignment.center,
-        //mainAxisSize: MainAxisSize.min,
         children: [
           Container(width: horSize(21, 15, left: true)),
           Container(
@@ -139,8 +130,6 @@ class _CreateTourState extends State<CreateTour> {
               ],
             ),
           ),
-          //Spacer(),
-          //MuseumSettings(),
         ],
       ),
     );
@@ -190,9 +179,6 @@ class _CreateTourState extends State<CreateTour> {
               //color: Colors.green,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                //buttonMinWidth: 50,
-                //buttonPadding: EdgeInsets.zero,
-                //buttonHeight: 40,
                 children: [
                   StreamBuilder(
                       stream: MuseumDatabase.get().getCustomStop(),
@@ -319,14 +305,11 @@ class _CreateTourState extends State<CreateTour> {
                   textColor: Colors.white,
                   color: COLOR_ADD,
                   onPressed: () {
-                    // TODO make input variable
                     widget.tour.creationTime = DateTime.now();
                     for (var s in widget.tour.stops)
                       for (var e in s.extras)
-                        if (e is ActualTask) {
-                          //e.descr.text = e.descr.text.trim();
+                        if (e is ActualTask)
                           e.textInfo.text = e.textInfo.text.trim();
-                        }
                     MuseumDatabase.get().writeTourStops(widget.tour).then(
                         (val) {
                       widget.goBack();
@@ -411,7 +394,9 @@ class _CreateTourState extends State<CreateTour> {
         funct = () => setState(() => _type = CreateType.MULTI_STOP);
         break;
     }
-    return Container(
+    return WillPopScope(
+      onWillPop: () {funct(); return Future.value(false);},
+      child: Container(
       width: horSize(25, 30),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -424,7 +409,7 @@ class _CreateTourState extends State<CreateTour> {
           Text(label),
         ],
       ),
-    );
+    ),);
   }
 
   void _confirmBack() {

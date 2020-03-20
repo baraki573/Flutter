@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/bottom_navigationbar/navigationbar_pattern.dart';
+import 'package:museum_app/database/database.dart';
 
 class LogIn extends StatefulWidget {
   LogIn({Key key}) : super(key: key);
@@ -66,6 +66,7 @@ class _LogInState extends State<LogIn> {
       MaterialPageRoute(
           builder: (context) => BottomBarNavigationPatternExample()),
     );
+    MuseumDatabase.get().updateOnboard(true);
   }
 
   Widget _customButtons(text, funct) {

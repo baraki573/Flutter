@@ -9,7 +9,6 @@ import '../SizeConfig.dart';
 import 'database.dart';
 
 class TourWithStops {
-  //Tour tour;
   final TextEditingController name = TextEditingController();
   final TextEditingController descr = TextEditingController();
   final String author;
@@ -116,20 +115,6 @@ class ActualExtra {
   ActualExtra(this.type, {text = "", sel = const [""], correct = const <int>{}}) : task = ActualTask(type, answerNames: sel, correct: correct) {
     textInfo.text = text;
   }
-
-/*
-  ActualExtra.onlyText(String text) : image = false {
-    this.textInfo.text = text;
-  }
-
-  ActualExtra.realTask(task, type, answerNames) : image = false {
-    this.textInfo.text = task;
-    this.task = ActualTask(type, answerNames: answerNames);
-  }
-
-  ActualExtra.images(String images) : image = true {
-    this.textInfo.text = images;
-  }*/
 }
 
 class Tuple<K, V> {
@@ -140,12 +125,6 @@ class Tuple<K, V> {
 }
 
 class ActualTask {
-  //final ExtraType type;
-  //Map<String, m.TextEditingController> answers;
-  //final List<m.TextEditingController> labels;
-  //final List<m.TextEditingController> answers;
-  //final Set<int> selected;
-  //final List<String> answers;
   final List<Tuple> entries;
   final Set<int> correct;
   int selected;
@@ -173,8 +152,6 @@ class ActualTask {
   addLabel(String label, value) {
     var tedit = TextEditingController();
     tedit.text = label;
-    //labels.add(tedit);
-    //answers.add(m.TextEditingController());
     entries.add(Tuple(tedit, value));
   }
 

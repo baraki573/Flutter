@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:museum_app/add_tour/add_tour.dart';
 import 'package:museum_app/constants.dart';
-import 'package:museum_app/database/database.dart';
-import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/map/map_page.dart';
 import 'package:museum_app/museum_tabs.dart';
 import 'package:museum_app/tours_page/tours_widgets.dart';
@@ -19,9 +17,10 @@ class Tours extends StatefulWidget {
   _ToursState createState() => _ToursState();
 }
 
-enum TourType { all, my, fav }
-
 class _ToursState extends State<Tours> {
+  TextEditingController _ctrlSearch = TextEditingController();
+  TextEditingController _ctrlCode = TextEditingController();
+
   Widget _topInfo() {
     return Center(
       child: Stack(
@@ -30,7 +29,7 @@ class _ToursState extends State<Tours> {
             margin: EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
               image: DecorationImage(
-                  image: AssetImage('assets/images/product_tour.png')),
+                  image: AssetImage('assets/images/product_tour_text.png')),
             ),
           ),
           Positioned(
@@ -55,23 +54,7 @@ class _ToursState extends State<Tours> {
     );
   }
 
-  Widget _bottomInfo(funct) {
-    return StreamBuilder(
-        stream: MuseumDatabase.get().watchUser(),
-        builder: (context, snapU) {
-          var username =
-              (snapU.data ?? User(username: "", imgPath: "")).username;
-          return StreamBuilder(
-              stream: MuseumDatabase.get().getTourStops(),
-              builder: (context, snapTs) {
-                var tours = snapTs.data ?? List<TourWithStops>();
-                tours = tours.where(funct(username)).toList();
-                return TourList.fromList(tours);
-              });
-        });
-  }
 
-  TextEditingController _ctrl = TextEditingController();
 
   Widget _allTours() {
     return Column(
@@ -84,7 +67,7 @@ class _ToursState extends State<Tours> {
             borderRadius: BorderRadius.circular(30),
           ),
           child: TextField(
-            controller: _ctrl,
+            controller: _ctrlSearch,
             decoration: InputDecoration(
               icon: Icon(Icons.search),
               border: InputBorder.none,
@@ -96,8 +79,6 @@ class _ToursState extends State<Tours> {
       ],
     );
   }
-
-  TextEditingController _ctrlCode = TextEditingController();
 
   Widget _code() {
     return Column(
@@ -125,15 +106,7 @@ class _ToursState extends State<Tours> {
               color: COLOR_TOUR, fontWeight: FontWeight.bold, fontSize: 25),
         ),
         GestureDetector(
-          onTap: () {
-            /*
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => QrCamera(
-                          qrCodeCallback: (value) {},
-                        )));*/
-          },
+          onTap: () => print("QR not implemented"),
           child: border(
             Icon(FontAwesomeIcons.qrcode, size: 50),
             borderColor: COLOR_TOUR,
@@ -149,11 +122,11 @@ class _ToursState extends State<Tours> {
     return MuseumTabs(
       _topInfo(),
       {
-        // All tours
+        // All (online) tours
         "Alle": _allTours(), //_bottomInfo((_) => (tour) => true),
-        // Only the created ones
+        // Only the local/downloaded ones
         "Downloads": TourList.downloaded(),
-        // The rest
+        // Add a tour via a code
         "Code": _code(),
       },
       color: COLOR_TOUR,

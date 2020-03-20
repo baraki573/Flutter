@@ -11,9 +11,6 @@ class MuseumTabs extends StatefulWidget {
   final Map<String, Widget> tabs;
   final bool showSetting;
 
-  //final List<String> names;
-  //final List<Widget> tabs;
-
   MuseumTabs(this.top, this.tabs,
       {this.color = Colors.black, this.showSetting=true, Key key})
       : super(key: key);

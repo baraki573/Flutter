@@ -24,10 +24,17 @@ class EditSingleStop extends StatefulWidget {
 }
 
 class _EditSingleStopState extends State<EditSingleStop> {
+  TextEditingController _ctrlSearch = TextEditingController();
+
+  @override
+  void dispose() {
+    _ctrlSearch.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-    //print("SingleStop: "+widget.stop.stop.name);
     return Container(
       color: Colors.white,
       child: Column(
@@ -74,16 +81,6 @@ class _EditSingleStopState extends State<EditSingleStop> {
           stream: MuseumDatabase.get().getCustomStop(),
           builder: (context, snap) {
             Stop stop = snap.data?.stop;
-            /*if (widget.stop.stop == null && list.isNotEmpty) {
-              widget.stop.stop = list[0];
-              widget.stop.features = StopFeature(
-                id_tour: null,
-                id_stop: list[0].id,
-                showImages: true,
-                showText: true,
-                showDetails: true,
-              );
-            }*/
             return DropdownButton(
               hint: Text("  "+widget.stop.stop?.name),
               isExpanded: true,
@@ -117,28 +114,6 @@ class _EditSingleStopState extends State<EditSingleStop> {
                 }
               },
             );
-            /*return FlatButton(
-              onPressed: _action,
-              child: Text("Auswahl..."),
-            ) DropdownButton(
-              isExpanded: true,
-              hint: Text("  " + (widget.stop.stop?.name) ?? "Auswählen"),
-              items: list
-                  .map((stop) =>
-                      DropdownMenuItem(child: Text(stop.name), value: stop))
-                  .toList(),
-              onChanged: (value) => setState(() {
-                widget.stop.stop = value;
-                widget.stop.features = StopFeature(
-                  id_tour: null,
-                  id_stop: value.id,
-                  showImages: !widget.stop.isCustom(),
-                  showText: true,
-                  showDetails: !widget.stop.isCustom(),
-                );
-              }),
-            )*/
-                ;
           },
         ));
   }
@@ -150,7 +125,7 @@ class _EditSingleStopState extends State<EditSingleStop> {
         contentPadding: EdgeInsets.only(left: 15, right: 15, top: 15),
         content: Container(
           height: verSize(53, 50),
-          child: MuseumSearch(_setStop),
+          child: MuseumSearch(_setStop, _ctrlSearch),
         ),
         actions: [
           FlatButton(
@@ -175,8 +150,6 @@ class _EditSingleStopState extends State<EditSingleStop> {
       );
     });
   }
-
-  TextEditingController _ctrl = TextEditingController();
 
   // right-hand sidebar
   Widget _sideBar() {

@@ -4,21 +4,22 @@ import 'package:museum_app/database/database.dart';
 
 class MuseumSearch extends StatefulWidget {
   final Function funct;
-  static TextEditingController ctrl = TextEditingController();
+  final TextEditingController ctrl;
 
-  const MuseumSearch(this.funct, {Key key}) : super(key: key);
+  const MuseumSearch(this.funct, this.ctrl, {Key key}) : super(key: key);
 
   _MuseumSearchState createState() => _MuseumSearchState();
 }
 
 class _MuseumSearchState extends State<MuseumSearch> {
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
-          controller: MuseumSearch.ctrl,
+          controller: widget.ctrl,
           onChanged: (s) => setState(() {}),
           decoration: InputDecoration(
             labelText: "Suche...",
@@ -30,12 +31,12 @@ class _MuseumSearchState extends State<MuseumSearch> {
           child: Container(
             //color: Colors.red,
             child: StreamBuilder(
-              stream: MuseumDatabase.get().stopSearch(MuseumSearch.ctrl.text),
+              stream: MuseumDatabase.get().stopSearch(widget.ctrl.text),
               builder: (context, snap) {
                 List<Stop> lst = snap?.data;
                 if (lst == null) return Container();
                 if (lst.isEmpty) {
-                  var text = MuseumSearch.ctrl.text.isEmpty
+                  var text = widget.ctrl.text.isEmpty
                       ? "Gib einen Begriff oben ein, um die Suche zu starten."
                       : "Leider konnte kein passendes Objekt zu dieser Suchanfrage gefunden werden.\nVersuche es mit einem anderen Begriff erneut!";
                   return Center(child: Text(text, textAlign: TextAlign.center));
