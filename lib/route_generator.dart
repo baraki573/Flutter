@@ -20,6 +20,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample());
       case '/tutorials':
         return MaterialPageRoute(builder: (_) => Tutorials());
+      case '/loading':
+        return MaterialPageRoute(builder: (_) => Center(child: CircularProgressIndicator()));
       // case '/second':
       //   // Validation of correct data type
       //   if (args is String) {

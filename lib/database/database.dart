@@ -252,12 +252,12 @@ class MuseumDatabase extends _$MuseumDatabase {
   static MuseumDatabase _db;
   static int customID = 0;
 
-  static MuseumDatabase get() {
-    _db ??= MuseumDatabase();
+  factory MuseumDatabase() {
+    _db ??= MuseumDatabase.create();
     return _db;
   }
 
-  MuseumDatabase() : super(_openConnection());
+  MuseumDatabase.create() : super(_openConnection());
 
   @override
   int get schemaVersion => 5;
@@ -271,8 +271,12 @@ class MuseumDatabase extends _$MuseumDatabase {
     return into(users).insert(uc);
   }
 
-  Future updateUsername(String name) {
-    return update(users).write(UsersCompanion(username: Value(name)));
+  Future updateUsername(String name) async {
+    String oldName = await select(users).map((u) => u.username).getSingle();
+    await batch((batch) {
+      batch.update(users, UsersCompanion(username: Value(name)));
+      batch.update(tours, ToursCompanion(author: Value(name)), where: ($ToursTable t) => t.author.equals(oldName));
+    });
   }
 
   Future updateImage(String imgPath) {
@@ -683,7 +687,7 @@ class MuseumDatabase extends _$MuseumDatabase {
 }
 
 void demo() {
-  var db = MuseumDatabase.get();
+  var db = MuseumDatabase();
   //db.clear();
   db.demoUser();
   db.demoDivisions().catchError((_) => print("divisionError"));
@@ -696,10 +700,10 @@ void demo() {
 void init() {
   var u = UsersCompanion(
       username: Value("ABC"), imgPath: Value("assets/images/profile_test.png"));
-  MuseumDatabase.get().setUser(u);
+  MuseumDatabase().setUser(u);
 }
 
 void reset() {
-  MuseumDatabase.get().clear();
+  MuseumDatabase().clear();
   //MuseumDatabase.get().reset(UsersCompanion(username: Value("TEST"), imgPath: Value("testPath")));
 }

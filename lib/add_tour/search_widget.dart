@@ -31,7 +31,7 @@ class _MuseumSearchState extends State<MuseumSearch> {
           child: Container(
             //color: Colors.red,
             child: StreamBuilder(
-              stream: MuseumDatabase.get().stopSearch(widget.ctrl.text),
+              stream: MuseumDatabase().stopSearch(widget.ctrl.text),
               builder: (context, snap) {
                 List<Stop> lst = snap?.data;
                 if (lst == null) return Container();

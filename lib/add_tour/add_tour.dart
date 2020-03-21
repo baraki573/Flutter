@@ -31,11 +31,11 @@ class _AddTourState extends State<AddTour> {
     switch (_type) {
       case AddType.CREATE:
         return StreamBuilder(
-          stream: MuseumDatabase.get().watchUser(),
+          stream: MuseumDatabase().watchUser(),
           builder: (context, snap) {
             var name = snap.data?.username ?? "";
             return StreamBuilder(
-              stream: MuseumDatabase.get().getCustomStop(),
+              stream: MuseumDatabase().getCustomStop(),
               builder: (context, snap) {
                 var stop = snap.data ?? ActualStop.custom();
                 if (_tour == null || _tour.author != name) {
@@ -49,14 +49,14 @@ class _AddTourState extends State<AddTour> {
         );
       case AddType.EDIT:
         return StreamBuilder(
-          stream: MuseumDatabase.get().watchUser(),
+          stream: MuseumDatabase().watchUser(),
           builder: (context, snap) {
             var name = snap.data?.username ?? "";
             return StreamBuilder(
-              stream: MuseumDatabase.get().getTourStops(),
+              stream: MuseumDatabase().getTourStops(),
               builder: (context, snap) {
                 var tours = snap.data ?? List<TourWithStops>();
-                tours.where((t) => t.author == name);
+                tours = tours.where((t) => t.author == name).toList();
                 return _editList(tours);
               },
             );

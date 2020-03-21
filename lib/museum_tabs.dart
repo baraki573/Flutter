@@ -122,6 +122,7 @@ class MuseumSettings extends StatelessWidget {
       content: TextFormField(
         autovalidate: true,
         controller: ctrl,
+        maxLength: MAX_USERNAME,
         validator: (input) {
           if (input.length < MIN_USERNAME) return "Username ist zu kurz";
           if (input.length > MAX_USERNAME) return "Username ist zu lang";
@@ -130,13 +131,13 @@ class MuseumSettings extends StatelessWidget {
       ),
       actions: [
         FlatButton(
-          child: Text("Zurück"),
+          child: Text("Zurück", style: TextStyle(color: COLOR_PROFILE)),
           onPressed: () => Navigator.pop(context),
         ),
         FlatButton(
-          child: Text("Bestätigen"),
+          child: Text("Bestätigen", style: TextStyle(color: COLOR_PROFILE)),
           onPressed: () {
-            MuseumDatabase.get().updateUsername(ctrl.text);
+            MuseumDatabase().updateUsername(ctrl.text);
             ctrl.clear();
             Navigator.pop(context);
           },
@@ -158,7 +159,7 @@ class MuseumSettings extends StatelessWidget {
         showAboutDialog(context: context);
         break;
       case _OptionType.clear:
-        MuseumDatabase.get().clear();
+        MuseumDatabase().clear();
         break;
       case _OptionType.demo:
         demo();

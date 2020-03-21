@@ -84,12 +84,12 @@ class _FavWidgetState extends State<FavWidget> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-        stream: MuseumDatabase.get().getDivisions(),
+        stream: MuseumDatabase().getDivisions(),
         builder: (context, snapDev) {
           var divisions = snapDev.data ?? List<Division>();
           //print(divisions);
           return StreamBuilder(
-              stream: MuseumDatabase.get().watchStops(),
+              stream: MuseumDatabase().watchStops(),
               builder: (context, snapStop) {
                 var stops = snapStop.data ?? List<Stop>();
                 return Column(
@@ -209,7 +209,7 @@ class _BadgeWidgetState extends State<BadgeWidget> {
   Widget build(BuildContext context) {
     //UserClass u = getUser();
     return StreamBuilder(
-        stream: MuseumDatabase.get().getBadges(),
+        stream: MuseumDatabase().getBadges(),
         builder: (context, snapBad) {
           List<Badge> badges = snapBad.data ?? List<Badge>();
           return Container(

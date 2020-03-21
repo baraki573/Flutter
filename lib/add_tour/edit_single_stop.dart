@@ -78,7 +78,7 @@ class _EditSingleStopState extends State<EditSingleStop> {
     return Container(
         color: Colors.white,
         child: StreamBuilder(
-          stream: MuseumDatabase.get().getCustomStop(),
+          stream: MuseumDatabase().getCustomStop(),
           builder: (context, snap) {
             Stop stop = snap.data?.stop;
             return DropdownButton(
@@ -215,7 +215,6 @@ class _EditSingleStopState extends State<EditSingleStop> {
           ),
           _withLabel(
             FontAwesomeIcons.fileImage, "Bild",
-            //TODO block for individuell
             funct: widget.stop.isCustom()
                 ? null
                 : () => setState(() => widget.stop.extras.add(ActualExtra(

@@ -181,7 +181,7 @@ class _CreateTourState extends State<CreateTour> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   StreamBuilder(
-                      stream: MuseumDatabase.get().getCustomStop(),
+                      stream: MuseumDatabase().getCustomStop(),
                       builder: (context, snap) {
                         var stop = snap.data ?? ActualStop.custom();
                         return IconButton(
@@ -310,7 +310,7 @@ class _CreateTourState extends State<CreateTour> {
                       for (var e in s.extras)
                         if (e is ActualTask)
                           e.textInfo.text = e.textInfo.text.trim();
-                    MuseumDatabase.get().writeTourStops(widget.tour).then(
+                    MuseumDatabase().writeTourStops(widget.tour).then(
                         (val) {
                       widget.goBack();
                       Scaffold.of(context).showSnackBar(SnackBar(

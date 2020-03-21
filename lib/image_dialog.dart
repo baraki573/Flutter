@@ -42,7 +42,10 @@ class _ImageDialogState extends State<ImageDialog> {
             children: list
                 .map(
                   (img) => GestureDetector(
-                    onTap: () { MuseumDatabase.get().updateImage(img); Navigator.pop(context); },
+                    onTap: () {
+                      MuseumDatabase().updateImage(img);
+                      Navigator.pop(context);
+                    },
                     child: Container(
                       height: verSize(13, 27),
                       width: horSize(23, 16),
@@ -62,10 +65,7 @@ class _ImageDialogState extends State<ImageDialog> {
       actions: [
         FlatButton(
           onPressed: () => Navigator.pop(context),
-          child: Text(
-            "Schließen",
-            style: TextStyle(color: COLOR_PROFILE),
-          ),
+          child: Text("Schließen", style: TextStyle(color: COLOR_PROFILE)),
         ),
       ],
     );

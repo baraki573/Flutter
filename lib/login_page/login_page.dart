@@ -66,8 +66,7 @@ class _LogInState extends State<LogIn> {
       MaterialPageRoute(
           builder: (context) => BottomBarNavigationPatternExample()),
     );
-    MuseumDatabase.get().demoUser();
-    MuseumDatabase.get().updateOnboard(true);
+    MuseumDatabase().updateOnboard(true);
   }
 
   Widget _customButtons(text, funct) {

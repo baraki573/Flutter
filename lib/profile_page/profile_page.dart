@@ -18,7 +18,7 @@ class _ProfileState extends State<Profile> {
 
   Widget _topInfo() {
     return StreamBuilder(
-        stream: MuseumDatabase.get().watchUser(),
+        stream: MuseumDatabase().watchUser(),
         builder: (context, snap) {
           var user = snap.data ??
               User(username: "", imgPath: "assets/images/profile_test.png");

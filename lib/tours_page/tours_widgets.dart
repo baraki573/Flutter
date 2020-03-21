@@ -242,7 +242,7 @@ class _TourListState extends State<TourList> {
                                   style: TextStyle(color: COLOR_TOUR)),
                               onPressed: () => setState(() {
                                 widget.tours?.remove(t);
-                                MuseumDatabase.get().removeTour(t.id);
+                                MuseumDatabase().removeTour(t.id);
                                 Navigator.pop(contextPop);
                                 Navigator.pop(contextPop);
                                 Scaffold.of(context).showSnackBar(SnackBar(
@@ -294,7 +294,7 @@ class _TourListState extends State<TourList> {
     if (widget.tours != null) return _toursFromList(widget.tours);
 
     return StreamBuilder(
-      stream: MuseumDatabase.get().getTourStops(),
+      stream: MuseumDatabase().getTourStops(),
       builder: (context, snap) {
         List<TourWithStops> tours = snap.data ?? List<TourWithStops>();
         return _toursFromList(tours);
