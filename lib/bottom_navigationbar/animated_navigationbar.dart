@@ -5,19 +5,22 @@ class AnimatedBottomBar extends StatefulWidget {
   final Duration animationDuration;
   final Function onBarTap;
   final BarStyle barStyle;
+  final int startIndex;
 
   AnimatedBottomBar(
       {this.barItems,
       this.animationDuration = const Duration(milliseconds: 500),
-      this.onBarTap, this.barStyle});
+      this.onBarTap, this.barStyle, this.startIndex = 0});
 
   @override
-  _AnimatedBottomBarState createState() => _AnimatedBottomBarState();
+  _AnimatedBottomBarState createState() => _AnimatedBottomBarState(startIndex);
 }
 
 class _AnimatedBottomBarState extends State<AnimatedBottomBar>
     with TickerProviderStateMixin {
-  int selectedBarIndex = 0;
+  int _selectedBarIndex;
+
+  _AnimatedBottomBarState(this._selectedBarIndex);
 
   @override
   Widget build(BuildContext context) {
@@ -43,14 +46,14 @@ class _AnimatedBottomBarState extends State<AnimatedBottomBar>
     List<Widget> _barItems = List();
     for (int i = 0; i < widget.barItems.length; i++) {
       BarItem item = widget.barItems[i];
-      bool isSelected = selectedBarIndex == i;
+      bool isSelected = _selectedBarIndex == i;
       _barItems.add(InkWell(
         borderRadius: BorderRadius.circular(30.0),
         splashColor: Colors.transparent,
         onTap: () {
           setState(() {
-            selectedBarIndex = i;
-            widget.onBarTap(selectedBarIndex);
+            _selectedBarIndex = i;
+            widget.onBarTap(_selectedBarIndex);
           });
         },
         child: AnimatedContainer(

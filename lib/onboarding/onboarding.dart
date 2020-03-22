@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:museum_app/database/database.dart';
-import 'package:museum_app/login_page/login_page.dart';
-import 'onboarding_data.dart';
-import 'page_indicator.dart';
 import 'package:gradient_text/gradient_text.dart';
 import 'package:museum_app/SizeConfig.dart';
+import 'package:museum_app/database/database.dart';
+
+import 'onboarding_data.dart';
+import 'page_indicator.dart';
 
 class Onboarding extends StatefulWidget {
   Onboarding({Key key})
@@ -584,10 +584,8 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                           color: Colors.white,
                         ),
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => LogIn()),
-                          );
+                          Navigator.pushNamed(context, "/login");
+                          MuseumDatabase().updateOnboard(true);
                         },
                       )
                     : Container(),

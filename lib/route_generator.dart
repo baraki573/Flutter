@@ -18,6 +18,14 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => LogIn());
       case '/':
         return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample());
+      case '/home':
+        return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample.fromIndex(0));
+      case '/tours':
+        return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample.fromIndex(1));
+      case '/add':
+        return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample.fromIndex(2));
+      case '/profile':
+        return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample.fromIndex(3));
       case '/tutorials':
         return MaterialPageRoute(builder: (_) => Tutorials());
       case '/loading':

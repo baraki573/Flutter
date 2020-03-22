@@ -102,7 +102,7 @@ class _MuseumTabsState extends State<MuseumTabs> with TickerProviderStateMixin {
   }
 }
 
-enum _OptionType { EDIT_US, EDIT_PW, EDIT_IMG, ABOUT, clear, demo }
+enum _OptionType { EDIT_US, EDIT_PW, EDIT_IMG, LOGIN, LOGOUT, ABOUT, clear, demo }
 
 class MuseumSettings extends StatelessWidget {
   PopupMenuItem _myPopUpItem(String s, IconData i, _OptionType t) {
@@ -146,6 +146,28 @@ class MuseumSettings extends StatelessWidget {
     );
   }
 
+  Widget _logout(BuildContext context) {
+    return AlertDialog(
+      title: Text("Warnung"),
+      content: Text("Möchten Sie sich wirklich ausloggen?\n"
+          "Zum Wiederanmelden benötigen Sie Ihre Anmeldedaten."),
+      actions: [
+        FlatButton(
+          child: Text("Zurück", style: TextStyle(color: COLOR_PROFILE)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        FlatButton(
+          child: Text("Abmelden", style: TextStyle(color: COLOR_PROFILE)),
+          onPressed: () async {
+            await MuseumDatabase().updateUsername("");
+            Navigator.pop(context);
+            Navigator.popAndPushNamed(context, "/profile");
+          },
+        )
+      ],
+    );
+  }
+
   void _select(val, BuildContext context) {
     switch (val) {
       // TODO build own about dialog in german. Maybe general dialog, val determines content
@@ -157,6 +179,12 @@ class MuseumSettings extends StatelessWidget {
         break;
       case _OptionType.ABOUT:
         showAboutDialog(context: context);
+        break;
+      case _OptionType.LOGOUT:
+        showDialog(context: context, builder: _logout);
+        break;
+      case _OptionType.LOGIN:
+        Navigator.popAndPushNamed(context, "/profile");
         break;
       case _OptionType.clear:
         MuseumDatabase().clear();
@@ -170,26 +198,39 @@ class MuseumSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton(
-      itemBuilder: (context) => [
-        _myPopUpItem("Profilbild ändern", Icons.image, _OptionType.EDIT_IMG),
-        _myPopUpItem("Username ändern", Icons.person, _OptionType.EDIT_US),
-        _myPopUpItem("Passwort ändern", Icons.fiber_pin, _OptionType.EDIT_PW),
-        _myPopUpItem("Über diese App", Icons.info, _OptionType.ABOUT),
-        _myPopUpItem(
-            "DEBUG clear", Icons.restore_from_trash, _OptionType.clear),
-        _myPopUpItem("DEBUG demo", Icons.play_arrow, _OptionType.demo),
-      ],
-      onSelected: (result) => _select(result, context),
-      /*onPressed: () {
-                print("Options");
-              },
-              iconSize: 35,*/
-      icon: Icon(
-        Icons.settings,
-        size: 35,
-        color: Colors.white,
-      ),
+    return StreamBuilder(
+      stream: MuseumDatabase().watchUser(),
+      builder: (context, snap) {
+        bool logged = snap.hasData && snap.data.username != "";
+        return PopupMenuButton(
+          itemBuilder: (context) => _popUpList(logged),
+          onSelected: (result) => _select(result, context),
+          icon: Icon(
+            Icons.settings,
+            size: 35,
+            color: Colors.white,
+          ),
+        );
+      },
     );
+  }
+
+  _popUpList(bool logged) {
+    List<PopupMenuItem> base = [
+      _myPopUpItem("Einloggen", Icons.redo, _OptionType.LOGIN),
+      _myPopUpItem("Über diese App", Icons.info, _OptionType.ABOUT),
+      _myPopUpItem("DEBUG clear", Icons.clear, _OptionType.clear),
+      _myPopUpItem("DEBUG demo", Icons.play_arrow, _OptionType.demo),
+    ];
+
+    if (logged) {
+      base.removeAt(0);
+      base.insert(0, _myPopUpItem("Ausloggen", Icons.undo, _OptionType.LOGOUT));
+      base.insert(0, _myPopUpItem("Passwort ändern", Icons.fiber_pin, _OptionType.EDIT_PW));
+      base.insert(0, _myPopUpItem("Username ändern", Icons.person, _OptionType.EDIT_US));
+      base.insert(0, _myPopUpItem("Profilbild ändern", Icons.image, _OptionType.EDIT_IMG));
+    }
+
+    return base;
   }
 }

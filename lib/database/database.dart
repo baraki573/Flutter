@@ -272,6 +272,7 @@ class MuseumDatabase extends _$MuseumDatabase {
   }
 
   Future updateUsername(String name) async {
+    await initUser();
     String oldName = await select(users).map((u) => u.username).getSingle();
     await batch((batch) {
       batch.update(users, UsersCompanion(username: Value(name)));
@@ -279,11 +280,13 @@ class MuseumDatabase extends _$MuseumDatabase {
     });
   }
 
-  Future updateImage(String imgPath) {
+  Future updateImage(String imgPath) async {
+    await initUser();
     return update(users).write(UsersCompanion(imgPath: Value(imgPath)));
   }
 
-  Future updateOnboard(bool b) {
+  Future updateOnboard(bool b) async {
+    await initUser();
     return update(users).write(UsersCompanion(onboardEnd: Value(b)));
   }
 
@@ -292,7 +295,7 @@ class MuseumDatabase extends _$MuseumDatabase {
   }
 
   Future initUser() {
-    customStatement("INSERT INTO users (username, imgPath, onboardEnd) SELECT 'Test', '', false WHERE NOT EXISTS (SELECT * FROM users)");
+    customStatement("INSERT INTO users (username, imgPath, onboardEnd) SELECT '', 'assets/images/profile_test.png', false WHERE NOT EXISTS (SELECT * FROM users)");
   }
 
   Future reset(UsersCompanion uc) {
