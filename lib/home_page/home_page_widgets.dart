@@ -28,8 +28,7 @@ class _HomeFunctionalitiesState extends State<HomeFunctionalities> {
         child: Stack(children: [
       Column(children: [
         _firstRow(),
-        //_secondRow(),
-        _thirdRow(),
+        _secondRow(),
       ] //next row should be here
           ),
     ]));
@@ -101,7 +100,7 @@ class _HomeFunctionalitiesState extends State<HomeFunctionalities> {
                       ],
                     ))),
             onTap: () {
-              Navigator.of(context).pushNamed('/profile');
+              Navigator.of(context).pushNamed('/einfuehrung');
             }),
         Container(
             width: SizeConfig.orientationDevice == Orientation.portrait
@@ -166,143 +165,6 @@ class _HomeFunctionalitiesState extends State<HomeFunctionalities> {
   }
 
   Widget _secondRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        InkWell(
-          child: Container(
-              width: SizeConfig.orientationDevice == Orientation.portrait
-                  ? SizeConfig.safeBlockHorizontal * funcSizeWidthPortrait
-                  : SizeConfig.safeBlockHorizontal * funcSizeWidthLandscape,
-              height: SizeConfig.orientationDevice == Orientation.portrait
-                  ? SizeConfig.safeBlockVertical * funcSizeHeightPortrait
-                  : SizeConfig.safeBlockVertical * funcSizeHeightLandscape,
-              margin: EdgeInsets.only(left: 16.0, bottom: 16, right: 5),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(17.0)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.8),
-                    spreadRadius: 1,
-                    blurRadius: 2,
-                    offset: Offset.fromDirection(pi / 2),
-                  )
-                ],
-              ),
-              alignment: Alignment.center,
-              child: SafeArea(
-                  bottom: false,
-                  child: Column(
-                    children: <Widget>[
-                      Container(
-                          margin:
-                              EdgeInsets.only(right: 5.0, left: 5.0, top: 10),
-                          child: Image.asset(
-                              'assets/images/undraw_detailed_analysis_xn7y.png',
-                              width: SizeConfig.orientationDevice ==
-                                      Orientation.portrait
-                                  ? SizeConfig.safeBlockHorizontal *
-                                      imageSizeWidthPortrait
-                                  : SizeConfig.safeBlockHorizontal *
-                                      imageSizeWidthLandscape,
-                              height: SizeConfig.orientationDevice ==
-                                      Orientation.portrait
-                                  ? SizeConfig.safeBlockVertical *
-                                      imageSizeHeightPortrait
-                                  : SizeConfig.safeBlockVertical *
-                                      imageSizeHeightLandscape)),
-                      Container(
-                          alignment: Alignment.center,
-                          margin: EdgeInsets.only(bottom: 10.0, top: 5.0),
-                          child: SafeArea(
-                              bottom: false,
-                              child: Text(
-                                "Tour erstellen",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontSize: SizeConfig.orientationDevice ==
-                                            Orientation.portrait
-                                        ? SizeConfig.safeBlockHorizontal * 5
-                                        : SizeConfig.safeBlockHorizontal * 2,
-                                    fontFamily: "Nunito",
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF1A1A1A)),
-                              )))
-                    ],
-                  ))),
-          //onTap: () { Navigator.of(context).pushNamed('/tutorials');}
-        ),
-        InkWell(
-            child: Container(
-                width: SizeConfig.orientationDevice == Orientation.portrait
-                    ? SizeConfig.safeBlockHorizontal * funcSizeWidthPortrait
-                    : SizeConfig.safeBlockHorizontal * funcSizeWidthLandscape,
-                height: SizeConfig.orientationDevice == Orientation.portrait
-                    ? SizeConfig.safeBlockVertical * funcSizeHeightPortrait
-                    : SizeConfig.safeBlockVertical * funcSizeHeightLandscape,
-                margin: EdgeInsets.only(right: 16.0, bottom: 16, left: 5),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(17.0)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.8),
-                      spreadRadius: 1,
-                      blurRadius: 2,
-                      offset: Offset.fromDirection(pi / 2),
-                    )
-                  ],
-                ),
-                alignment: Alignment.center,
-                child: SafeArea(
-                    bottom: false,
-                    child: Column(
-                      children: <Widget>[
-                        Container(
-                            margin:
-                                EdgeInsets.only(right: 5.0, left: 5.0, top: 10),
-                            child: Image.asset(
-                                'assets/images/undraw_collecting_fjjl.png',
-                                width: SizeConfig.orientationDevice ==
-                                        Orientation.portrait
-                                    ? SizeConfig.safeBlockHorizontal *
-                                        imageSizeWidthPortrait
-                                    : SizeConfig.safeBlockHorizontal *
-                                        imageSizeWidthLandscape,
-                                height: SizeConfig.orientationDevice ==
-                                        Orientation.portrait
-                                    ? SizeConfig.safeBlockVertical *
-                                        imageSizeHeightPortrait
-                                    : SizeConfig.safeBlockVertical *
-                                        imageSizeHeightLandscape)),
-                        Container(
-                            alignment: Alignment.center,
-                            margin: EdgeInsets.only(bottom: 10.0, top: 5.0),
-                            child: SafeArea(
-                                bottom: false,
-                                child: Text(
-                                  "Tutorials",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      fontSize: SizeConfig.orientationDevice ==
-                                              Orientation.portrait
-                                          ? SizeConfig.safeBlockHorizontal * 5
-                                          : SizeConfig.safeBlockHorizontal * 2,
-                                      fontFamily: "Nunito",
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF1A1A1A)),
-                                )))
-                      ],
-                    ))),
-            onTap: () {
-              Navigator.of(context).pushNamed('/tutorials');
-            })
-      ],
-    );
-  }
-
-  Widget _thirdRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
