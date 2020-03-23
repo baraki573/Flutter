@@ -7,12 +7,12 @@ import 'package:museum_app/home_page/tutorials.dart';
 
 GraphQLConfiguration graphQLConfiguration = GraphQLConfiguration();
 
-// void main() => runApp(
-//       GraphQLProvider(
-//         client: graphQLConfiguration.client,
-//         child: CacheProvider(child: MyApp()),
-//       ),
-//     );
+void main() => runApp(
+      GraphQLProvider(
+        client: graphQLConfiguration.client,
+        child: CacheProvider(child: MyApp()),
+      ),
+    );
 
 class MyApp extends StatelessWidget {
   @override
@@ -41,20 +41,9 @@ class MyApp extends StatelessWidget {
               primarySwatch: Colors.lightBlue,
             ),
             //home: Onboarding(),
-            //home: Home(),
             initialRoute: start,
             onGenerateRoute: RouteGenerator.generateRoute,
           );
         });
-    // return MaterialApp(
-    //   debugShowCheckedModeBanner: true,
-    //   title: 'Museum App',
-    //   theme: ThemeData(
-    //     primarySwatch: Colors.lightBlue,
-    //   ),
-    //   //home: Tutorials(),
-    //   initialRoute: '/',
-    //   onGenerateRoute: RouteGenerator.generateRoute,
-    // );
   }
 }

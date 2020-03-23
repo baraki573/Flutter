@@ -3,8 +3,8 @@ import "package:graphql_flutter/graphql_flutter.dart";
 
 class GraphQLConfiguration {
   static HttpLink httpLink =
-      //HttpLink(uri: 'https://countries.trevorblades.com/');
-      HttpLink(uri: 'http://http://247-244.gugw.tu-darmstadt.de/app');
+      HttpLink(uri: 'https://countries.trevorblades.com/');
+  //HttpLink(uri: 'http://http://247-244.gugw.tu-darmstadt.de/app');
 
   // static AuthLink _authLink = AuthLink(
   //   getToken: () async => 'Bearer $YOUR_PERSONAL_ACCESS_TOKEN',
