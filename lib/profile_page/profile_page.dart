@@ -57,8 +57,8 @@ class _ProfileState extends State<Profile> {
       stream: MuseumDatabase().watchUser(),
       builder: (context, snap) {
         var user = snap.data ??
-            User(username: "...", imgPath: "assets/images/profile_test.png");
-        if (user.username == "") return LogIn(skippable: false);
+            User(username: "...", imgPath: "assets/images/empty_profile.png");
+        if (user.username.trim() == "") return LogIn(skippable: false);
         return MuseumTabs(
           _topInfo(user),
           {

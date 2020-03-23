@@ -18,7 +18,6 @@ enum FormType { LOGIN, SIGNUP }
 
 class _LogInState extends State<LogIn> {
   FormType _form = FormType.LOGIN;
-  String _us, _pw, _pw2;
   final _usCtrl = TextEditingController();
   final _pwCtrl = TextEditingController();
   final _pw2Ctrl = TextEditingController();
@@ -47,24 +46,16 @@ class _LogInState extends State<LogIn> {
     super.dispose();
   }
 
-  bool _getUS() {
-    setState(() {
-      _us = _usCtrl.text.trim();
-      _pw = _pwCtrl.text.trim();
-      _pw2 = _pw2Ctrl.text.trim();
-    });
-    return _us != "" && _pw != "";
-  }
-
-  void _nextScreen() {
+  void _nextScreen({login = true}) {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    MuseumDatabase().updateUsername(_usCtrl.text);
-    Navigator.popAndPushNamed(context, "/profile");
+    if (login)
+      MuseumDatabase().updateUsername(_usCtrl.text);
+    Navigator.popAndPushNamed(context, widget.skippable ? "/" : "/profile");
   }
 
   Widget _customButtons(String text, funct) {
@@ -127,7 +118,7 @@ class _LogInState extends State<LogIn> {
         ],*/
       ),
       child: TextFormField(
-        onChanged: (_) => setState(() => _getUS()),
+        onChanged: (_) => setState(() {}),
         controller: ctrl,
         obscureText: pwField,
         autovalidate: true,
@@ -143,8 +134,7 @@ class _LogInState extends State<LogIn> {
   }
 
   String _userVal(String s) {
-    if (MIN_USERNAME <= s.length)
-      return null;
+    if (MIN_USERNAME <= s.length) return null;
     return "Username zu kurz";
   }
 
@@ -161,8 +151,8 @@ class _LogInState extends State<LogIn> {
           // Retype Password field [SignUp]
           _form == FormType.SIGNUP
               ? _customTextField(
-                  _pw2Ctrl, Icons.fiber_pin, 'Passwort bestätigen',
-                  pwField: true)
+              _pw2Ctrl, Icons.fiber_pin, 'Passwort bestätigen',
+              pwField: true)
               : Container(),
         ],
       ),
@@ -176,8 +166,8 @@ class _LogInState extends State<LogIn> {
         return AlertDialog(
           title: Text("Hinweis"),
           content:
-              Text("Möchten Sie wirklich ohne Accountverbindung fortfahen?\n"
-                  "Sie verpassen so spannende Sammelaufgaben, blah blah"),
+          Text("Möchten Sie wirklich ohne Accountverbindung fortfahen?\n"
+              "Sie verpassen so spannende Sammelaufgaben, blah blah"),
           actions: [
             FlatButton(
               child: Text("Zurück"),
@@ -185,7 +175,7 @@ class _LogInState extends State<LogIn> {
             ),
             FlatButton(
               child: Text("Fortfahren"),
-              onPressed: _nextScreen,
+              onPressed: () => _nextScreen(login: false),
             ),
           ],
         );
@@ -194,59 +184,49 @@ class _LogInState extends State<LogIn> {
   }
 
   void _signUpDialog() {
-    _getUS();
-    print(_us.length);
-    if (_us == "" || _pw == "" || _pw2 == "" || _pw != _pw2)
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Hinweis"),
-            content: Text(_pw != _pw2
-                ? "Die eingegebenen Passwörter stimmen nicht überein."
-                : "Bitte füllen Sie alle Felder aus."),
-            actions: [
-              FlatButton(
-                child: Text("Schließen"),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-          );
-        },
-      );
+    var content;
+    if (_usCtrl.text == "" || _pwCtrl.text == "" || _pw2Ctrl.text == "")
+      content = Text("Bitte füllen Sie alle Felder aus.");
+    else if (_pwCtrl.text != _pw2Ctrl.text)
+      content = Text("Die eingegebenen Passwörter stimmen nicht überein.");
     else
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text("Anmerkung"),
-            content: RichText(
-              text: TextSpan(
-                style: TextStyle(fontSize: 18.0, color: Colors.black),
-                children: [
-                  TextSpan(
-                      text: "Gehen Sie sicher, dass Sie für den Benutzernamen "
-                          "keine persönlichen Informationen verwenden.\n"
-                          "Eingabe: "),
-                  TextSpan(
-                      text: "$_us",
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
-            actions: [
-              FlatButton(
-                child: Text("Zurück"),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              FlatButton(
-                child: Text("Weiter"),
-                onPressed: _nextScreen,
-              ),
-            ],
-          );
-        },
+      content = RichText(
+        text: TextSpan(
+          style: TextStyle(fontSize: 18.0, color: Colors.black),
+          children: [
+            TextSpan(
+                text: "Gehen Sie sicher, dass Sie für den Benutzernamen "
+                    "keine persönlichen Informationen verwenden.\n"
+                    "Eingabe: "),
+            TextSpan(
+                text: _usCtrl.text,
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
       );
+
+    var actions = [
+      FlatButton(
+        child: Text("Schließen"),
+        onPressed: () => Navigator.of(context).pop(),
+      ),
+    ];
+    if (!(content is Text))
+      actions.add(FlatButton(
+        child: Text("Weiter"),
+        onPressed: _nextScreen,
+      ));
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Hinweis"),
+          content: content,
+          actions: actions,
+        );
+      },
+    );
   }
 
   @override
@@ -291,14 +271,18 @@ class _LogInState extends State<LogIn> {
                   padding: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
                   textColor: Colors.white,
                   color: Colors.blue,
+                  disabledTextColor: Colors.white.withOpacity(.6),
                   disabledColor: Colors.blue.withOpacity(.6),
                   splashColor: Colors.blue[200].withOpacity(.4),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18.0),
                   ),
                   child: Text("Bestätigen", textScaleFactor: 1.3),
-                  onPressed:
-                      _form == FormType.SIGNUP ? _signUpDialog : (_userVal(_us) == null ? _nextScreen : null),
+                  onPressed: _userVal(_usCtrl.text) != null
+                      ? null
+                      : (_form == FormType.SIGNUP
+                      ? _signUpDialog
+                      : _nextScreen),
                 ),
               ),
             ),
@@ -307,18 +291,18 @@ class _LogInState extends State<LogIn> {
       ),
       floatingActionButton: widget.skippable
           ? FlatButton(
-              textColor: Colors.white,
-              color: Colors.blue,
-              splashColor: Colors.blueAccent,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [Text("Skip"), Icon(Icons.skip_next)],
-              ),
-              onPressed: _skipDialog,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18.0),
-              ),
-            )
+        textColor: Colors.white,
+        color: Colors.blue,
+        splashColor: Colors.blueAccent,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [Text("Skip"), Icon(Icons.skip_next)],
+        ),
+        onPressed: _skipDialog,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18.0),
+        ),
+      )
           : null,
     );
   }
