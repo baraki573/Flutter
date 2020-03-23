@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:museum_app/SizeConfig.dart';
+import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
 
 class LogIn extends StatefulWidget {
@@ -109,31 +110,42 @@ class _LogInState extends State<LogIn> {
     );
   }
 
-  Widget _customTextField(ctrl, icon, String text, {obscure = false}) {
+  Widget _customTextField(ctrl, icon, String text, {pwField = false}) {
     return Container(
-      margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-      padding: EdgeInsets.only(left: 10, right: 15),
+      height: verSize(pwField ? 10 : 14, 15),
+      margin: EdgeInsets.only(top: 15.5, left: 16, right: 16),
+      //padding: EdgeInsets.only(left: 10, right: 15),
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        //color: Colors.grey[200],
         borderRadius: BorderRadius.circular(30.0),
-        boxShadow: [
+        /*boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.8),
             spreadRadius: 1,
             blurRadius: 2,
           ),
-        ],
+        ],*/
       ),
       child: TextFormField(
+        onChanged: (_) => setState(() => _getUS()),
         controller: ctrl,
-        obscureText: obscure,
+        obscureText: pwField,
+        autovalidate: true,
+        maxLength: pwField ? null : MAX_USERNAME,
+        validator: pwField ? null : _userVal,
         decoration: InputDecoration(
-          border: InputBorder.none,
-          icon: Icon(icon),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0)),
+          prefixIcon: Icon(icon),
           labelText: text,
         ),
       ),
     );
+  }
+
+  String _userVal(String s) {
+    if (MIN_USERNAME <= s.length)
+      return null;
+    return "Username zu kurz";
   }
 
   Widget _textFields() {
@@ -145,12 +157,12 @@ class _LogInState extends State<LogIn> {
           _customTextField(_usCtrl, Icons.account_circle, 'Username eingeben'),
           // Password field
           _customTextField(_pwCtrl, Icons.mail, 'Passwort eingeben',
-              obscure: true),
+              pwField: true),
           // Retype Password field [SignUp]
           _form == FormType.SIGNUP
               ? _customTextField(
                   _pw2Ctrl, Icons.fiber_pin, 'Passwort bestätigen',
-                  obscure: true)
+                  pwField: true)
               : Container(),
         ],
       ),
@@ -249,48 +261,48 @@ class _LogInState extends State<LogIn> {
           ),
         ),
         padding: const EdgeInsets.only(right: 16, left: 16),
-        child: Center(
-          child: Stack(
-            children: [
-              // LogIn-Box
-              Container(
-                height: SizeConfig.safeBlockVertical *
-                    (_form == FormType.SIGNUP ? 50 : 38),
-                margin: const EdgeInsets.only(bottom: 27),
-                padding: const EdgeInsets.only(top: 16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(18.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.8),
-                      spreadRadius: 1,
-                      blurRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Column(children: [_topButtons(), _textFields()]),
-              ),
-              // Submit-Button
-              Positioned.fill(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: RaisedButton(
-                    padding: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
-                    textColor: Colors.white,
-                    color: Colors.blue,
-                    splashColor: Colors.blue[200].withOpacity(.4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18.0),
-                    ),
-                    child: Text("Bestätigen", textScaleFactor: 1.3),
-                    onPressed:
-                        _form == FormType.SIGNUP ? _signUpDialog : _nextScreen,
+        alignment: Alignment.center,
+        child: Stack(
+          children: [
+            // LogIn-Box
+            Container(
+              height: SizeConfig.safeBlockVertical *
+                  (_form == FormType.SIGNUP ? 55.5 : 42.5),
+              margin: const EdgeInsets.only(bottom: 27),
+              padding: const EdgeInsets.only(top: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(18.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.8),
+                    spreadRadius: 1,
+                    blurRadius: 2,
                   ),
+                ],
+              ),
+              child: Column(children: [_topButtons(), _textFields()]),
+            ),
+            // Submit-Button
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: RaisedButton(
+                  padding: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+                  textColor: Colors.white,
+                  color: Colors.blue,
+                  disabledColor: Colors.blue.withOpacity(.6),
+                  splashColor: Colors.blue[200].withOpacity(.4),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18.0),
+                  ),
+                  child: Text("Bestätigen", textScaleFactor: 1.3),
+                  onPressed:
+                      _form == FormType.SIGNUP ? _signUpDialog : (_userVal(_us) == null ? _nextScreen : null),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: widget.skippable

@@ -20,21 +20,6 @@ class MyApp extends StatelessWidget {
     precacheImage(
         AssetImage("assets/images/orientierungsplan_high.png"), context);
 
-    /*return FutureBuilder(
-        future: MuseumDatabase().onboardEnd(),
-        builder: (context, snap) {
-          if (!snap.hasData) {
-            MuseumDatabase().initUser();
-            //return Center(child: CircularProgressIndicator());
-          }
-
-          var onboardEnd = snap.data;
-          String start =
-              onboardEnd == null ? "/loading" : (onboardEnd ? "/" : "/onboard");
-
-          print("ON " + (onboardEnd?.toString() ?? "null"));
-          print("START " + start);
-*/
     return MaterialApp(
       debugShowCheckedModeBanner: true,
       locale: Locale('de'),

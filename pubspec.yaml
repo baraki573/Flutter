@@ -55,6 +55,7 @@ flutter_icons:
   android: true
   ios: true
   image_path: "assets/images/AppIcon_G_vernetzt.png"
+  image_path_android: "assets/images/AppIcon_G_vernetzt_round.png"
 
 
 # For information on the generic Dart part of this file, see the
