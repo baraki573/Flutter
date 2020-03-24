@@ -62,6 +62,15 @@ class QueryBackend {
     """;
   }
 
+  static String allObjects(String token) {
+    return """ query all{
+      allObjects(token:"$token"){
+        objectId
+        title
+      }
+    } """;
+  }
+
   String func2() {
     return r"""
 

@@ -1,9 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:museum_app/graphql/mutations.dart';
 
 import 'SizeConfig.dart';
 import 'constants.dart';
 import 'database/database.dart';
+import 'graphql/graphqlConf.dart';
 import 'image_dialog.dart';
 
 class MuseumTabs extends StatefulWidget {
@@ -102,7 +105,16 @@ class _MuseumTabsState extends State<MuseumTabs> with TickerProviderStateMixin {
   }
 }
 
-enum _OptionType { EDIT_US, EDIT_PW, EDIT_IMG, LOGIN, LOGOUT, ABOUT, clear, demo }
+enum _OptionType {
+  EDIT_US,
+  EDIT_PW,
+  EDIT_IMG,
+  LOGIN,
+  LOGOUT,
+  ABOUT,
+  clear,
+  demo
+}
 
 class MuseumSettings extends StatelessWidget {
   PopupMenuItem _myPopUpItem(String s, IconData i, _OptionType t) {
@@ -125,9 +137,9 @@ class MuseumSettings extends StatelessWidget {
         maxLength: MAX_USERNAME,
         validator: (input) {
           if (input.length < MIN_USERNAME) return "Username ist zu kurz";
-          if (input.length > MAX_USERNAME) return "Username ist zu lang";
           return null;
         },
+        decoration: InputDecoration(hintText: "Username"),
       ),
       actions: [
         FlatButton(
@@ -138,12 +150,66 @@ class MuseumSettings extends StatelessWidget {
           child: Text("Bestätigen", style: TextStyle(color: COLOR_PROFILE)),
           onPressed: () {
             MuseumDatabase().updateUsername(ctrl.text);
-            ctrl.clear();
             Navigator.pop(context);
           },
         )
       ],
     );
+  }
+
+  Future<void> _editPW(BuildContext context) async {
+    var ctrl = TextEditingController();
+    var ctrl2 = TextEditingController();
+    final key = GlobalKey<FormFieldState>();
+    String accesToken = await MuseumDatabase().accessToken();
+
+    var dialog = AlertDialog(
+      title: Text("Passwort ändern"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextFormField(
+            controller: ctrl,
+            obscureText: true,
+            decoration: InputDecoration(hintText: "Passwort"),
+          ),
+          TextFormField(
+            key: key,
+            controller: ctrl2,
+            obscureText: true,
+            decoration: InputDecoration(hintText: "Passwort wiederholen"),
+            validator: (s) {
+              if (s != ctrl.text)
+                return "Passwörter stimmen nicht überein";
+              return null;
+            },
+          ),
+        ],
+      ),
+      actions: [
+        FlatButton(
+          child: Text("Zurück", style: TextStyle(color: COLOR_PROFILE)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        FlatButton(
+          child: Text("Bestätigen", style: TextStyle(color: COLOR_PROFILE)),
+          onPressed: () async {
+            if (!key.currentState.validate()) return;
+            GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+            print(ctrl.text);
+            await _client.mutate(MutationOptions(
+              documentNode: gql(
+                  MutationBackend.changePassword(accesToken, ctrl.text.trim())),
+              update: (cache, result) => cache,
+              onCompleted: (result) => Navigator.pop(context),
+              onError: (e) => print("ERROR"),
+            ));
+          },
+        ),
+      ],
+    );
+
+    showDialog(context: context, builder: (context) => dialog);
   }
 
   Widget _logout(BuildContext context) {
@@ -159,7 +225,7 @@ class MuseumSettings extends StatelessWidget {
         FlatButton(
           child: Text("Abmelden", style: TextStyle(color: COLOR_PROFILE)),
           onPressed: () async {
-            await MuseumDatabase().updateUsername("");
+            await MuseumDatabase().logOut();
             Navigator.pop(context);
             Navigator.popAndPushNamed(context, "/profile");
           },
@@ -177,8 +243,11 @@ class MuseumSettings extends StatelessWidget {
       case _OptionType.EDIT_US:
         showDialog(context: context, builder: _editUS);
         break;
+      case _OptionType.EDIT_PW:
+        _editPW(context);
+        break;
       case _OptionType.ABOUT:
-        showAboutDialog(context: context);
+        showDialog(context: context, builder: _about);
         break;
       case _OptionType.LOGOUT:
         showDialog(context: context, builder: _logout);
@@ -194,6 +263,53 @@ class MuseumSettings extends StatelessWidget {
         break;
       default:
     }
+  }
+
+  Widget _about(context) {
+    return AlertDialog(
+      title: Text("Geschichte Vernetzt"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "Teil des Projekts MINTplus²: Systematischer und vernetzter Kompetenzaufbau in der Lehrerbildung im Umgang mit Digitalisierung und Heterogenität",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontSize: horSize(4, 2),
+                fontFamily: "Nunito",
+                fontWeight: FontWeight.w300,
+                fontStyle: FontStyle.italic,
+                color: Color(0xFF1A1A1A)),
+          ),
+          Image.asset('assets/images/photo_2020-01-19.jpeg',
+              width: horSize(35, 30), height: verSize(15, 10)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                margin: EdgeInsets.only(left: 7, right: 7),
+                alignment: Alignment.center,
+                child: Image.asset('assets/images/Logo_MINTplus_182x0.jpg',
+                    width: horSize(28, 30), height: verSize(10, 20)),
+              ),
+              Container(
+                margin: EdgeInsets.only(left: 7, right: 7),
+                alignment: Alignment.center,
+                child: Image.asset('assets/images/serveimage.png',
+                    width: horSize(28, 30), height: verSize(10, 20)),
+              ),
+            ],
+          ),
+        ],
+      ),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16),
+      actions: [
+        FlatButton(
+          child: Text("Schließen"),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ],
+    );
   }
 
   @override
@@ -226,9 +342,14 @@ class MuseumSettings extends StatelessWidget {
     if (logged) {
       base.removeAt(0);
       base.insert(0, _myPopUpItem("Ausloggen", Icons.undo, _OptionType.LOGOUT));
-      base.insert(0, _myPopUpItem("Passwort ändern", Icons.fiber_pin, _OptionType.EDIT_PW));
-      base.insert(0, _myPopUpItem("Username ändern", Icons.person, _OptionType.EDIT_US));
-      base.insert(0, _myPopUpItem("Profilbild ändern", Icons.image, _OptionType.EDIT_IMG));
+      base.insert(
+          0,
+          _myPopUpItem(
+              "Passwort ändern", Icons.fiber_pin, _OptionType.EDIT_PW));
+      base.insert(0,
+          _myPopUpItem("Username ändern", Icons.person, _OptionType.EDIT_US));
+      base.insert(0,
+          _myPopUpItem("Profilbild ändern", Icons.image, _OptionType.EDIT_IMG));
     }
 
     return base;

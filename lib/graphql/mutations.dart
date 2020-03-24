@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class MutationBackend {
-  String addPerson(String id, String name, String lastName, int age) {
+  static String addPerson(String id, String name, String lastName, int age) {
     return """
 mutation{
 addPerson(id: "$id", name: "$name", lastName: "$lastName", age: "$age"){
@@ -14,8 +14,8 @@ age
 """;
   }
 
-  String auth(String password, String username) {
-    return r"""
+  static String auth(String password, String username) {
+    return '''
     mutation{
       auth(password: "$password", username: "$username")
       {
@@ -24,27 +24,24 @@ age
         ok
   }
 }
-""";
+''';
   }
 
-  String createUser(String password, String username) {
-    return r"""
+  static String createUser(String password, String username) {
+    return """
     mutation{
-      mutation{
       createUser(password: "$password", username: "$username"){
         user{
           username
           password
         }
-    ok
-  }
-}
-}
-""";
+        ok
+      }
+    }""";
   }
 
-  String changePassword(String token, String password) {
-    return r"""
+  static String changePassword(String token, String password) {
+    return """
     mutation{
   changePassword(password: "$password", token: "$token")
   {
@@ -54,7 +51,7 @@ age
     """;
   }
 
-  String chooseProfilePicture(String id, String token) {
+  static String chooseProfilePicture(String id, String token) {
     return r"""
     mutation{
   chooseProfilePicture(pictureId: "$id", token: "$token"){
@@ -64,7 +61,7 @@ age
     """;
   }
 
-  String fileUpload(Image file) {
+  static String fileUpload(Image file) {
     return r"""
       mutation{
   fileUpload(file:$file ){

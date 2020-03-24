@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:museum_app/database/database.dart';
-import 'package:museum_app/route_generator.dart';
-import 'package:museum_app/graphql/graphqlConf.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:museum_app/home_page/tutorials.dart';
+import 'package:museum_app/database/database.dart';
+import 'package:museum_app/graphql/graphqlConf.dart';
+import 'package:museum_app/route_generator.dart';
 
-GraphQLConfiguration graphQLConfiguration = GraphQLConfiguration();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await MuseumDatabase().initUser();
   final bool onboardEnd = await MuseumDatabase().onboardEnd();
   runApp(GraphQLProvider(
-    client: graphQLConfiguration.client,
+    client: GraphQLConfiguration().client,
     child: CacheProvider(
       child: MyApp(onboardEnd ? "/" : "/onboard"),
     ),

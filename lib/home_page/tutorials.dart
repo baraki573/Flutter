@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:museum_app/graphql/graphqlConf.dart';
+import 'package:museum_app/database/database.dart';
 import 'package:museum_app/graphql/query.dart';
 
 class Tutorials extends StatefulWidget {
@@ -11,43 +11,65 @@ class Tutorials extends StatefulWidget {
 }
 
 class _TutorialsState extends State<Tutorials> {
-  GraphQLConfiguration graphQLConfiguration = GraphQLConfiguration();
   QueryBackend addQuery = QueryBackend();
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        home: Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.indigo,
-        leading: Padding(
-          padding: EdgeInsets.only(left: 16),
-          child: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.pop(context);
-            },
+      home: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.indigo,
+          leading: Padding(
+            padding: EdgeInsets.only(left: 16),
+            child: IconButton(
+              icon: Icon(Icons.arrow_back),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
           ),
+          title: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Text('Tutorials'),
+              ]),
         ),
-        title:
-            Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
-          Text('Tutorials'),
-        ]),
+        body: FutureBuilder(
+            future: MuseumDatabase().accessToken(),
+            builder: (context, snap) {
+              String accessToken = snap.data ?? "";
+              return Column(children: [
+                Query(
+                  /*options: MutationOptions(
+              documentNode:
+                  gql(MutationBackend.createUser("asdf", "Maria123")),
+              //variables: <String, dynamic>{"code": "AS"},
+              update: (cache, result) => cache,
+              onCompleted: (result) {
+                if (result is LazyCacheMap)
+                  print(result.data);
+              },
+              onError: (e) => print("ERROR"),
+            ),*/
+                  options: QueryOptions(
+                    documentNode: gql(QueryBackend.allObjects(accessToken)),
+                  ),
+                  builder: (QueryResult result,
+                      {VoidCallback refetch, FetchMore fetchMore}) {
+                    if (result.hasException) {
+                      print(result.exception.toString());
+                      return Text(result.exception.toString());
+                    }
+                    if (result.loading)
+                      return Text("LOADING");
+                    print(result.data);
+                    return Text("ASDF");
+                  },
+                ),
+              ]);
+            }),
       ),
-      body: FlatButton(
-        child: Text("Get"),
-        onPressed: () async {
-          GraphQLClient _client = graphQLConfiguration.clientToQuery();
-          QueryResult result = await _client.query(
-            QueryOptions(
-                documentNode: gql(addQuery.getContinents()),
-                variables: <String, dynamic>{"code": "AS"},
-                pollInterval: 1),
-          );
-          debugPrint(result.data['continent']['countries'].length.toString());
-        },
-      ),
-    ));
+    );
   }
 }
 

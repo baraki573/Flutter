@@ -8,11 +8,15 @@ part of 'database.dart';
 
 // ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
 class User extends DataClass implements Insertable<User> {
+  final String accessToken;
+  final String refreshToken;
   final String username;
   final String imgPath;
   final bool onboardEnd;
   User(
-      {@required this.username,
+      {@required this.accessToken,
+      @required this.refreshToken,
+      @required this.username,
       @required this.imgPath,
       @required this.onboardEnd});
   factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
@@ -21,6 +25,10 @@ class User extends DataClass implements Insertable<User> {
     final stringType = db.typeSystem.forDartType<String>();
     final boolType = db.typeSystem.forDartType<bool>();
     return User(
+      accessToken: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}accessToken']),
+      refreshToken: stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}refreshToken']),
       username: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}username']),
       imgPath:
@@ -33,6 +41,8 @@ class User extends DataClass implements Insertable<User> {
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return User(
+      accessToken: serializer.fromJson<String>(json['accessToken']),
+      refreshToken: serializer.fromJson<String>(json['refreshToken']),
       username: serializer.fromJson<String>(json['username']),
       imgPath: serializer.fromJson<String>(json['imgPath']),
       onboardEnd: serializer.fromJson<bool>(json['onboardEnd']),
@@ -42,6 +52,8 @@ class User extends DataClass implements Insertable<User> {
   Map<String, dynamic> toJson({ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'accessToken': serializer.toJson<String>(accessToken),
+      'refreshToken': serializer.toJson<String>(refreshToken),
       'username': serializer.toJson<String>(username),
       'imgPath': serializer.toJson<String>(imgPath),
       'onboardEnd': serializer.toJson<bool>(onboardEnd),
@@ -51,6 +63,12 @@ class User extends DataClass implements Insertable<User> {
   @override
   UsersCompanion createCompanion(bool nullToAbsent) {
     return UsersCompanion(
+      accessToken: accessToken == null && nullToAbsent
+          ? const Value.absent()
+          : Value(accessToken),
+      refreshToken: refreshToken == null && nullToAbsent
+          ? const Value.absent()
+          : Value(refreshToken),
       username: username == null && nullToAbsent
           ? const Value.absent()
           : Value(username),
@@ -63,7 +81,15 @@ class User extends DataClass implements Insertable<User> {
     );
   }
 
-  User copyWith({String username, String imgPath, bool onboardEnd}) => User(
+  User copyWith(
+          {String accessToken,
+          String refreshToken,
+          String username,
+          String imgPath,
+          bool onboardEnd}) =>
+      User(
+        accessToken: accessToken ?? this.accessToken,
+        refreshToken: refreshToken ?? this.refreshToken,
         username: username ?? this.username,
         imgPath: imgPath ?? this.imgPath,
         onboardEnd: onboardEnd ?? this.onboardEnd,
@@ -71,6 +97,8 @@ class User extends DataClass implements Insertable<User> {
   @override
   String toString() {
     return (StringBuffer('User(')
+          ..write('accessToken: $accessToken, ')
+          ..write('refreshToken: $refreshToken, ')
           ..write('username: $username, ')
           ..write('imgPath: $imgPath, ')
           ..write('onboardEnd: $onboardEnd')
@@ -79,35 +107,53 @@ class User extends DataClass implements Insertable<User> {
   }
 
   @override
-  int get hashCode => $mrjf(
-      $mrjc(username.hashCode, $mrjc(imgPath.hashCode, onboardEnd.hashCode)));
+  int get hashCode => $mrjf($mrjc(
+      accessToken.hashCode,
+      $mrjc(
+          refreshToken.hashCode,
+          $mrjc(username.hashCode,
+              $mrjc(imgPath.hashCode, onboardEnd.hashCode)))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is User &&
+          other.accessToken == this.accessToken &&
+          other.refreshToken == this.refreshToken &&
           other.username == this.username &&
           other.imgPath == this.imgPath &&
           other.onboardEnd == this.onboardEnd);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
+  final Value<String> accessToken;
+  final Value<String> refreshToken;
   final Value<String> username;
   final Value<String> imgPath;
   final Value<bool> onboardEnd;
   const UsersCompanion({
+    this.accessToken = const Value.absent(),
+    this.refreshToken = const Value.absent(),
     this.username = const Value.absent(),
     this.imgPath = const Value.absent(),
     this.onboardEnd = const Value.absent(),
   });
   UsersCompanion.insert({
+    this.accessToken = const Value.absent(),
+    this.refreshToken = const Value.absent(),
     @required String username,
     @required String imgPath,
     this.onboardEnd = const Value.absent(),
   })  : username = Value(username),
         imgPath = Value(imgPath);
   UsersCompanion copyWith(
-      {Value<String> username, Value<String> imgPath, Value<bool> onboardEnd}) {
+      {Value<String> accessToken,
+      Value<String> refreshToken,
+      Value<String> username,
+      Value<String> imgPath,
+      Value<bool> onboardEnd}) {
     return UsersCompanion(
+      accessToken: accessToken ?? this.accessToken,
+      refreshToken: refreshToken ?? this.refreshToken,
       username: username ?? this.username,
       imgPath: imgPath ?? this.imgPath,
       onboardEnd: onboardEnd ?? this.onboardEnd,
@@ -119,6 +165,28 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final GeneratedDatabase _db;
   final String _alias;
   $UsersTable(this._db, [this._alias]);
+  final VerificationMeta _accessTokenMeta =
+      const VerificationMeta('accessToken');
+  GeneratedTextColumn _accessToken;
+  @override
+  GeneratedTextColumn get accessToken =>
+      _accessToken ??= _constructAccessToken();
+  GeneratedTextColumn _constructAccessToken() {
+    return GeneratedTextColumn('accessToken', $tableName, false,
+        defaultValue: const Constant(""));
+  }
+
+  final VerificationMeta _refreshTokenMeta =
+      const VerificationMeta('refreshToken');
+  GeneratedTextColumn _refreshToken;
+  @override
+  GeneratedTextColumn get refreshToken =>
+      _refreshToken ??= _constructRefreshToken();
+  GeneratedTextColumn _constructRefreshToken() {
+    return GeneratedTextColumn('refreshToken', $tableName, false,
+        defaultValue: const Constant(""));
+  }
+
   final VerificationMeta _usernameMeta = const VerificationMeta('username');
   GeneratedTextColumn _username;
   @override
@@ -153,7 +221,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   }
 
   @override
-  List<GeneratedColumn> get $columns => [username, imgPath, onboardEnd];
+  List<GeneratedColumn> get $columns =>
+      [accessToken, refreshToken, username, imgPath, onboardEnd];
   @override
   $UsersTable get asDslTable => this;
   @override
@@ -164,6 +233,16 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   VerificationContext validateIntegrity(UsersCompanion d,
       {bool isInserting = false}) {
     final context = VerificationContext();
+    if (d.accessToken.present) {
+      context.handle(_accessTokenMeta,
+          accessToken.isAcceptableValue(d.accessToken.value, _accessTokenMeta));
+    }
+    if (d.refreshToken.present) {
+      context.handle(
+          _refreshTokenMeta,
+          refreshToken.isAcceptableValue(
+              d.refreshToken.value, _refreshTokenMeta));
+    }
     if (d.username.present) {
       context.handle(_usernameMeta,
           username.isAcceptableValue(d.username.value, _usernameMeta));
@@ -194,6 +273,12 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   Map<String, Variable> entityToSql(UsersCompanion d) {
     final map = <String, Variable>{};
+    if (d.accessToken.present) {
+      map['accessToken'] = Variable<String, StringType>(d.accessToken.value);
+    }
+    if (d.refreshToken.present) {
+      map['refreshToken'] = Variable<String, StringType>(d.refreshToken.value);
+    }
     if (d.username.present) {
       map['username'] = Variable<String, StringType>(d.username.value);
     }

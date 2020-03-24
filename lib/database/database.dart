@@ -17,12 +17,19 @@ part 'database.g.dart';
 String customName = "Individuell";
 
 class Users extends Table {
+  TextColumn get accessToken =>
+      text().withDefault(const Constant("")).named("accessToken")();
+
+  TextColumn get refreshToken =>
+      text().withDefault(const Constant("")).named("refreshToken")();
+
   TextColumn get username =>
       text().withLength(min: MIN_USERNAME, max: MAX_USERNAME)();
 
   TextColumn get imgPath => text().named("imgPath")();
 
-  BoolColumn get onboardEnd => boolean().withDefault(const Constant(false)).named("onboardEnd")();
+  BoolColumn get onboardEnd =>
+      boolean().withDefault(const Constant(false)).named("onboardEnd")();
 
   @override
   Set<Column> get primaryKey => {username};
@@ -253,11 +260,11 @@ class MuseumDatabase extends _$MuseumDatabase {
   static int customID = 0;
 
   factory MuseumDatabase() {
-    _db ??= MuseumDatabase.create();
+    _db ??= MuseumDatabase._create();
     return _db;
   }
 
-  MuseumDatabase.create() : super(_openConnection());
+  MuseumDatabase._create() : super(_openConnection());
 
   @override
   int get schemaVersion => 5;
@@ -276,7 +283,8 @@ class MuseumDatabase extends _$MuseumDatabase {
     String oldName = await select(users).map((u) => u.username).getSingle();
     await batch((batch) {
       batch.update(users, UsersCompanion(username: Value(name)));
-      batch.update(tours, ToursCompanion(author: Value(name)), where: ($ToursTable t) => t.author.equals(oldName));
+      batch.update(tours, ToursCompanion(author: Value(name)),
+          where: ($ToursTable t) => t.author.equals(oldName));
     });
   }
 
@@ -294,12 +302,31 @@ class MuseumDatabase extends _$MuseumDatabase {
     return select(users).map((u) => u.onboardEnd).getSingle();
   }
 
-  Future initUser() {
-    customStatement("INSERT INTO users (username, imgPath, onboardEnd) SELECT '', 'assets/images/profile_test.png', false WHERE NOT EXISTS (SELECT * FROM users)");
+  Future<String> accessToken() {
+    return select(users).map((u) => u.accessToken).getSingle();
   }
 
-  Future reset(UsersCompanion uc) {
-    return delete(users).delete(uc);
+  Future initUser() {
+    customStatement(
+        "INSERT INTO users (username, imgPath, onboardEnd) SELECT '', 'assets/images/profile_test.png', false WHERE NOT EXISTS (SELECT * FROM users)");
+  }
+
+  Future logIn(String accesToken, String refreshToken, String username) {
+    return update(users).write(User(
+        refreshToken: refreshToken,
+        accessToken: accesToken,
+        username: username,
+        imgPath: "assets/images/empty_profile.png",
+        onboardEnd: null));
+  }
+
+  Future logOut() {
+    return update(users).write(User(
+        refreshToken: "",
+        accessToken: "",
+        username: "",
+        imgPath: "assets/images/empty_profile.png",
+        onboardEnd: null));
   }
 
   void clear() {
@@ -343,7 +370,8 @@ class MuseumDatabase extends _$MuseumDatabase {
       );
   }
 
-  Future addExtra(ActualExtra e, int pos_stop, int pos_extra, int tour_id, int stop_id) {
+  Future addExtra(
+      ActualExtra e, int pos_stop, int pos_extra, int tour_id, int stop_id) {
     if (e.task != null) {
       var list = List<int>();
 
@@ -378,8 +406,7 @@ class MuseumDatabase extends _$MuseumDatabase {
   }
 
   Stream<ActualStop> getActualStop(int pos_stop, int tour_id, int stop_id) {
-    final stop = select(stops)
-      ..where((s) => s.id.equals(stop_id));
+    final stop = select(stops)..where((s) => s.id.equals(stop_id));
 
     final feature = getStopFeature(pos_stop, stop_id, tour_id);
 
@@ -500,7 +527,8 @@ class MuseumDatabase extends _$MuseumDatabase {
       }
       // search in the object's name and division
       else
-        query.where((s) => s.name.like("%" + part + "%") | s.division.like("%" + part + "%"));
+        query.where((s) =>
+            s.name.like("%" + part + "%") | s.division.like("%" + part + "%"));
     }
 
     return query.watch();
@@ -579,7 +607,8 @@ class MuseumDatabase extends _$MuseumDatabase {
 
       for (var stop in entry.stops)
         for (var extra in stop.extras)
-          addExtra(extra, entry.stops.indexOf(stop), stop.extras.indexOf(extra), id, stop.stop.id);
+          addExtra(extra, entry.stops.indexOf(stop), stop.extras.indexOf(extra),
+              id, stop.stop.id);
     });
   }
 

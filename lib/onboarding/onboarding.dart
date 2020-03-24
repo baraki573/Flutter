@@ -96,14 +96,8 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                                 bottom: false,
                                 child: Image.asset(
                                   page.imageUrl,
-                                  width: SizeConfig.orientationDevice ==
-                                          Orientation.portrait
-                                      ? SizeConfig.safeBlockHorizontal * 80
-                                      : SizeConfig.safeBlockHorizontal * 30,
-                                  height: SizeConfig.orientationDevice ==
-                                          Orientation.portrait
-                                      ? SizeConfig.safeBlockVertical * 35
-                                      : SizeConfig.safeBlockVertical * 20,
+                                  width: horSize(80, 30),
+                                  height: verSize(35, 20),
                                 ))),
                         Container(
                           margin: EdgeInsets.only(left: 16.0, right: 16.0),
@@ -119,10 +113,7 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                               gradient: LinearGradient(
                                   colors: pageList[index].titleGradient),
                               style: TextStyle(
-                                fontSize: SizeConfig.orientationDevice ==
-                                        Orientation.portrait
-                                    ? SizeConfig.safeBlockHorizontal * 8
-                                    : SizeConfig.safeBlockHorizontal * 4,
+                                fontSize: horSize(8, 4),
                                 fontFamily: "Nunito",
                                 fontWeight: FontWeight.w700,
                               ),
@@ -163,12 +154,7 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                                     "Teil des Projekts MINTplus²: Systematischer und vernetzter Kompetenzaufbau in der Lehrerbildung im Umgang mit Digitalisierung und Heterogenität",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                        fontSize: SizeConfig
-                                                    .orientationDevice ==
-                                                Orientation.portrait
-                                            ? SizeConfig.safeBlockHorizontal * 4
-                                            : SizeConfig.safeBlockHorizontal *
-                                                2,
+                                        fontSize: horSize(4, 2),
                                         fontFamily: "Nunito",
                                         fontWeight: FontWeight.w300,
                                         fontStyle: FontStyle.italic,
@@ -481,24 +467,8 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                                           bottom: false,
                                           child: Image.asset(
                                               'assets/images/photo_2020-01-19.jpeg',
-                                              width: SizeConfig
-                                                          .orientationDevice ==
-                                                      Orientation.portrait
-                                                  ? SizeConfig
-                                                          .safeBlockHorizontal *
-                                                      22
-                                                  : SizeConfig
-                                                          .safeBlockHorizontal *
-                                                      30,
-                                              height: SizeConfig
-                                                          .orientationDevice ==
-                                                      Orientation.portrait
-                                                  ? SizeConfig
-                                                          .safeBlockVertical *
-                                                      15
-                                                  : SizeConfig
-                                                          .safeBlockVertical *
-                                                      10),
+                                              width: horSize(22, 30),
+                                              height: verSize(15, 10)),
                                         )),
                                     Container(
                                         margin: EdgeInsets.only(
@@ -508,24 +478,8 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                                           bottom: false,
                                           child: Image.asset(
                                               'assets/images/Logo_MINTplus_182x0.jpg',
-                                              width: SizeConfig
-                                                          .orientationDevice ==
-                                                      Orientation.portrait
-                                                  ? SizeConfig
-                                                          .safeBlockHorizontal *
-                                                      22
-                                                  : SizeConfig
-                                                          .safeBlockHorizontal *
-                                                      30,
-                                              height: SizeConfig
-                                                          .orientationDevice ==
-                                                      Orientation.portrait
-                                                  ? SizeConfig
-                                                          .safeBlockVertical *
-                                                      15
-                                                  : SizeConfig
-                                                          .safeBlockVertical *
-                                                      20),
+                                              width: horSize(22, 30),
+                                              height: verSize(15, 20)),
                                         )),
                                     Container(
                                         margin: EdgeInsets.only(
@@ -535,24 +489,8 @@ class _OnboardingState extends State<Onboarding> with TickerProviderStateMixin {
                                           bottom: false,
                                           child: Image.asset(
                                               'assets/images/serveimage.png',
-                                              width: SizeConfig
-                                                          .orientationDevice ==
-                                                      Orientation.portrait
-                                                  ? SizeConfig
-                                                          .safeBlockHorizontal *
-                                                      22
-                                                  : SizeConfig
-                                                          .safeBlockHorizontal *
-                                                      30,
-                                              height: SizeConfig
-                                                          .orientationDevice ==
-                                                      Orientation.portrait
-                                                  ? SizeConfig
-                                                          .safeBlockVertical *
-                                                      15
-                                                  : SizeConfig
-                                                          .safeBlockVertical *
-                                                      20),
+                                              width: horSize(22, 30),
+                                              height: verSize(15, 20)),
                                         )),
                                   ],
                                 )

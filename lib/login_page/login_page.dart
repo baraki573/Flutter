@@ -1,9 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
+import 'package:museum_app/graphql/graphqlConf.dart';
+import 'package:museum_app/graphql/mutations.dart';
 
 class LogIn extends StatefulWidget {
   final bool skippable;
@@ -14,18 +17,26 @@ class LogIn extends StatefulWidget {
   _LogInState createState() => _LogInState();
 }
 
-enum FormType { LOGIN, SIGNUP }
+/// Models the two possible actions for this widget
+enum LogInType { LOGIN, SIGNUP }
 
 class _LogInState extends State<LogIn> {
-  FormType _form = FormType.LOGIN;
+  /// the current state
+  LogInType _type = LogInType.LOGIN;
+
+  /// controller for the username form
   final _usCtrl = TextEditingController();
+
+  /// controller for the first password form
   final _pwCtrl = TextEditingController();
+
+  /// controller for the second password form
   final _pw2Ctrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _form = FormType.LOGIN;
+    // only displayed in portrait-mode
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -46,40 +57,46 @@ class _LogInState extends State<LogIn> {
     super.dispose();
   }
 
-  void _nextScreen({login = true}) {
+  /// Proceeds to the next screen.
+  /// If the LogIn can be skipped -> go to home-screen
+  /// else -> go to profile-screen
+  void _nextScreen() {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    if (login)
-      MuseumDatabase().updateUsername(_usCtrl.text);
     Navigator.popAndPushNamed(context, widget.skippable ? "/" : "/profile");
   }
 
-  Widget _customButtons(String text, funct) {
+  /// Creates the input change buttons used for this widget.
+  ///
+  /// The button's [text] and [function] can be defined.
+  /// If [function] is null, the [text] will be displayed in upper case.
+  Widget _customButtons(String text, function) {
     return FlatButton(
       //color: Colors.grey[300],
       textColor: Colors.black54,
       disabledColor: Colors.blue,
       disabledTextColor: Colors.white,
       splashColor: Colors.blueAccent,
-      child: Text(funct == null ? text.toUpperCase() : text),
-      onPressed: funct,
+      child: Text(function == null ? text.toUpperCase() : text),
+      onPressed: function,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.0)),
     );
   }
 
+  /// Creates the two state changing buttons.
   Widget _topButtons() {
     var funct1, funct2;
-
-    switch (_form) {
-      case FormType.LOGIN:
-        funct2 = () => setState(() => _form = FormType.SIGNUP);
+    // the button's functions depend on the current state
+    switch (_type) {
+      case LogInType.LOGIN:
+        funct2 = () => setState(() => _type = LogInType.SIGNUP);
         break;
-      case FormType.SIGNUP:
-        funct1 = () => setState(() => _form = FormType.LOGIN);
+      case LogInType.SIGNUP:
+        funct1 = () => setState(() => _type = LogInType.LOGIN);
         break;
     }
     return Container(
@@ -101,22 +118,18 @@ class _LogInState extends State<LogIn> {
     );
   }
 
-  Widget _customTextField(ctrl, icon, String text, {pwField = false}) {
+  /// Creates a single text field used in this widget.
+  ///
+  /// The [icon] is displayed left to the text field. The [text] is displayed as
+  /// the field's label. Set [pwField] to true to create a password-field.
+  Widget _customTextField(
+      TextEditingController ctrl, IconData icon, String text,
+      {bool pwField = false}) {
     return Container(
       height: verSize(pwField ? 10 : 14, 15),
       margin: EdgeInsets.only(top: 15.5, left: 16, right: 16),
       //padding: EdgeInsets.only(left: 10, right: 15),
-      decoration: BoxDecoration(
-        //color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(30.0),
-        /*boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.8),
-            spreadRadius: 1,
-            blurRadius: 2,
-          ),
-        ],*/
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(30.0)),
       child: TextFormField(
         onChanged: (_) => setState(() {}),
         controller: ctrl,
@@ -133,11 +146,13 @@ class _LogInState extends State<LogIn> {
     );
   }
 
+  /// The username's validator.
   String _userVal(String s) {
-    if (MIN_USERNAME <= s.length) return null;
+    if (1 <= s.length) return null;
     return "Username zu kurz";
   }
 
+  /// Creates the two/three text fields.
   Widget _textFields() {
     return Container(
       margin: const EdgeInsets.only(right: 15, left: 15),
@@ -149,16 +164,17 @@ class _LogInState extends State<LogIn> {
           _customTextField(_pwCtrl, Icons.mail, 'Passwort eingeben',
               pwField: true),
           // Retype Password field [SignUp]
-          _form == FormType.SIGNUP
+          _type == LogInType.SIGNUP
               ? _customTextField(
-              _pw2Ctrl, Icons.fiber_pin, 'Passwort bestätigen',
-              pwField: true)
+                  _pw2Ctrl, Icons.fiber_pin, 'Passwort bestätigen',
+                  pwField: true)
               : Container(),
         ],
       ),
     );
   }
 
+  /// Displays a dialog after the user wants to skip the login-process.
   void _skipDialog() {
     showDialog(
       context: context,
@@ -166,8 +182,8 @@ class _LogInState extends State<LogIn> {
         return AlertDialog(
           title: Text("Hinweis"),
           content:
-          Text("Möchten Sie wirklich ohne Accountverbindung fortfahen?\n"
-              "Sie verpassen so spannende Sammelaufgaben, blah blah"),
+              Text("Möchten Sie wirklich ohne Accountverbindung fortfahen?\n"
+                  "Sie verpassen so spannende Sammelaufgaben, blah blah"),
           actions: [
             FlatButton(
               child: Text("Zurück"),
@@ -175,7 +191,7 @@ class _LogInState extends State<LogIn> {
             ),
             FlatButton(
               child: Text("Fortfahren"),
-              onPressed: () => _nextScreen(login: false),
+              onPressed: _nextScreen,
             ),
           ],
         );
@@ -183,12 +199,16 @@ class _LogInState extends State<LogIn> {
     );
   }
 
+  /// Displays the signup-confirmation dialog
   void _signUpDialog() {
     var content;
+    // not all fields filled
     if (_usCtrl.text == "" || _pwCtrl.text == "" || _pw2Ctrl.text == "")
       content = Text("Bitte füllen Sie alle Felder aus.");
+    // the two passwords dont match
     else if (_pwCtrl.text != _pw2Ctrl.text)
       content = Text("Die eingegebenen Passwörter stimmen nicht überein.");
+    // everything ok
     else
       content = RichText(
         text: TextSpan(
@@ -205,28 +225,47 @@ class _LogInState extends State<LogIn> {
         ),
       );
 
-    var actions = [
+    // If something went wrong, only be able to close the alert
+    var actions = <Widget>[
       FlatButton(
         child: Text("Schließen"),
         onPressed: () => Navigator.of(context).pop(),
       ),
     ];
+
+    // ... else be able to confirm the data
     if (!(content is Text))
-      actions.add(FlatButton(
-        child: Text("Weiter"),
-        onPressed: _nextScreen,
-      ));
+      actions.add(
+        Mutation(
+          options: MutationOptions(
+              documentNode:
+                  gql(MutationBackend.createUser(_pwCtrl.text, _usCtrl.text)),
+              onError: (e) =>
+                  print("Signup-Error: " + e.clientException.toString()),
+              onCompleted: (result) async {
+                var map = result.data['createUser'];
+                Navigator.pop(context);
+                if (map['ok'] == true) {
+                  print("SIGNUP COMPLETE");
+                  setState(() {
+                    _pwCtrl.clear();
+                    _pw2Ctrl.clear();
+                    _type = LogInType.LOGIN;
+                  });
+                } else
+                  _failedLogin();
+              }),
+          builder: (runMutation, result) => FlatButton(
+            child: Text("Weiter"),
+            onPressed: () => runMutation({}),
+          ),
+        ),
+      );
 
     showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Hinweis"),
-          content: content,
-          actions: actions,
-        );
-      },
-    );
+        context: context,
+        builder: (context) => AlertDialog(
+            title: Text("Hinweis"), content: content, actions: actions));
   }
 
   @override
@@ -247,7 +286,7 @@ class _LogInState extends State<LogIn> {
             // LogIn-Box
             Container(
               height: SizeConfig.safeBlockVertical *
-                  (_form == FormType.SIGNUP ? 55.5 : 42.5),
+                  (_type == LogInType.SIGNUP ? 55.5 : 42.5),
               margin: const EdgeInsets.only(bottom: 27),
               padding: const EdgeInsets.only(top: 16),
               decoration: BoxDecoration(
@@ -280,9 +319,7 @@ class _LogInState extends State<LogIn> {
                   child: Text("Bestätigen", textScaleFactor: 1.3),
                   onPressed: _userVal(_usCtrl.text) != null
                       ? null
-                      : (_form == FormType.SIGNUP
-                      ? _signUpDialog
-                      : _nextScreen),
+                      : (_type == LogInType.SIGNUP ? _signUpDialog : _login),
                 ),
               ),
             ),
@@ -291,19 +328,58 @@ class _LogInState extends State<LogIn> {
       ),
       floatingActionButton: widget.skippable
           ? FlatButton(
-        textColor: Colors.white,
-        color: Colors.blue,
-        splashColor: Colors.blueAccent,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [Text("Skip"), Icon(Icons.skip_next)],
-        ),
-        onPressed: _skipDialog,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18.0),
-        ),
-      )
+              textColor: Colors.white,
+              color: Colors.blue,
+              splashColor: Colors.blueAccent,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [Text("Skip"), Icon(Icons.skip_next)],
+              ),
+              onPressed: _skipDialog,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18.0),
+              ),
+            )
           : null,
+    );
+  }
+
+  /// Tries to login using the controller's current contents.
+  _login() async {
+    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+    await _client.mutate(MutationOptions(
+      documentNode: gql(MutationBackend.auth(_pwCtrl.text, _usCtrl.text)),
+      update: (cache, result) => cache,
+      onCompleted: (result) async {
+        var map = result.data['auth'];
+        if (map['ok'] == true) {
+          print("LOGIN");
+          String access = map['accessToken'];
+          String refresh = map['refreshToken'];
+          await MuseumDatabase().logIn(access, refresh, _usCtrl.text);
+          _nextScreen();
+        }
+        else _failedLogin();
+      },
+      onError: (e) => print("Login-Error: " + e.clientException.toString()),
+    ));
+  }
+
+  /// Displays an error dialog
+  _failedLogin() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Hinweis"),
+        content: Text(
+            "Die eingegebenen Benutzerdaten sind nicht korrekt. Überprüfen Sie die Eingaben und versuchen es erneut!"),
+        actions: [
+          FlatButton(
+            child: Text("Schließen"),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
     );
   }
 }
