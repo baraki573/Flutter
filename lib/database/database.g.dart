@@ -12,12 +12,16 @@ class User extends DataClass implements Insertable<User> {
   final String refreshToken;
   final String username;
   final String imgPath;
+  final List<int> favStops;
+  final List<int> favTours;
   final bool onboardEnd;
   User(
       {@required this.accessToken,
       @required this.refreshToken,
       @required this.username,
       @required this.imgPath,
+      @required this.favStops,
+      @required this.favTours,
       @required this.onboardEnd});
   factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
@@ -33,6 +37,10 @@ class User extends DataClass implements Insertable<User> {
           .mapFromDatabaseResponse(data['${effectivePrefix}username']),
       imgPath:
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}imgPath']),
+      favStops: $UsersTable.$converter0.mapToDart(stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}favStops'])),
+      favTours: $UsersTable.$converter1.mapToDart(stringType
+          .mapFromDatabaseResponse(data['${effectivePrefix}favTours'])),
       onboardEnd: boolType
           .mapFromDatabaseResponse(data['${effectivePrefix}onboardEnd']),
     );
@@ -45,6 +53,8 @@ class User extends DataClass implements Insertable<User> {
       refreshToken: serializer.fromJson<String>(json['refreshToken']),
       username: serializer.fromJson<String>(json['username']),
       imgPath: serializer.fromJson<String>(json['imgPath']),
+      favStops: serializer.fromJson<List<int>>(json['favStops']),
+      favTours: serializer.fromJson<List<int>>(json['favTours']),
       onboardEnd: serializer.fromJson<bool>(json['onboardEnd']),
     );
   }
@@ -56,6 +66,8 @@ class User extends DataClass implements Insertable<User> {
       'refreshToken': serializer.toJson<String>(refreshToken),
       'username': serializer.toJson<String>(username),
       'imgPath': serializer.toJson<String>(imgPath),
+      'favStops': serializer.toJson<List<int>>(favStops),
+      'favTours': serializer.toJson<List<int>>(favTours),
       'onboardEnd': serializer.toJson<bool>(onboardEnd),
     };
   }
@@ -75,6 +87,12 @@ class User extends DataClass implements Insertable<User> {
       imgPath: imgPath == null && nullToAbsent
           ? const Value.absent()
           : Value(imgPath),
+      favStops: favStops == null && nullToAbsent
+          ? const Value.absent()
+          : Value(favStops),
+      favTours: favTours == null && nullToAbsent
+          ? const Value.absent()
+          : Value(favTours),
       onboardEnd: onboardEnd == null && nullToAbsent
           ? const Value.absent()
           : Value(onboardEnd),
@@ -86,12 +104,16 @@ class User extends DataClass implements Insertable<User> {
           String refreshToken,
           String username,
           String imgPath,
+          List<int> favStops,
+          List<int> favTours,
           bool onboardEnd}) =>
       User(
         accessToken: accessToken ?? this.accessToken,
         refreshToken: refreshToken ?? this.refreshToken,
         username: username ?? this.username,
         imgPath: imgPath ?? this.imgPath,
+        favStops: favStops ?? this.favStops,
+        favTours: favTours ?? this.favTours,
         onboardEnd: onboardEnd ?? this.onboardEnd,
       );
   @override
@@ -101,6 +123,8 @@ class User extends DataClass implements Insertable<User> {
           ..write('refreshToken: $refreshToken, ')
           ..write('username: $username, ')
           ..write('imgPath: $imgPath, ')
+          ..write('favStops: $favStops, ')
+          ..write('favTours: $favTours, ')
           ..write('onboardEnd: $onboardEnd')
           ..write(')'))
         .toString();
@@ -111,8 +135,12 @@ class User extends DataClass implements Insertable<User> {
       accessToken.hashCode,
       $mrjc(
           refreshToken.hashCode,
-          $mrjc(username.hashCode,
-              $mrjc(imgPath.hashCode, onboardEnd.hashCode)))));
+          $mrjc(
+              username.hashCode,
+              $mrjc(
+                  imgPath.hashCode,
+                  $mrjc(favStops.hashCode,
+                      $mrjc(favTours.hashCode, onboardEnd.hashCode)))))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -121,6 +149,8 @@ class User extends DataClass implements Insertable<User> {
           other.refreshToken == this.refreshToken &&
           other.username == this.username &&
           other.imgPath == this.imgPath &&
+          other.favStops == this.favStops &&
+          other.favTours == this.favTours &&
           other.onboardEnd == this.onboardEnd);
 }
 
@@ -129,12 +159,16 @@ class UsersCompanion extends UpdateCompanion<User> {
   final Value<String> refreshToken;
   final Value<String> username;
   final Value<String> imgPath;
+  final Value<List<int>> favStops;
+  final Value<List<int>> favTours;
   final Value<bool> onboardEnd;
   const UsersCompanion({
     this.accessToken = const Value.absent(),
     this.refreshToken = const Value.absent(),
     this.username = const Value.absent(),
     this.imgPath = const Value.absent(),
+    this.favStops = const Value.absent(),
+    this.favTours = const Value.absent(),
     this.onboardEnd = const Value.absent(),
   });
   UsersCompanion.insert({
@@ -142,6 +176,8 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.refreshToken = const Value.absent(),
     @required String username,
     @required String imgPath,
+    this.favStops = const Value.absent(),
+    this.favTours = const Value.absent(),
     this.onboardEnd = const Value.absent(),
   })  : username = Value(username),
         imgPath = Value(imgPath);
@@ -150,12 +186,16 @@ class UsersCompanion extends UpdateCompanion<User> {
       Value<String> refreshToken,
       Value<String> username,
       Value<String> imgPath,
+      Value<List<int>> favStops,
+      Value<List<int>> favTours,
       Value<bool> onboardEnd}) {
     return UsersCompanion(
       accessToken: accessToken ?? this.accessToken,
       refreshToken: refreshToken ?? this.refreshToken,
       username: username ?? this.username,
       imgPath: imgPath ?? this.imgPath,
+      favStops: favStops ?? this.favStops,
+      favTours: favTours ?? this.favTours,
       onboardEnd: onboardEnd ?? this.onboardEnd,
     );
   }
@@ -211,6 +251,24 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     );
   }
 
+  final VerificationMeta _favStopsMeta = const VerificationMeta('favStops');
+  GeneratedTextColumn _favStops;
+  @override
+  GeneratedTextColumn get favStops => _favStops ??= _constructFavStops();
+  GeneratedTextColumn _constructFavStops() {
+    return GeneratedTextColumn('favStops', $tableName, false,
+        defaultValue: const Constant(""));
+  }
+
+  final VerificationMeta _favToursMeta = const VerificationMeta('favTours');
+  GeneratedTextColumn _favTours;
+  @override
+  GeneratedTextColumn get favTours => _favTours ??= _constructFavTours();
+  GeneratedTextColumn _constructFavTours() {
+    return GeneratedTextColumn('favTours', $tableName, false,
+        defaultValue: const Constant(""));
+  }
+
   final VerificationMeta _onboardEndMeta = const VerificationMeta('onboardEnd');
   GeneratedBoolColumn _onboardEnd;
   @override
@@ -221,8 +279,15 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   }
 
   @override
-  List<GeneratedColumn> get $columns =>
-      [accessToken, refreshToken, username, imgPath, onboardEnd];
+  List<GeneratedColumn> get $columns => [
+        accessToken,
+        refreshToken,
+        username,
+        imgPath,
+        favStops,
+        favTours,
+        onboardEnd
+      ];
   @override
   $UsersTable get asDslTable => this;
   @override
@@ -255,6 +320,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     } else if (isInserting) {
       context.missing(_imgPathMeta);
     }
+    context.handle(_favStopsMeta, const VerificationResult.success());
+    context.handle(_favToursMeta, const VerificationResult.success());
     if (d.onboardEnd.present) {
       context.handle(_onboardEndMeta,
           onboardEnd.isAcceptableValue(d.onboardEnd.value, _onboardEndMeta));
@@ -285,6 +352,16 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     if (d.imgPath.present) {
       map['imgPath'] = Variable<String, StringType>(d.imgPath.value);
     }
+    if (d.favStops.present) {
+      final converter = $UsersTable.$converter0;
+      map['favStops'] =
+          Variable<String, StringType>(converter.mapToSql(d.favStops.value));
+    }
+    if (d.favTours.present) {
+      final converter = $UsersTable.$converter1;
+      map['favTours'] =
+          Variable<String, StringType>(converter.mapToSql(d.favTours.value));
+    }
     if (d.onboardEnd.present) {
       map['onboardEnd'] = Variable<bool, BoolType>(d.onboardEnd.value);
     }
@@ -295,6 +372,9 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   $UsersTable createAlias(String alias) {
     return $UsersTable(_db, alias);
   }
+
+  static TypeConverter<List<int>, String> $converter0 = IntListConverter();
+  static TypeConverter<List<int>, String> $converter1 = IntListConverter();
 }
 
 class Badge extends DataClass implements Insertable<Badge> {

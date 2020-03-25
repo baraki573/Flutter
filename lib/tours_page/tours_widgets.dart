@@ -20,23 +20,6 @@ class TourList extends StatefulWidget {
 }
 
 class _TourListState extends State<TourList> {
-  Widget _pictureLeft(ActualStop stop, Size s, {margin = EdgeInsets.zero}) {
-    return Container(
-      margin: margin,
-      width: SizeConfig.safeBlockHorizontal * s.width,
-      height: SizeConfig.safeBlockVertical * s.height,
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
-        borderRadius: BorderRadius.all(Radius.circular(10.0)),
-        image: DecorationImage(
-            image: AssetImage(stop.stop.images.isNotEmpty
-                ? stop.stop.images[0]
-                : "assets/images/profile_test.png"),
-            fit: BoxFit.cover),
-      ),
-    );
-  }
-
   Widget _infoRight(TourWithStops t) => Expanded(
         //width: horSize(50, 55),
         child: Column(
@@ -147,14 +130,58 @@ class _TourListState extends State<TourList> {
         scale: a1.value,
         child: Opacity(
           opacity: a1.value,
-          child: _tourPopUp(t),
+          child: _TourPopUp(t),
         ),
       ),
       pageBuilder: (context, animation1, animation2) {},
     );
   }
 
-  Widget _tourPopUp(TourWithStops t) {
+  @override
+  Widget build(BuildContext context) {
+    SizeConfig().init(context);
+    if (widget.tours != null) return _toursFromList(widget.tours);
+
+    return StreamBuilder(
+      stream: MuseumDatabase().getTourStops(),
+      builder: (context, snap) {
+        List<TourWithStops> tours = snap.data ?? List<TourWithStops>();
+        return _toursFromList(tours);
+      },
+    );
+  }
+}
+
+Widget _pictureLeft(ActualStop stop, Size s, {margin = EdgeInsets.zero}) {
+  return Container(
+    margin: margin,
+    width: SizeConfig.safeBlockHorizontal * s.width,
+    height: SizeConfig.safeBlockVertical * s.height,
+    decoration: BoxDecoration(
+      border: Border.all(color: Colors.black),
+      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+      image: DecorationImage(
+          image: AssetImage(stop.stop.images.isNotEmpty
+              ? stop.stop.images[0]
+              : "assets/images/profile_test.png"),
+          fit: BoxFit.cover),
+    ),
+  );
+}
+
+class _TourPopUp extends StatefulWidget {
+  final TourWithStops tour;
+
+  _TourPopUp(this.tour, {Key key}) : super(key: key);
+
+  @override
+  _TourPopUpState createState() => _TourPopUpState();
+}
+
+class _TourPopUpState extends State<_TourPopUp> {
+  @override
+  Widget build(BuildContext context) {
+    var t = widget.tour;
     return SimpleDialog(
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(10))),
@@ -222,38 +249,10 @@ class _TourListState extends State<TourList> {
                   color: Colors.black,
                   size: 31,
                 ),
-                onPressed: () => setState(() {
-                  // TODO confirmation dialog
-                  if (t.id != null) {
-                    showDialog(
-                        context: context,
-                        builder: (contextPop) => AlertDialog(
-                          title: Text("Warnung"),
-                          content: Text(
-                              "Möchten Sie die ausgewählte Tour wirklich entfernen?\nDies kann nicht rückgängig gemacht werden."),
-                          actions: [
-                            FlatButton(
-                              child: Text("Abbrechen",
-                                  style: TextStyle(color: COLOR_TOUR)),
-                              onPressed: () => Navigator.pop(contextPop),
-                            ),
-                            FlatButton(
-                              child: Text("Tour entfernen",
-                                  style: TextStyle(color: COLOR_TOUR)),
-                              onPressed: () => setState(() {
-                                widget.tours?.remove(t);
-                                MuseumDatabase().removeTour(t.id);
-                                Navigator.pop(contextPop);
-                                Navigator.pop(contextPop);
-                                Scaffold.of(context).showSnackBar(SnackBar(
-                                  content: Text("Tour entfernt!"),
-                                ));
-                              }),
-                            ),
-                          ],
-                        ));
-                  }
-                })),
+                onPressed: () {
+                  if (t.id != null)
+                    showDialog(context: context, builder: _popUp);
+                }),
             FlatButton(
               padding: EdgeInsets.all(9),
               splashColor: COLOR_TOUR.shade100,
@@ -271,7 +270,29 @@ class _TourListState extends State<TourList> {
                         builder: (context) => TourWalker(tour: t)));
               },
             ),
-            FlatButton(
+            FutureBuilder(
+              future: MuseumDatabase().isFavTour(t.id),
+              builder: (context, snap) {
+                bool fav = snap.data ?? false;
+                return FlatButton(
+                  splashColor: COLOR_TOUR.shade100,
+                  color: Colors.white,
+                  shape: CircleBorder(side: BorderSide(color: Colors.black)),
+                  child: Icon(
+                    fav ? Icons.favorite : Icons.favorite_border,
+                    color: Colors.black,
+                    size: 31,
+                  ),
+                  onPressed: () => setState(() {
+                    if (fav)
+                      MuseumDatabase().removeFavTour(t.id);
+                    else
+                      MuseumDatabase().addFavTour(t.id);
+                  }),
+                );
+              },
+            ),
+            /*FlatButton(
               splashColor: COLOR_TOUR.shade100,
               color: Colors.white,
               shape: CircleBorder(side: BorderSide(color: Colors.black)),
@@ -281,24 +302,35 @@ class _TourListState extends State<TourList> {
                 size: 31,
               ),
               onPressed: () {},
-            ),
+            ),*/
           ],
         ),
       ],
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    SizeConfig().init(context);
-    if (widget.tours != null) return _toursFromList(widget.tours);
-
-    return StreamBuilder(
-      stream: MuseumDatabase().getTourStops(),
-      builder: (context, snap) {
-        List<TourWithStops> tours = snap.data ?? List<TourWithStops>();
-        return _toursFromList(tours);
-      },
+  Widget _popUp(context) {
+    return AlertDialog(
+      title: Text("Warnung"),
+      content: Text(
+          "Möchten Sie die ausgewählte Tour wirklich entfernen?\nDies kann nicht rückgängig gemacht werden."),
+      actions: [
+        FlatButton(
+          child: Text("Abbrechen", style: TextStyle(color: COLOR_TOUR)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        FlatButton(
+          child: Text("Tour entfernen", style: TextStyle(color: COLOR_TOUR)),
+          onPressed: () => setState(() {
+            MuseumDatabase().removeTour(widget.tour.id);
+            Navigator.pop(context);
+            Navigator.pop(context);
+            Scaffold.of(context).showSnackBar(SnackBar(
+              content: Text("Tour entfernt!"),
+            ));
+          }),
+        ),
+      ],
     );
   }
 }

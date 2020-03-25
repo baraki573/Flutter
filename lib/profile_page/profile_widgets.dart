@@ -5,6 +5,8 @@ import 'package:flutter_circular_chart/flutter_circular_chart.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
+import 'package:museum_app/database/modelling.dart';
+import 'package:museum_app/tours_page/tours_widgets.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_content.dart';
 
 class FavWidget extends StatefulWidget {
@@ -44,23 +46,22 @@ class _FavWidgetState extends State<FavWidget> {
             itemCount: stops.length,
             // One "bubble"
             itemBuilder: (context, index) => Container(
-              margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 5.0),
+              margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               height: horSize(27, 16),
               width: horSize(27, 16),
               decoration: BoxDecoration(
-                  border: Border.all(color: division.color, width: 3),
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: AssetImage(stops[index].images[0]),
-                    fit: BoxFit.fill,
-                  ),
+                color: Colors.blue,
+                border: Border.all(color: division.color, width: 3),
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                  image: AssetImage(stops[index].images[0]),
+                  fit: BoxFit.cover,
+                ),
               ),
               child: FlatButton(
                 splashColor: division.color.withOpacity(.1),
                 highlightColor: division.color.withOpacity(.05),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(80.0),
-                ),
+                shape: CircleBorder(),
                 onPressed: () => _showStop(stops[index]),
                 child: null,
               ),
@@ -106,23 +107,49 @@ class _FavWidgetState extends State<FavWidget> {
       stream: MuseumDatabase().getDivisions(),
       builder: (context, snapDev) {
         var divisions = snapDev.data ?? List<Division>();
-        return StreamBuilder(
-          stream: MuseumDatabase().watchStops(),
+        return FutureBuilder(
+          future: MuseumDatabase().getFavStops(),
           builder: (context, snapStop) {
             var stops = snapStop.data ?? List<Stop>();
             // show every division with it's stops
             return Column(
-              children: List.generate(
-                divisions.length,
-                (index) => _buildDivision(
-                    divisions[index],
-                    stops
-                        .where((e) => e.division == divisions[index].name)
-                        .toList()),
-              ),
+              children: <Widget>[
+                    Text(
+                      "Lieblingsobjekte\n",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    )
+                  ] +
+                  List.generate(
+                    divisions.length,
+                    (index) => _buildDivision(
+                        divisions[index],
+                        stops
+                            .where((e) => e.division == divisions[index].name)
+                            .toList()),
+                  ) +
+                  [
+                    Text(
+                      "Lieblingstouren\n",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    ),
+                    _favTours(),
+                  ],
             );
           },
         );
+      },
+    );
+  }
+
+  Widget _favTours() {
+    return StreamBuilder(
+      stream: MuseumDatabase().watchFavTours(),
+      builder: (context, snap) {
+        var tours = snap.data ?? List<TourWithStops>();
+        //print("TOURS: "+tours.toString());
+        return TourList.fromList(tours);
       },
     );
   }

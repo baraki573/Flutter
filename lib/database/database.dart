@@ -28,6 +28,16 @@ class Users extends Table {
 
   TextColumn get imgPath => text().named("imgPath")();
 
+  TextColumn get favStops => text()
+      .withDefault(const Constant(""))
+      .map(IntListConverter())
+      .named("favStops")();
+
+  TextColumn get favTours => text()
+      .withDefault(const Constant(""))
+      .map(IntListConverter())
+      .named("favTours")();
+
   BoolColumn get onboardEnd =>
       boolean().withDefault(const Constant(false)).named("onboardEnd")();
 
@@ -309,6 +319,89 @@ class MuseumDatabase extends _$MuseumDatabase {
   Future initUser() {
     customStatement(
         "INSERT INTO users (username, imgPath, onboardEnd) SELECT '', 'assets/images/profile_test.png', false WHERE NOT EXISTS (SELECT * FROM users)");
+  }
+
+  Future addFavStop(int id) async {
+    var stopIds = await select(users).map((u) => u.favStops).getSingle();
+    stopIds.add(id);
+    update(users).write(User(
+        accessToken: null,
+        refreshToken: null,
+        username: null,
+        imgPath: null,
+        favStops: stopIds,
+        favTours: null,
+        onboardEnd: null));
+  }
+
+  Future removeFavStop(int id) async {
+    var stopIds = await select(users).map((u) => u.favStops).getSingle();
+    stopIds.remove(id);
+    update(users).write(User(
+        accessToken: null,
+        refreshToken: null,
+        username: null,
+        imgPath: null,
+        favStops: stopIds,
+        favTours: null,
+        onboardEnd: null));
+  }
+
+  Future<bool> isFavStop(int id) async {
+    var stopIds = await select(users).map((u) => u.favStops).getSingle();
+
+    return stopIds.where((fav) => fav == id).isNotEmpty;
+  }
+
+  Future<List<Stop>> getFavStops() async {
+    var stopIds = await select(users).map((u) => u.favStops).getSingle();
+
+    var query = select(stops)..where((s) => s.id.isIn(stopIds));
+    return query.get();
+  }
+
+  Future addFavTour(int id) async {
+    var tourIds = await select(users).map((u) => u.favTours).getSingle();
+    tourIds.add(id);
+    update(users).write(User(
+        accessToken: null,
+        refreshToken: null,
+        username: null,
+        imgPath: null,
+        favStops: null,
+        favTours: tourIds,
+        onboardEnd: null));
+  }
+
+  Future removeFavTour(int id) async {
+    var tourIds = await select(users).map((u) => u.favTours).getSingle();
+    tourIds.remove(id);
+    update(users).write(User(
+        accessToken: null,
+        refreshToken: null,
+        username: null,
+        imgPath: null,
+        favStops: null,
+        favTours: tourIds,
+        onboardEnd: null));
+  }
+
+  Future<bool> isFavTour(int id) async {
+    var tourIds = await select(users).map((u) => u.favTours).getSingle();
+
+    return tourIds.where((fav) => fav == id).isNotEmpty;
+  }
+
+  Stream<List<TourWithStops>> watchFavTours() {
+    var tourIds = select(users).map((u) => u.favTours).watchSingle();
+
+    var tours = getTourStops();
+
+    return Rx.combineLatest2(
+        tourIds,
+        tours,
+        (List<int> ids, List<TourWithStops> tours) =>
+            tours.where((t) => ids.contains(t.id)).toList());
   }
 
   Future logIn(String accesToken, String refreshToken, String username) {

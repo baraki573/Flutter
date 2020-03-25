@@ -12,8 +12,6 @@ import 'package:museum_app/image_carousel.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_extras.dart';
 
 class TourWalkerContent extends StatefulWidget {
-  //final int tour_id;
-  //final Stop stop;
   final ActualStop stop;
   final Color color;
   final bool showExtras;
@@ -26,7 +24,7 @@ class TourWalkerContent extends StatefulWidget {
       : this(ActualStop(
             s,
             StopFeature(showText: true, showImages: true, showDetails: true),
-            []), showExtras: false);
+            []));
 
   @override
   _TourWalkerContentState createState() => _TourWalkerContentState();
@@ -214,16 +212,44 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
   }
 
   Widget _extras(List<ActualExtra> extras) {
-    if (extras == null || extras.length < 1) return Container();
-    List<ActualExtra> tasks = extras.where((e) => e.task != null).toList();
+    List<ActualExtra> tasks = extras?.where((e) => e.task != null).toList();
+    int id = widget.stop.stop.id;
+
+    var base = List<Widget>();
+
+    if (!widget.stop.isCustom())
+      base.add(Container(
+          width: horSize(100, 100),
+          alignment: Alignment.centerRight,
+          child: FutureBuilder(
+            future: MuseumDatabase().isFavStop(id),
+            builder: (context, snap) {
+              bool fav = snap.data ?? false;
+              return FlatButton(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("Objekt favorisieren "),
+                    Icon(fav ? Icons.favorite : Icons.favorite_border),
+                  ],
+                ),
+                onPressed: () => setState(() {
+                  if (fav)
+                    MuseumDatabase().removeFavStop(id);
+                  else
+                    MuseumDatabase().addFavStop(id);
+                }),
+              );
+            },
+          )));
+
+    base += (extras?.map((t) => TourExtra(tasks.indexOf(t) + 1, t)))?.toList();
+
     return Container(
       margin: EdgeInsets.only(top: 13),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: extras
-            // TODO Numerierung nur mit actualTask
-            .map((t) => TourExtra(tasks.indexOf(t) + 1, t))
-            .toList(),
+        children: base,
       ),
     );
   }
