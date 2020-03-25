@@ -22,12 +22,17 @@ class TourWalkerContent extends StatefulWidget {
       {Key key, this.color = COLOR_TOUR, this.showExtras = true})
       : super(key: key);
 
+  TourWalkerContent.fromStop(Stop s)
+      : this(ActualStop(
+            s,
+            StopFeature(showText: true, showImages: true, showDetails: true),
+            []), showExtras: false);
+
   @override
   _TourWalkerContentState createState() => _TourWalkerContentState();
 }
 
 class _TourWalkerContentState extends State<TourWalkerContent> {
-
   @override
   Widget build(BuildContext context) {
     var feat = widget.stop.features ??
@@ -42,7 +47,9 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
       //padding: EdgeInsets.all(0),
       children: [
         // Images
-        feat.showImages ? ImageCaroussel.fromStrings(widget.stop.stop.images) : Container(height: 16),
+        feat.showImages
+            ? ImageCaroussel.fromStrings(widget.stop.stop.images)
+            : Container(height: 16),
         _information(feat.showText, feat.showDetails),
         //TourWalkerTasks(widget.),
       ],
@@ -93,39 +100,40 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
             color: widget.color,
           ),
         ),
-        stop.descr.isNotEmpty ?
-        ExpandableNotifier(
-          child: Expandable(
-            theme: ExpandableThemeData(
-              tapBodyToCollapse: true,
-              tapBodyToExpand: true,
-            ),
-            collapsed: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  stop.descr,
-                  maxLines: 5,
-                  textAlign: TextAlign.justify,
-                  style: TextStyle(fontSize: 18),
-                  overflow: TextOverflow.ellipsis,
+        stop.descr.isNotEmpty
+            ? ExpandableNotifier(
+                child: Expandable(
+                  theme: ExpandableThemeData(
+                    tapBodyToCollapse: true,
+                    tapBodyToExpand: true,
+                  ),
+                  collapsed: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        stop.descr,
+                        maxLines: 5,
+                        textAlign: TextAlign.justify,
+                        style: TextStyle(fontSize: 18),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      _expButton("Mehr anzeigen"),
+                    ],
+                  ),
+                  expanded: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SelectableText(
+                        stop.descr,
+                        textAlign: TextAlign.justify,
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      _expButton("Weniger anzeigen"),
+                    ],
+                  ),
                 ),
-                _expButton("Mehr anzeigen"),
-              ],
-            ),
-            expanded: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SelectableText(
-                  stop.descr,
-                  textAlign: TextAlign.justify,
-                  style: TextStyle(fontSize: 18),
-                ),
-                _expButton("Weniger anzeigen"),
-              ],
-            ),
-          ),
-        ) : Container(),
+              )
+            : Container(),
       ],
     );
   }
@@ -212,12 +220,11 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
       margin: EdgeInsets.only(top: 13),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children:
-            extras
+        children: extras
             // TODO Numerierung nur mit actualTask
-                .map((t) => TourExtra(tasks.indexOf(t) + 1, t))
-                .toList(),),
-
+            .map((t) => TourExtra(tasks.indexOf(t) + 1, t))
+            .toList(),
+      ),
     );
   }
 }

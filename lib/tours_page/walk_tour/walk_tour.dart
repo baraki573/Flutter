@@ -351,7 +351,7 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                       /*TourWalkerTasks(widget
                         .tour.tasks[widget.tour.stops[_currentItem].name]),*/
                       Container(
-                          height: bottomOff == 0 ? verSize(11, 21) : bottomOff),
+                          height: bottomOff == 0 ? verSize(15, 21) : bottomOff),
                       //_content(),
                     ],
                   ),

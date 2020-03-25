@@ -45,6 +45,7 @@ class _LogInState extends State<LogIn> {
 
   @override
   void dispose() {
+    // set the orientation settings to normal
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
