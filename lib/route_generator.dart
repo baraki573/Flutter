@@ -4,8 +4,6 @@ import 'package:museum_app/home_page/tutorials.dart';
 import 'package:museum_app/login_page/login_page.dart';
 import 'package:museum_app/onboarding/onboarding.dart';
 
-
-
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     // Getting arguments passed in while calling Navigator.pushNamed
@@ -17,7 +15,8 @@ class RouteGenerator {
       case '/login':
         return MaterialPageRoute(builder: (_) => LogIn());
       case '/':
-        return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample());
+        return MaterialPageRoute(
+            builder: (_) => BottomBarNavigationPatternExample());
       case '/tutorials':
         return MaterialPageRoute(builder: (_) => Tutorials());
       // case '/second':
