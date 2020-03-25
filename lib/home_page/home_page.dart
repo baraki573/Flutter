@@ -12,6 +12,7 @@ import '../constants.dart';
 import 'package:open_file/open_file.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:museum_app/home_page/home_museum.dart';
 
 class Home extends StatefulWidget {
   Home({Key key}) : super(key: key);
@@ -1198,11 +1199,11 @@ class _HomeState extends State<Home> {
       case InfoType.TUTORIALS:
         return _tutorials();
       case InfoType.ABOUT_MUSEUM:
-        return Container();
+        return HomeMuseum(goBack: goBack);
       case InfoType.ABOUT_PROJECT:
         return _aboutProject();
       default:
-        debugPrint("init");
+        debugPrint("init from home");
         return _homePage();
     }
   }
