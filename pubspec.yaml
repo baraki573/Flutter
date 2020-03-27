@@ -53,6 +53,7 @@ dev_dependencies:
   moor_generator: ^2.4.0 # use the latest version
   build_runner: ^1.7.3
   flutter_launcher_icons: ^0.7.3
+  test: ^1.5.1
 
 flutter_icons:
   android: true

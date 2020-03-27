@@ -3,7 +3,6 @@ import 'package:museum_app/database/database.dart';
 import 'package:museum_app/route_generator.dart';
 import 'package:museum_app/graphql/graphqlConf.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:museum_app/home_page/tutorials.dart';
 
 GraphQLConfiguration graphQLConfiguration = GraphQLConfiguration();
 
@@ -36,7 +35,7 @@ class MyApp extends StatelessWidget {
           String start = onboardEnd ? "/" : "/onboard";
 
           return MaterialApp(
-            debugShowCheckedModeBanner: true,
+            debugShowCheckedModeBanner: false,
             locale: Locale('de'),
             title: 'Museum App',
             theme: ThemeData(
