@@ -14,7 +14,7 @@ description: A new Flutter project.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.3.0 <3.0.0"
+  sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -22,7 +22,7 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^0.1.3
+  cupertino_icons: ^0.1.2
   gradient_text: ^1.0.2
   flutter_circular_chart: ^0.1.0
   flutter_rating_bar: ^3.0.1+1
@@ -33,7 +33,7 @@ dependencies:
   intl: ^0.16.1
   expandable_bottom_bar: ^0.1.1
   keyboard_visibility: ^0.5.6
-  moor: ^2.4.0
+  moor: ^2.4.2
   moor_ffi: ^0.4.0
   path_provider: ^1.6.5
   path: ^1.6.4
@@ -103,13 +103,6 @@ flutter:
     - family: Chiller
       fonts:
         - asset: fonts/Chiller-Regular.ttf
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/custom-fonts/#from-packages
-module:
-  androidX: true
+#
+# For details regarding fonts from package dependencies,
+# see https://flutter.dev/custom-fonts/#from-packages
