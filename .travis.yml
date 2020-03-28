@@ -88,4 +88,4 @@ deploy:
     secure: $GITHUB_OAUTH_TOKEN
   file: build/app/outputs/apk/app.apk
   on:
-    tags: false
+    tags: true
