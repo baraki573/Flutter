@@ -168,6 +168,7 @@ class _CreateTourState extends State<CreateTour> {
                   Expanded(
                       child: Text(
                     elem.stop?.name ?? "Fehler",
+                    textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16),
                   ))
                 ],
@@ -306,11 +307,11 @@ class _CreateTourState extends State<CreateTour> {
                   color: COLOR_ADD,
                   onPressed: () {
                     widget.tour.creationTime = DateTime.now();
-                    for (var s in widget.tour.stops)
+                    /*for (var s in widget.tour.stops)
                       for (var e in s.extras)
-                        if (e is ActualTask)
-                          e.textInfo.text = e.textInfo.text.trim();
-                    MuseumDatabase().writeTourStops(widget.tour).then(
+                        if (e.task != null)
+                          e.task.*/
+                    MuseumDatabase().writeTourStops(widget.tour, upload: true).then(
                         (val) {
                       widget.goBack();
                       Scaffold.of(context).showSnackBar(SnackBar(

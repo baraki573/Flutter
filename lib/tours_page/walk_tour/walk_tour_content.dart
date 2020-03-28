@@ -36,7 +36,7 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
     var feat = widget.stop.features ??
         StopFeature(
             id_tour: 1,
-            id_stop: 1,
+            id_stop: "1",
             showImages: false,
             showDetails: false,
             showText: false);
@@ -138,7 +138,7 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
 
   Map<String, String> getInformation(Stop s) {
     Map<String, String> map = {
-      "Inventarnummer": s.invId,
+      "Inv.nummer": s.id,
       "Abteilung": s.division,
       "Kategorie": s.artType,
       "Ersteller": s.creator,
@@ -148,7 +148,7 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
       "Ort": s.location,
       "Kontext": s.interContext
     };
-    map.removeWhere((key, val) => val == null);
+    map.removeWhere((key, val) => val == null || (val is String && val.trim() == ""));
 
     return map;
   }
@@ -213,7 +213,7 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
 
   Widget _extras(List<ActualExtra> extras) {
     List<ActualExtra> tasks = extras?.where((e) => e.task != null).toList();
-    int id = widget.stop.stop.id;
+    String id = widget.stop.stop.id;
 
     var base = List<Widget>();
 
@@ -233,12 +233,13 @@ class _TourWalkerContentState extends State<TourWalkerContent> {
                     Icon(fav ? Icons.favorite : Icons.favorite_border),
                   ],
                 ),
-                onPressed: () => setState(() {
+                onPressed: () async {
                   if (fav)
-                    MuseumDatabase().removeFavStop(id);
+                    await MuseumDatabase().removeFavStop(id);
                   else
-                    MuseumDatabase().addFavStop(id);
-                }),
+                    await MuseumDatabase().addFavStop(id);
+                  setState(() {});
+                  },
               );
             },
           )));

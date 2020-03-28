@@ -106,7 +106,7 @@ class _EditSingleStopState extends State<EditSingleStop> {
                   ),
                 ),
               ],
-              onChanged: (value) {
+              onChanged: (value) async {
                 switch(value) {
                   case 0: _action(); break;
                   case 1: _setStop(stop); break;

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:museum_app/add_tour/add_tour.dart';
 import 'package:museum_app/constants.dart';
+import 'package:museum_app/database/database.dart';
 import 'package:museum_app/map/map_page.dart';
 import 'package:museum_app/museum_tabs.dart';
 import 'package:museum_app/tours_page/tours_widgets.dart';
@@ -92,6 +93,11 @@ class _ToursState extends State<Tours> {
         border(
           TextField(
             controller: _ctrlCode,
+            onSubmitted: (s) async {
+              bool ok = await MuseumDatabase().joinAndDownloadTour(s);
+              String cont = ok ? "Tour heruntergeladen!" : "Tour konnte nicht gefunden werden...";
+              Scaffold.of(context).showSnackBar(SnackBar(content: Text(cont)));
+            },
             decoration: InputDecoration(
                 icon: Icon(Icons.keyboard), border: InputBorder.none),
           ),

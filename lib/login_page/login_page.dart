@@ -5,7 +5,6 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
-import 'package:museum_app/graphql/graphqlConf.dart';
 import 'package:museum_app/graphql/mutations.dart';
 
 class LogIn extends StatefulWidget {
@@ -347,12 +346,19 @@ class _LogInState extends State<LogIn> {
 
   /// Tries to login using the controller's current contents.
   _login() async {
-    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+    bool b = await MuseumDatabase().logIn(_usCtrl.text, _pwCtrl.text);
+
+    if (b)
+      _nextScreen();
+    else
+      _failedLogin();
+
+    /*GraphQLClient _client = GraphQLConfiguration().clientToQuery();
     await _client.mutate(MutationOptions(
       documentNode: gql(MutationBackend.auth(_pwCtrl.text, _usCtrl.text)),
       update: (cache, result) => cache,
       onCompleted: (result) async {
-        var map = result.data['auth'];
+        var map = (result?.data ?? {})['auth'] ?? {};
         if (map['ok'] == true) {
           print("LOGIN");
           String access = map['accessToken'];
@@ -363,7 +369,7 @@ class _LogInState extends State<LogIn> {
         else _failedLogin();
       },
       onError: (e) => print("Login-Error: " + e.clientException.toString()),
-    ));
+    ));*/
   }
 
   /// Displays an error dialog

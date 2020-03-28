@@ -28,6 +28,7 @@ class _AddTourState extends State<AddTour> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
+
     switch (_type) {
       case AddType.CREATE:
         return StreamBuilder(

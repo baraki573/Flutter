@@ -127,9 +127,11 @@ class MuseumSettings extends StatelessWidget {
     );
   }
 
-  Widget _editUS(BuildContext context) {
+  Future<void> _editUS(BuildContext context) async {
     var ctrl = TextEditingController();
-    return AlertDialog(
+    String accesToken = await MuseumDatabase().accessToken();
+
+    showDialog(context: context, builder: (context) => AlertDialog(
       title: Text("Username ändern"),
       content: TextFormField(
         autovalidate: true,
@@ -148,13 +150,28 @@ class MuseumSettings extends StatelessWidget {
         ),
         FlatButton(
           child: Text("Bestätigen", style: TextStyle(color: COLOR_PROFILE)),
-          onPressed: () {
-            MuseumDatabase().updateUsername(ctrl.text);
-            Navigator.pop(context);
+          onPressed: () async {
+            GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+            print(ctrl.text);
+            await _client.mutate(MutationOptions(
+              documentNode: gql(
+                  MutationBackend.changeUsername(accesToken, ctrl.text.trim())),
+              update: (cache, result) => cache,
+              onCompleted: (result) {
+                if (result is LazyCacheMap) {
+                  print(result.data);
+                  if (result.data['changeUsername'] != null) {
+                    MuseumDatabase().updateUsername(ctrl.text.trim());
+                    Navigator.pop(context);
+                  }
+                }
+                },
+              onError: (e) => print("ERROR "+e.toString()),
+            ));
           },
         )
       ],
-    );
+    ));
   }
 
   Future<void> _editPW(BuildContext context) async {
@@ -236,12 +253,12 @@ class MuseumSettings extends StatelessWidget {
 
   void _select(val, BuildContext context) {
     switch (val) {
-      // TODO build own about dialog in german. Maybe general dialog, val determines content
       case _OptionType.EDIT_IMG:
         showDialog(context: context, builder: (_) => ImageDialog());
         break;
       case _OptionType.EDIT_US:
-        showDialog(context: context, builder: _editUS);
+        _editUS(context);
+        //showDialog(context: context, builder: _editUS);
         break;
       case _OptionType.EDIT_PW:
         _editPW(context);
@@ -266,6 +283,7 @@ class MuseumSettings extends StatelessWidget {
   }
 
   Widget _about(context) {
+    MuseumDatabase().refreshToken();
     return AlertDialog(
       title: Text("Geschichte Vernetzt"),
       content: Column(
@@ -317,7 +335,7 @@ class MuseumSettings extends StatelessWidget {
     return StreamBuilder(
       stream: MuseumDatabase().watchUser(),
       builder: (context, snap) {
-        bool logged = snap.hasData && snap.data.username != "";
+        bool logged = snap.hasData && snap.data.accessToken != "";
         return PopupMenuButton(
           itemBuilder: (context) => _popUpList(logged),
           onSelected: (result) => _select(result, context),

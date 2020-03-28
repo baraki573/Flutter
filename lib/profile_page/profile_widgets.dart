@@ -42,31 +42,38 @@ class _FavWidgetState extends State<FavWidget> {
           padding: EdgeInsets.only(bottom: 20.0, top: 2.0),
           height: verSize(21, 40),
           child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: stops.length,
-            // One "bubble"
-            itemBuilder: (context, index) => Container(
-              margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              height: horSize(27, 16),
-              width: horSize(27, 16),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                border: Border.all(color: division.color, width: 3),
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: AssetImage(stops[index].images[0]),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: FlatButton(
-                splashColor: division.color.withOpacity(.1),
-                highlightColor: division.color.withOpacity(.05),
-                shape: CircleBorder(),
-                onPressed: () => _showStop(stops[index]),
-                child: null,
-              ),
-            ),
-          ),
+              scrollDirection: Axis.horizontal,
+              itemCount: stops.length,
+              // One "bubble"
+              itemBuilder: (context, index) {
+                String image;
+                try {
+                  image = stops[index].images.first;
+                } catch (e) {
+                  image = "assets/images/empty_profile.png";
+                }
+                return Container(
+                  margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  height: horSize(27, 16),
+                  width: horSize(27, 16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    border: Border.all(color: division.color, width: 3),
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                      image: AssetImage(image),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  child: FlatButton(
+                    splashColor: division.color.withOpacity(.1),
+                    highlightColor: division.color.withOpacity(.05),
+                    shape: CircleBorder(),
+                    onPressed: () => _showStop(stops[index]),
+                    child: null,
+                  ),
+                );
+              }),
         ),
       ],
     );
@@ -112,6 +119,18 @@ class _FavWidgetState extends State<FavWidget> {
           builder: (context, snapStop) {
             var stops = snapStop.data ?? List<Stop>();
             // show every division with it's stops
+
+            var favStops = List.generate(
+              divisions.length,
+              (index) => _buildDivision(
+                  divisions[index],
+                  stops
+                      .where((e) => e.division == divisions[index].name)
+                      .toList()),
+            );
+            if (stops.isEmpty)
+              favStops.add(Text("Keine Objekte favorisiert!\n"));
+
             return Column(
               children: <Widget>[
                     Text(
@@ -120,14 +139,7 @@ class _FavWidgetState extends State<FavWidget> {
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                     )
                   ] +
-                  List.generate(
-                    divisions.length,
-                    (index) => _buildDivision(
-                        divisions[index],
-                        stops
-                            .where((e) => e.division == divisions[index].name)
-                            .toList()),
-                  ) +
+                  favStops +
                   [
                     Text(
                       "Lieblingstouren\n",
@@ -135,6 +147,29 @@ class _FavWidgetState extends State<FavWidget> {
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                     ),
                     _favTours(),
+                    /*FutureBuilder(
+                      future: MuseumDatabase().accessToken(),
+                      builder: (context, snap) {
+                        if (!snap.hasData) return Text("LOADING");
+                        var token = snap.data;
+                        return Query(
+                          options: QueryOptions(
+                            documentNode: gql(QueryBackend.allPictures(token)),
+                          ),
+                          builder: (QueryResult result, {fetchMore, refetch}) {
+                            if (result.hasException)
+                              return Text("ERR " + result.exception.toString());
+
+                            if (result.data is LazyCacheMap)
+                              print(result.data["availableProfilePictures"]);
+
+                            return Text("JJOJO");
+                            //return Image.network(
+                            //  "http://130.83.247.244/web/file/download?token=$token&type='ProfilePicture'");
+                          },
+                        );
+                      },
+                    ),*/
                   ],
             );
           },
@@ -148,7 +183,9 @@ class _FavWidgetState extends State<FavWidget> {
       stream: MuseumDatabase().watchFavTours(),
       builder: (context, snap) {
         var tours = snap.data ?? List<TourWithStops>();
-        //print("TOURS: "+tours.toString());
+        if (tours.isEmpty)
+          return Text("Keine Touren favorisiert!\n");
+
         return TourList.fromList(tours);
       },
     );

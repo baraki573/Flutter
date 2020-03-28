@@ -62,7 +62,9 @@ class _TutorialsState extends State<Tutorials> {
                     }
                     if (result.loading)
                       return Text("LOADING");
-                    print(result.data);
+                    var d = result.data;
+                    //if (d is LazyCacheMap)
+                      //MuseumDatabase().mapToStops(d.data["allObjects"]);
                     return Text("ASDF");
                   },
                 ),

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/add_tour/add_tour.dart';
 import 'package:museum_app/constants.dart';
@@ -161,7 +162,7 @@ Widget _pictureLeft(ActualStop stop, Size s, {margin = EdgeInsets.zero}) {
       border: Border.all(color: Colors.black),
       borderRadius: BorderRadius.all(Radius.circular(10.0)),
       image: DecorationImage(
-          image: AssetImage(stop.stop.images.isNotEmpty
+          image: AssetImage(stop.stop != null && stop.stop.images.isNotEmpty
               ? stop.stop.images[0]
               : "assets/images/profile_test.png"),
           fit: BoxFit.cover),
@@ -245,9 +246,9 @@ class _TourPopUpState extends State<_TourPopUp> {
                 color: Colors.white,
                 shape: CircleBorder(side: BorderSide(color: Colors.black)),
                 child: Icon(
-                  Icons.file_download,
+                  FontAwesomeIcons.trash,
                   color: Colors.black,
-                  size: 31,
+                  size: 30,
                 ),
                 onPressed: () {
                   if (t.id != null)
@@ -271,7 +272,7 @@ class _TourPopUpState extends State<_TourPopUp> {
               },
             ),
             FutureBuilder(
-              future: MuseumDatabase().isFavTour(t.id),
+              future: MuseumDatabase().isFavTour(t.onlineId),
               builder: (context, snap) {
                 bool fav = snap.data ?? false;
                 return FlatButton(
@@ -283,12 +284,13 @@ class _TourPopUpState extends State<_TourPopUp> {
                     color: Colors.black,
                     size: 31,
                   ),
-                  onPressed: () => setState(() {
+                  onPressed: () async {
                     if (fav)
-                      MuseumDatabase().removeFavTour(t.id);
+                      await MuseumDatabase().removeFavTour(t.id);
                     else
-                      MuseumDatabase().addFavTour(t.id);
-                  }),
+                      await MuseumDatabase().addFavTour(t.onlineId);
+                    setState(() {});
+                    },
                 );
               },
             ),
@@ -325,9 +327,6 @@ class _TourPopUpState extends State<_TourPopUp> {
             MuseumDatabase().removeTour(widget.tour.id);
             Navigator.pop(context);
             Navigator.pop(context);
-            Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text("Tour entfernt!"),
-            ));
           }),
         ),
       ],
