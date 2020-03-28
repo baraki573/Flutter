@@ -65,14 +65,13 @@ script: #install:
   - cd BPG9/Flutter
   - echo $PATH
   - flutter pub get
-  - cd cd $HOME/.pub-cache/hosted/pub.dartlang.org/keyboard_visibility-0.5.6/android/gradle/wrapper
-  - cat gradle-wrapper.properties
-  - cd android
+  # - cd cd $HOME/.pub-cache/hosted/pub.dartlang.org/keyboard_visibility-0.5.6/android/gradle/wrapper
+  # - cat gradle-wrapper.properties
+  # - cd android
   #- gradle build connectedCheck
   #- flutter doctor -v
-  - cd ..
+  # - cd ..
   - flutter build apk
-  - ls
 
 deploy:
   provider: releases
