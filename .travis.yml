@@ -35,10 +35,10 @@ before_script:
   #- yes | sudo $ANDROID_HOME/tools/bin/sdkmanager --licenses
   #- yes | flutter doctor --android-licenses
   - $ANDROID_HOME/tools/bin/sdkmanager --list
-  - cd $HOME/.pub-cache/
-  - ls -alh
-  - sed -i 's/27/28/g' build.gradle
-  - cat build.gradle
+  # - cd $HOME/.pub-cache/
+  # - ls -alh
+  # - sed -i 's/27/28/g' build.gradle
+  # - cat build.gradle
   #- sed '$d' gradle-wrapper.properties
   #- echo "distributionUrl=https\://services.gradle.org/distributions/gradle-5.6.2-all.zip" >> gradle-wrapper.properties
 
@@ -66,6 +66,10 @@ script: #install:
   - cd BPG9/Flutter
   - echo $PATH
   - flutter pub get
+  - cd $HOME/.pub-cache/
+  - ls -alh
+  - sed -i 's/27/28/g' build.gradle
+  - cat build.gradle
   # - cd cd $HOME/.pub-cache/hosted/pub.dartlang.org/keyboard_visibility-0.5.6/android/gradle/wrapper
   # - cat gradle-wrapper.properties
   # - cd android
