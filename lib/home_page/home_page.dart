@@ -1161,7 +1161,8 @@ class _HomeState extends State<Home> {
             _aboutProjectText(),
             border(
                 GestureDetector(
-                  onTap: () => print("developer names"),
+                  onTap: () => _launchURL(
+                      "mailto:mrahimmasoumi@gmail.com?subject=Museum App"),
                   child: Row(
                     //mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
