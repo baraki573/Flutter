@@ -24,6 +24,8 @@ jdk: oraclejdk8
 sudo: false
 
 before_script:
+  - pwd
+  - ls -alh
   # Setup gradle.
   - wget https://services.gradle.org/distributions/gradle-4.10.3-bin.zip
   - unzip -qq gradle-4.10.3-bin.zip
@@ -35,9 +37,10 @@ before_script:
   #- yes | sudo $ANDROID_HOME/tools/bin/sdkmanager --licenses
   #- yes | flutter doctor --android-licenses
   - $ANDROID_HOME/tools/bin/sdkmanager --list
-  - cd $HOME/.pub-cache/hosted/pub.dartlang.org/keyboard_visibility-0.5.6/android
-  - sed -i 's/27/28/g' build.gradle
-  - cat build.gradle
+  # - cd $HOME/.pub-cache/
+  # - ls -alh
+  # - sed -i 's/27/28/g' build.gradle
+  # - cat build.gradle
   #- sed '$d' gradle-wrapper.properties
   #- echo "distributionUrl=https\://services.gradle.org/distributions/gradle-5.6.2-all.zip" >> gradle-wrapper.properties
 
@@ -65,6 +68,11 @@ script: #install:
   - cd BPG9/Flutter
   - echo $PATH
   - flutter pub get
+  - cd $HOME/.pub-cache/hosted/pub.dartlang.org/keyboard_visibility-0.5.6/android
+  - ls -alh
+  - sed -i 's/27/28/g' build.gradle
+  - cat build.gradle
+  - cd /home/travis/build/BPG9/Flutter
   # - cd cd $HOME/.pub-cache/hosted/pub.dartlang.org/keyboard_visibility-0.5.6/android/gradle/wrapper
   # - cat gradle-wrapper.properties
   # - cd android
@@ -80,4 +88,4 @@ deploy:
     secure: $GITHUB_OAUTH_TOKEN
   file: build/app/outputs/apk/app.apk
   on:
-    tags: false
+    tags: true
