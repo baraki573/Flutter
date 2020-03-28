@@ -136,7 +136,7 @@ class _HomeMuseumState extends State<HomeMuseum> {
                             margin:
                                 EdgeInsets.only(right: 5.0, left: 5.0, top: 10),
                             child: Image.asset(
-                                'assets/images/Mask Group_2@3x.png',
+                                'assets/images/Mask_Group_2@3x.png',
                                 width: SizeConfig.orientationDevice ==
                                         Orientation.portrait
                                     ? SizeConfig.safeBlockHorizontal * 35
