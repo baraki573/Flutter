@@ -85,7 +85,7 @@ deploy:
   provider: releases
   skip_cleanup: true
   api_key:
-    secure: $TOKEN
+    secure: "TG7+twQYvta8TI7iyAGAGS7FBW5TVwHYkUKhOAD8eywew3f0oDJaPMfESyrb8JHskAaG8WxlSlLQ864u800jsMQOA0XxhPE7sRke4/EWFJUQEKvpOPeA9GOVU5SjopugDIfZPQIJzzyXPFb+LrF/26Vx7sgZjRo4OioVOPZ1MBb2TFjxyFn6Lynu6FkvJeQb5CFDqJ9GbZeQx7kJClbdAlqFfPNMUxVahnIv6nNQJDABHPellWE+/Zf3r94GYjR13jl9Dx68aTkJAnmqzVh7iukKTQR0j0IJWt93PkMaBCOu/xMashD/6uIU78YXDB7Ho8yDJ0UloT/ivHuLuEgMb2GY0yMIy/O0aL4WszHjx9Y833DY/8FQPD7Zsy755zGcn9wQYQpkN+NbCHhoMfTqVEEKsICKssLg3o8McsHVQKsjBR+aLZn4BZHUKlkJksTnmdIvY+pDZFO+wGT+L7yqMLXI2CAeJhOa1A/NXQ0WI9zI/LrS5tuI2E69N6dqafWa4lq7u5qRAPs6gvt1f6Jpc5CYxK28YA4YvVRwFaT6h/HD39KIgrbtCJz8V+ocN9C3vDbFis3r7BvuU9VYCWNymy/cN2adab9+H83VlgU+a5cPNoikfYQqItdt9M1kIeMKpVIL7CobSWnHHz3kS9bx6C2GsY6PqViJ97+P4V3eb6w="
   file: build/app/outputs/apk/app.apk
   on:
     tags: true
