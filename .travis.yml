@@ -85,7 +85,7 @@ deploy:
   provider: releases
   skip_cleanup: true
   api_key:
-    secure: $GITHUB_OAUTH_TOKEN
+    secure: $TOKEN
   file: build/app/outputs/apk/app.apk
   on:
     tags: true
