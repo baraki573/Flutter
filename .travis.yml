@@ -62,6 +62,7 @@ script: #install:
   - export PATH="$PATH:`pwd`/flutter/bin"
   - pwd
   - ls -alh
+  - cd BPG9/Flutter
   - echo $PATH
   - cd android
   #- gradle build connectedCheck
