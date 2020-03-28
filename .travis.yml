@@ -66,7 +66,7 @@ script: #install:
   - cd BPG9/Flutter
   - echo $PATH
   - flutter pub get
-  - cd $HOME/.pub-cache/
+  - cd $HOME/.pub-cache/hosted/pub.dartlang.org/keyboard_visibility-0.5.6/android
   - ls -alh
   - sed -i 's/27/28/g' build.gradle
   - cat build.gradle
