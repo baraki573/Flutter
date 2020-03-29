@@ -514,26 +514,21 @@ class MuseumDatabase extends _$MuseumDatabase {
       String access = map['accessToken'];
       String refresh = map['refreshToken'];
 
-      result = await _client.mutate(MutationOptions(
-        documentNode: gql(MutationBackend.promote(access, "")),
+      result = await _client.query(QueryOptions(
+        documentNode: gql(QueryBackend.userInfo(access)),
       ));
       // badge, profile picture, producer
-      print("me "+result.data.data.toString());
-      //bool producer = result.data["me"]["producer"];
-
-      // Profile Picture
-      result = await _client.query(QueryOptions(
-        documentNode: gql(QueryBackend.profilePic(access, username)),
-      ));
-      String profilePic = result.data["profilePicture"][0].toString();
-      print(profilePic);
+      print("ME "+result.data.data.toString());
+      var me = result.data.data["me"][0];
+      String profilePic = (me["profilePicture"] ?? {"id": ""})["id"].toString();
+      bool producer = me["producer"] as bool;
 
       // Favourite Stops
       result = await _client.query(QueryOptions(
         documentNode: gql(QueryBackend.favStops(access)),
       ));
       List<String> favStops = List<String>();
-      for (var m in result.data["favouriteObjects"])
+      for (var m in result.data["favouriteObjects"] ?? [])
         favStops.add(m.data["objectId"].toString());
       print("FAVSTOPS"+favStops.toString());
 
@@ -542,7 +537,7 @@ class MuseumDatabase extends _$MuseumDatabase {
         documentNode: gql(QueryBackend.favTours(access)),
       ));
       List<String> favTours = List<String>();
-      for (var m in result.data["favouriteTours"])
+      for (var m in result.data["favouriteTours"] ?? [])
         favTours.add(m.data["id"].toString());
       print("FAVTOURS"+favTours.toString());
 
@@ -553,7 +548,7 @@ class MuseumDatabase extends _$MuseumDatabase {
         favStops: Value(favStops),
         favTours: Value(favTours),
         imgPath: Value(profilePic),
-        producer: Value(false),
+        producer: Value(producer),
       );
       await update(users).write(u);
 
@@ -580,6 +575,7 @@ class MuseumDatabase extends _$MuseumDatabase {
     update(badges).write(BadgesCompanion(current: Value(0)));
 
     return update(users).write(User(
+      producer: false,
         refreshToken: "",
         accessToken: "",
         username: "",

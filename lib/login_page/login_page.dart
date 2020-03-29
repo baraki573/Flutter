@@ -186,7 +186,7 @@ class _LogInState extends State<LogIn> {
           title: Text("Hinweis"),
           content:
               Text("Möchten Sie wirklich ohne Accountverbindung fortfahen?\n"
-                  "Sie verpassen so spannende Sammelaufgaben, blah blah"),
+                  "Sie benötigen einen Account für Rundgänge, können diesen aber auch später einrichten."),
           actions: [
             FlatButton(
               child: Text("Zurück"),
@@ -350,29 +350,8 @@ class _LogInState extends State<LogIn> {
   /// Tries to login using the controller's current contents.
   _login() async {
     bool b = await MuseumDatabase().logIn(_usCtrl.text, _pwCtrl.text);
-
-    if (b)
-      _nextScreen();
-    else
-      _failedLogin();
-
-    /*GraphQLClient _client = GraphQLConfiguration().clientToQuery();
-    await _client.mutate(MutationOptions(
-      documentNode: gql(MutationBackend.auth(_pwCtrl.text, _usCtrl.text)),
-      update: (cache, result) => cache,
-      onCompleted: (result) async {
-        var map = (result?.data ?? {})['auth'] ?? {};
-        if (map['ok'] == true) {
-          print("LOGIN");
-          String access = map['accessToken'];
-          String refresh = map['refreshToken'];
-          await MuseumDatabase().logIn(access, refresh, _usCtrl.text);
-          _nextScreen();
-        }
-        else _failedLogin();
-      },
-      onError: (e) => print("Login-Error: " + e.clientException.toString()),
-    ));*/
+    if (b) _nextScreen();
+    else _failedLogin();
   }
 
   /// Displays an error dialog

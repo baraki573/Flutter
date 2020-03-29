@@ -426,8 +426,9 @@ class DownloadColumn extends StatefulWidget {
   final Function query;
   final Color color;
   final String search;
+  final String notFoundText;
 
-  DownloadColumn(this.query, {Key key, this.color = COLOR_PROFILE, this.search = ""})
+  DownloadColumn(this.query, {Key key, this.color = COLOR_PROFILE, this.search = "", this.notFoundText = "\n\nEs konnten keine Touren gefunden werden."})
       : super(key: key);
 
   @override
@@ -446,6 +447,7 @@ class _DownloadColumnState extends State<DownloadColumn> {
 
   initList() async {
     String token = await MuseumDatabase().accessToken();
+    if (token == null || token == "") return;
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
     QueryResult result = await _client.query(QueryOptions(
       documentNode: gql(widget.query(token)),
@@ -456,7 +458,7 @@ class _DownloadColumnState extends State<DownloadColumn> {
     _loading = result.loading;
     _list.clear();
     var d = result.data;
-    for (var m in d[d.keys.first]) {
+    for (var m in d[d.keys.first] ?? []) {
       Tour t = Tour(
           onlineId: m["id"],
           name: m["name"],
@@ -480,13 +482,15 @@ class _DownloadColumnState extends State<DownloadColumn> {
         })
         .map((t) => _DownloadPanel(t, color: widget.color))
         .toList();
-    if (_list.isEmpty)
+    if (_loading) {
+      _loading = false;
       return Padding(
         padding: EdgeInsets.only(top: 16),
         child: CircularProgressIndicator(),
       );
-    if (children.isEmpty)
-      children = [Text("\n\nEs konnten keine Touren gefunden werden.")];
+    }
+    if (_list.isEmpty)
+      children = [Text(widget.notFoundText, style: TextStyle(fontSize: 16))];
     return Column(
       children: children,
     );

@@ -139,7 +139,7 @@ class _FavWidgetState extends State<FavWidget> {
             if (!snapStop.hasData)
               favStops.add(CircularProgressIndicator());
             else if (stops.isEmpty)
-              favStops.add(Text("Keine Objekte favorisiert!\n"));
+              favStops.add(Text("Keine Objekte favorisiert!\n", style: TextStyle(fontSize: 16)));
 
             return Column(
               children: <Widget>[
@@ -156,7 +156,7 @@ class _FavWidgetState extends State<FavWidget> {
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                     ),
-                    DownloadColumn(QueryBackend.favTours),
+                    DownloadColumn(QueryBackend.favTours, notFoundText: "Keine Touren favorisiert.",),
                   ],
             );
           },

@@ -17,7 +17,7 @@ class RouteGenerator {
       case '/login':
         return MaterialPageRoute(builder: (_) => LogIn());
       case '/':
-        return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample());
+        return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample(), settings: RouteSettings(isInitialRoute: true));
       case '/home':
         return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample.fromIndex(0));
       case '/tours':

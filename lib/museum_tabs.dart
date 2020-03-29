@@ -370,7 +370,6 @@ class MuseumSettings extends StatelessWidget {
               if (result.hasException) print("EXC: "+result.exception.toString());
               if (result.data is LazyCacheMap) {
                 if (result.data['promoteUser']["ok"]["boolean"] == true) {
-                  print("AAA");
                   MuseumDatabase().setProducer();
                   Navigator.pop(context);
                 }
