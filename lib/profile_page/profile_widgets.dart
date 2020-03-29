@@ -6,6 +6,7 @@ import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
 import 'package:museum_app/database/modelling.dart';
+import 'package:museum_app/graphql/query.dart';
 import 'package:museum_app/tours_page/tours_widgets.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_content.dart';
 
@@ -60,17 +61,22 @@ class _FavWidgetState extends State<FavWidget> {
                     color: Colors.blue,
                     border: Border.all(color: division.color, width: 3),
                     shape: BoxShape.circle,
-                    image: DecorationImage(
-                      image: AssetImage(image),
-                      fit: BoxFit.cover,
-                    ),
+                    //image: DecorationImage(
+                    //image: AssetImage(image),
+                    //fit: BoxFit.cover,
+                    //),
                   ),
-                  child: FlatButton(
-                    splashColor: division.color.withOpacity(.1),
-                    highlightColor: division.color.withOpacity(.05),
+                  child: MaterialButton(
+                    padding: EdgeInsets.zero,
+                    splashColor: division.color.withOpacity(.5),
+                    highlightColor: division.color.withOpacity(.5),
                     shape: CircleBorder(),
                     onPressed: () => _showStop(stops[index]),
-                    child: null,
+                    child: ClipOval(child: QueryBackend.netWorkImage(
+                      QueryBackend.imageURLPicture(image),
+                      height: horSize(27, 16),
+                      width: horSize(27, 16),
+                    ),),
                   ),
                 );
               }),
@@ -128,7 +134,9 @@ class _FavWidgetState extends State<FavWidget> {
                       .where((e) => e.division == divisions[index].name)
                       .toList()),
             );
-            if (stops.isEmpty)
+            if (!snapStop.hasData)
+              favStops.add(CircularProgressIndicator());
+            else if (stops.isEmpty)
               favStops.add(Text("Keine Objekte favorisiert!\n"));
 
             return Column(
@@ -183,9 +191,8 @@ class _FavWidgetState extends State<FavWidget> {
       stream: MuseumDatabase().watchFavTours(),
       builder: (context, snap) {
         var tours = snap.data ?? List<TourWithStops>();
-        if (tours.isEmpty)
-          return Text("Keine Touren favorisiert!\n");
-
+        if (!snap.hasData) return CircularProgressIndicator();
+        if (tours.isEmpty) return Text("Keine Touren favorisiert!\n");
         return TourList.fromList(tours);
       },
     );

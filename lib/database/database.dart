@@ -23,6 +23,8 @@ part 'database.g.dart';
 String customName = "Individuell";
 
 class Users extends Table {
+  BoolColumn get producer => boolean()();
+
   TextColumn get accessToken =>
       text().withDefault(const Constant("")).named("accessToken")();
 
@@ -305,6 +307,10 @@ class MuseumDatabase extends _$MuseumDatabase {
     });
   }
 
+  Future setProducer() {
+    return update(users).write(UsersCompanion(producer: Value(true)));
+  }
+
   Future updateImage(String imgPath) async {
     await initUser();
     return update(users).write(UsersCompanion(imgPath: Value(imgPath)));
@@ -328,9 +334,14 @@ class MuseumDatabase extends _$MuseumDatabase {
       var listStops = <StopsCompanion>[];
       List list = d.data["allObjects"];
       for (var object in list) {
+        List<String> images = List<String>();
+        for (var e in object["picture"])
+          images.add(e["id"]);
+        if (images.isEmpty)
+          print(object["title"]);
         var comp = Stop(
           id: object['objectId'],
-          images: <String>[],
+          images: images,
           name: object['title'],
           descr: object['description'],
           time: object['year'],
@@ -395,7 +406,7 @@ class MuseumDatabase extends _$MuseumDatabase {
 
   Future initUser() async {
     await customStatement(
-        "INSERT INTO users (username, imgPath, onboardEnd) SELECT '', 'assets/images/profile_test.png', false WHERE NOT EXISTS (SELECT * FROM users)");
+        "INSERT INTO users (username, imgPath, onboardEnd, producer) SELECT '', 'assets/images/profile_test.png', false, false WHERE NOT EXISTS (SELECT * FROM users)");
   }
 
   Future addFavStop(String id) async {
@@ -444,10 +455,6 @@ class MuseumDatabase extends _$MuseumDatabase {
   Future addFavTour(String id) async {
     var tourIds = await select(users).map((u) => u.favTours).getSingle();
     tourIds.add(id);
-    /*var user = await select(users).getSingle();
-    var tourId = await (select(tours)..where((t) => t.id.equals(id)))
-        .map((t) => t.onlineId)
-        .getSingle();*/
 
     String accessToken = await this.accessToken();
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
@@ -460,17 +467,19 @@ class MuseumDatabase extends _$MuseumDatabase {
       update(users).write(UsersCompanion(favTours: Value(tourIds)));
   }
 
-  Future removeFavTour(int id) async {
+  Future removeFavTour(String id) async {
     var tourIds = await select(users).map((u) => u.favTours).getSingle();
     tourIds.remove(id);
-    update(users).write(User(
-        accessToken: null,
-        refreshToken: null,
-        username: null,
-        imgPath: null,
-        favStops: null,
-        favTours: tourIds,
-        onboardEnd: null));
+
+    String accessToken = await this.accessToken();
+    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+    QueryResult result = await _client.mutate(MutationOptions(
+      documentNode: gql(MutationBackend.removeFavTour(accessToken, id)),
+      onError: (e) => print("ERROR_addFavTour: " + e.toString()),
+    ));
+
+    if (result.data["removeFavouriteTour"].data["ok"]["boolean"])
+      update(users).write(UsersCompanion(favTours: Value(tourIds)));
   }
 
   Future<bool> isFavTour(String id) async {
@@ -498,7 +507,7 @@ class MuseumDatabase extends _$MuseumDatabase {
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
     QueryResult result = await _client.mutate(MutationOptions(
       documentNode: gql(MutationBackend.auth(password, username)),
-      onError: (e) => print("ERROR_auth: " + e.toString()),
+      onError: (e) => print("ERROR_auth: " + e.clientException.toString()),
     ));
 
     var map = (result?.data ?? {})['auth'] ?? {};
@@ -510,7 +519,9 @@ class MuseumDatabase extends _$MuseumDatabase {
         documentNode: gql(QueryBackend.userInfo(access)),
         //onError: (e) => print("ERROR_userInfo: " + e.toString()),
       ));
-      // badge, profile picture
+      // badge, profile picture, producer
+      print(result.data.data);
+      //bool producer = result.data["me"]["producer"];
 
       result = await _client.query(QueryOptions(
         documentNode: gql(QueryBackend.favStops(access)),
@@ -520,7 +531,7 @@ class MuseumDatabase extends _$MuseumDatabase {
       for (var m in result.data["favouriteObjects"])
         favStops.add(m.data["objectId"].toString());
       //result.data["favouriteObjects"].map((m) => m.data["objectId"].toString()).toList();
-      print(favStops);
+      print("FAVSTOPS"+favStops.toString());
 
       result = await _client.query(QueryOptions(
         documentNode: gql(QueryBackend.favTours(access)),
@@ -530,7 +541,7 @@ class MuseumDatabase extends _$MuseumDatabase {
       for (var m in result.data["favouriteTours"])
         favTours.add(m.data["id"].toString());
       //result.data["favouriteTours"].map((m) => m.data["id"].toString()).toList();
-      print(favTours);
+      print("FAVTOURS"+favTours.toString());
 
         //favTours.forEach((s) async => await joinAndDownloadTour(s, searchId: false));
 
@@ -541,6 +552,7 @@ class MuseumDatabase extends _$MuseumDatabase {
         favStops: Value(favStops),
         favTours: Value(favTours),
         imgPath: Value("assets/images/empty_profile.png"),
+        producer: Value(false),
       );
       await update(users).write(u);
 
@@ -1185,7 +1197,7 @@ class MuseumDatabase extends _$MuseumDatabase {
   Future demoUser() {
     customStatement("DELETE FROM users");
     return into(users).insert(UsersCompanion.insert(
-        username: "Maria123_XD", imgPath: "assets/images/profile_test.png"));
+        username: "Maria123_XD", imgPath: "assets/images/profile_test.png", accessToken: Value("ABC"), producer: true));
   }
 
   Future<void> demoDivisions() async {

@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:graphql_flutter/graphql_flutter.dart";
+import 'package:museum_app/database/database.dart';
 
 class GraphQLConfiguration {
   static GraphQLConfiguration _gc;
@@ -11,20 +12,22 @@ class GraphQLConfiguration {
 
   GraphQLConfiguration._internal();
 
-
   static HttpLink httpLink =
       //HttpLink(uri: 'https://countries.trevorblades.com/');
   HttpLink(uri: 'http://130.83.247.244/app/');
 
-  // static AuthLink _authLink = AuthLink(
-  //   getToken: () async => 'Bearer $YOUR_PERSONAL_ACCESS_TOKEN',
-  // );
+  static AuthLink _authLink = AuthLink(
+     getToken: () async {
+       String token = await MuseumDatabase().accessToken();
+       return 'Bearer $token';
+       },
+   );
 
-  // static Link _link = _authLink.concat(httpLink);
+  static Link _link = _authLink.concat(httpLink);
 
   ValueNotifier<GraphQLClient> client = ValueNotifier(
     GraphQLClient(
-      link: httpLink,
+      link: _link,
       cache: OptimisticCache(dataIdFromObject: typenameDataIdFromObject),
     ),
   );

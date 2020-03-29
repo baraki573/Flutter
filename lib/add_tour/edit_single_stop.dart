@@ -215,7 +215,7 @@ class _EditSingleStopState extends State<EditSingleStop> {
           ),
           _withLabel(
             FontAwesomeIcons.fileImage, "Bild",
-            funct: widget.stop.isCustom()
+            funct: widget.stop.stop.images.isEmpty
                 ? null
                 : () => setState(() => widget.stop.extras.add(ActualExtra(
                     ExtraType.IMAGE,

@@ -2,9 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
+import 'package:museum_app/graphql/query.dart';
 import 'package:museum_app/login_page/login_page.dart';
 import 'package:museum_app/museum_tabs.dart';
 import 'package:museum_app/profile_page/profile_widgets.dart';
+import 'package:museum_app/tours_page/tours_widgets.dart';
 
 class Profile extends StatefulWidget {
   Profile({Key key}) : super(key: key);
@@ -22,7 +24,25 @@ class _ProfileState extends State<Profile> {
       mainAxisSize: MainAxisSize.min,
       children: [
         // profile picture
+
         Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.black, width: 2),
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          margin: EdgeInsets.symmetric(horizontal: 16),
+          child: ClipOval(
+            child: user.imgPath == ""
+                ? Image.asset("assets/images/empty_profile.png")
+                : QueryBackend.netWorkImage(
+                    QueryBackend.imageURLProfile(user.imgPath),
+                    height: 120,
+                    width: 120,
+                  ),
+          ),
+        ),
+        /*Container(
           margin: EdgeInsets.symmetric(horizontal: 16),
           height: 120,
           width: 120,
@@ -33,7 +53,7 @@ class _ProfileState extends State<Profile> {
             image: DecorationImage(
                 image: AssetImage(user.imgPath), fit: BoxFit.fill),
           ),
-        ),
+        ),*/
         // username
         Text(
           user.username + "\nOnboardEnd: " + user.onboardEnd.toString(),
@@ -61,8 +81,10 @@ class _ProfileState extends State<Profile> {
           _topInfo(user),
           {
             "Favoriten": FavWidget(),
+            "Meine Touren":
+                DownloadColumn(QueryBackend.created, color: COLOR_PROFILE),
             "Erfolge": BadgeWidget(),
-            "Statistik": StatWidget(),
+            //"Statistik": StatWidget(),
           },
           color: COLOR_PROFILE,
         );

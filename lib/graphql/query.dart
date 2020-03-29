@@ -1,20 +1,7 @@
+import 'package:flutter/cupertino.dart';
+import 'package:museum_app/database/database.dart';
+
 class QueryBackend {
-
-  static String imageURLProfile(String id) {
-    return imageURL("ProfilePicture", id);
-  }
-
-  static String imageURLBadge(String id) {
-    return imageURL("Badge", id);
-  }
-
-  static String imageURLPicture(String id) {
-    return imageURL("Picture", id);
-  }
-
-  static String imageURL(String type, String id) {
-    return "http://130.83.247.244/file/download?type=$type&id=$id";
-  }
 
   String getContinents() {
     // for my testing, we can delete it later
@@ -97,15 +84,7 @@ class QueryBackend {
         title
         year
         picture {
-          description
           id
-          picture {
-            contentType
-            md5
-            chunkSize
-            length
-            data
-          }
         } 
       }
     } """;
@@ -211,5 +190,81 @@ class QueryBackend {
         objectId
       }
     }""";
+  }
+
+  static String featured(String token) {
+    return """query{
+      featured(token: "$token"){
+        creation
+        description
+        difficulty
+        id
+        name
+        owner {
+          username
+        }
+        searchId
+        status
+      }
+    }""";
+  }
+
+  static created(String token) {
+    return """query{
+      ownedTours(token: "$token"){
+        creation
+        currentCheckpoints
+        description
+        difficulty
+        id
+        name
+        owner {
+          username
+        }
+        searchId
+        sessionId
+        status
+      }
+    }""";
+  }
+
+  static String availProfile(String token) {
+    return """query{
+      availableProfilePictures(token: "$token")
+    }""";
+  }
+
+  static String imageURLProfile(String id) {
+    return imageURL("ProfilePicture", id);
+  }
+
+  static String imageURLBadge(String id) {
+    return imageURL("Badge", id);
+  }
+
+  static String imageURLPicture(String id) {
+    return imageURL("Picture", id);
+  }
+
+  static String imageURL(String type, String id) {
+    return "http://130.83.247.244/file/download?type=$type&id=$id";
+  }
+
+  static Widget netWorkImage(String url, {width = 50, height = 50, fit = BoxFit.cover}) {
+    return FutureBuilder(
+      future: MuseumDatabase().accessToken(),
+      builder: (context, snap) {
+        String token = snap.data ?? "";
+        if (token=="") return Container();
+        return Image.network(
+          url,
+          //GraphQLConfiguration().imageURLProfile("5e7e091dbef4a100e3735722"),
+          headers: {"Authorization": "Bearer $token"},
+          fit: fit,
+          width: width.toDouble(),
+          height: height.toDouble(),
+        );
+      },
+    );
   }
 }

@@ -8,6 +8,7 @@ part of 'database.dart';
 
 // ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
 class User extends DataClass implements Insertable<User> {
+  final bool producer;
   final String accessToken;
   final String refreshToken;
   final String username;
@@ -16,7 +17,8 @@ class User extends DataClass implements Insertable<User> {
   final List<String> favTours;
   final bool onboardEnd;
   User(
-      {@required this.accessToken,
+      {@required this.producer,
+      @required this.accessToken,
       @required this.refreshToken,
       @required this.username,
       @required this.imgPath,
@@ -26,9 +28,11 @@ class User extends DataClass implements Insertable<User> {
   factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
-    final stringType = db.typeSystem.forDartType<String>();
     final boolType = db.typeSystem.forDartType<bool>();
+    final stringType = db.typeSystem.forDartType<String>();
     return User(
+      producer:
+          boolType.mapFromDatabaseResponse(data['${effectivePrefix}producer']),
       accessToken: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}accessToken']),
       refreshToken: stringType
@@ -49,6 +53,7 @@ class User extends DataClass implements Insertable<User> {
       {ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return User(
+      producer: serializer.fromJson<bool>(json['producer']),
       accessToken: serializer.fromJson<String>(json['accessToken']),
       refreshToken: serializer.fromJson<String>(json['refreshToken']),
       username: serializer.fromJson<String>(json['username']),
@@ -62,6 +67,7 @@ class User extends DataClass implements Insertable<User> {
   Map<String, dynamic> toJson({ValueSerializer serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'producer': serializer.toJson<bool>(producer),
       'accessToken': serializer.toJson<String>(accessToken),
       'refreshToken': serializer.toJson<String>(refreshToken),
       'username': serializer.toJson<String>(username),
@@ -75,6 +81,9 @@ class User extends DataClass implements Insertable<User> {
   @override
   UsersCompanion createCompanion(bool nullToAbsent) {
     return UsersCompanion(
+      producer: producer == null && nullToAbsent
+          ? const Value.absent()
+          : Value(producer),
       accessToken: accessToken == null && nullToAbsent
           ? const Value.absent()
           : Value(accessToken),
@@ -100,7 +109,8 @@ class User extends DataClass implements Insertable<User> {
   }
 
   User copyWith(
-          {String accessToken,
+          {bool producer,
+          String accessToken,
           String refreshToken,
           String username,
           String imgPath,
@@ -108,6 +118,7 @@ class User extends DataClass implements Insertable<User> {
           List<String> favTours,
           bool onboardEnd}) =>
       User(
+        producer: producer ?? this.producer,
         accessToken: accessToken ?? this.accessToken,
         refreshToken: refreshToken ?? this.refreshToken,
         username: username ?? this.username,
@@ -119,6 +130,7 @@ class User extends DataClass implements Insertable<User> {
   @override
   String toString() {
     return (StringBuffer('User(')
+          ..write('producer: $producer, ')
           ..write('accessToken: $accessToken, ')
           ..write('refreshToken: $refreshToken, ')
           ..write('username: $username, ')
@@ -132,19 +144,22 @@ class User extends DataClass implements Insertable<User> {
 
   @override
   int get hashCode => $mrjf($mrjc(
-      accessToken.hashCode,
+      producer.hashCode,
       $mrjc(
-          refreshToken.hashCode,
+          accessToken.hashCode,
           $mrjc(
-              username.hashCode,
+              refreshToken.hashCode,
               $mrjc(
-                  imgPath.hashCode,
-                  $mrjc(favStops.hashCode,
-                      $mrjc(favTours.hashCode, onboardEnd.hashCode)))))));
+                  username.hashCode,
+                  $mrjc(
+                      imgPath.hashCode,
+                      $mrjc(favStops.hashCode,
+                          $mrjc(favTours.hashCode, onboardEnd.hashCode))))))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
       (other is User &&
+          other.producer == this.producer &&
           other.accessToken == this.accessToken &&
           other.refreshToken == this.refreshToken &&
           other.username == this.username &&
@@ -155,6 +170,7 @@ class User extends DataClass implements Insertable<User> {
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
+  final Value<bool> producer;
   final Value<String> accessToken;
   final Value<String> refreshToken;
   final Value<String> username;
@@ -163,6 +179,7 @@ class UsersCompanion extends UpdateCompanion<User> {
   final Value<List<String>> favTours;
   final Value<bool> onboardEnd;
   const UsersCompanion({
+    this.producer = const Value.absent(),
     this.accessToken = const Value.absent(),
     this.refreshToken = const Value.absent(),
     this.username = const Value.absent(),
@@ -172,6 +189,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.onboardEnd = const Value.absent(),
   });
   UsersCompanion.insert({
+    @required bool producer,
     this.accessToken = const Value.absent(),
     this.refreshToken = const Value.absent(),
     @required String username,
@@ -179,10 +197,12 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.favStops = const Value.absent(),
     this.favTours = const Value.absent(),
     this.onboardEnd = const Value.absent(),
-  })  : username = Value(username),
+  })  : producer = Value(producer),
+        username = Value(username),
         imgPath = Value(imgPath);
   UsersCompanion copyWith(
-      {Value<String> accessToken,
+      {Value<bool> producer,
+      Value<String> accessToken,
       Value<String> refreshToken,
       Value<String> username,
       Value<String> imgPath,
@@ -190,6 +210,7 @@ class UsersCompanion extends UpdateCompanion<User> {
       Value<List<String>> favTours,
       Value<bool> onboardEnd}) {
     return UsersCompanion(
+      producer: producer ?? this.producer,
       accessToken: accessToken ?? this.accessToken,
       refreshToken: refreshToken ?? this.refreshToken,
       username: username ?? this.username,
@@ -205,6 +226,18 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final GeneratedDatabase _db;
   final String _alias;
   $UsersTable(this._db, [this._alias]);
+  final VerificationMeta _producerMeta = const VerificationMeta('producer');
+  GeneratedBoolColumn _producer;
+  @override
+  GeneratedBoolColumn get producer => _producer ??= _constructProducer();
+  GeneratedBoolColumn _constructProducer() {
+    return GeneratedBoolColumn(
+      'producer',
+      $tableName,
+      false,
+    );
+  }
+
   final VerificationMeta _accessTokenMeta =
       const VerificationMeta('accessToken');
   GeneratedTextColumn _accessToken;
@@ -280,6 +313,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
 
   @override
   List<GeneratedColumn> get $columns => [
+        producer,
         accessToken,
         refreshToken,
         username,
@@ -298,6 +332,12 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   VerificationContext validateIntegrity(UsersCompanion d,
       {bool isInserting = false}) {
     final context = VerificationContext();
+    if (d.producer.present) {
+      context.handle(_producerMeta,
+          producer.isAcceptableValue(d.producer.value, _producerMeta));
+    } else if (isInserting) {
+      context.missing(_producerMeta);
+    }
     if (d.accessToken.present) {
       context.handle(_accessTokenMeta,
           accessToken.isAcceptableValue(d.accessToken.value, _accessTokenMeta));
@@ -340,6 +380,9 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   Map<String, Variable> entityToSql(UsersCompanion d) {
     final map = <String, Variable>{};
+    if (d.producer.present) {
+      map['producer'] = Variable<bool, BoolType>(d.producer.value);
+    }
     if (d.accessToken.present) {
       map['accessToken'] = Variable<String, StringType>(d.accessToken.value);
     }

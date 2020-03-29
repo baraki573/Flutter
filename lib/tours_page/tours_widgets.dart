@@ -2,11 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/add_tour/add_tour.dart';
 import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
 import 'package:museum_app/database/modelling.dart';
+import 'package:museum_app/graphql/graphqlConf.dart';
+import 'package:museum_app/graphql/query.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour.dart';
 
 class TourList extends StatefulWidget {
@@ -154,18 +157,27 @@ class _TourListState extends State<TourList> {
 }
 
 Widget _pictureLeft(ActualStop stop, Size s, {margin = EdgeInsets.zero}) {
+  String path = stop.stop != null && stop.stop.images.isNotEmpty
+      ? stop.stop.images[0]
+      : "";
   return Container(
     margin: margin,
     width: SizeConfig.safeBlockHorizontal * s.width,
     height: SizeConfig.safeBlockVertical * s.height,
     decoration: BoxDecoration(
-      border: Border.all(color: Colors.black),
       borderRadius: BorderRadius.all(Radius.circular(10.0)),
+      border: Border.all(color: Colors.black),
       image: DecorationImage(
-          image: AssetImage(stop.stop != null && stop.stop.images.isNotEmpty
-              ? stop.stop.images[0]
-              : "assets/images/profile_test.png"),
+          image: AssetImage("assets/images/haupthalle_hlm_blue.png"),
           fit: BoxFit.cover),
+    ),
+    child: ClipRRect(
+      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+      child: path != ""
+          ? QueryBackend.netWorkImage(
+              QueryBackend.imageURLPicture(path),
+            )
+          : Container(),
     ),
   );
 }
@@ -286,11 +298,11 @@ class _TourPopUpState extends State<_TourPopUp> {
                   ),
                   onPressed: () async {
                     if (fav)
-                      await MuseumDatabase().removeFavTour(t.id);
+                      await MuseumDatabase().removeFavTour(t.onlineId);
                     else
                       await MuseumDatabase().addFavTour(t.onlineId);
                     setState(() {});
-                    },
+                  },
                 );
               },
             ),
@@ -330,6 +342,154 @@ class _TourPopUpState extends State<_TourPopUp> {
           }),
         ),
       ],
+    );
+  }
+}
+
+class _DownloadPanel extends StatelessWidget {
+  final Color color;
+  final TourWithStops tour;
+
+  const _DownloadPanel(this.tour, {Key key, this.color}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(left: 16, right: 16, top: 15),
+      child: border(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Container(
+              width: horSize(100, 100),
+              child: Text(
+                tour.name.text,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: tour.getRating(
+                    color2: Colors.black.withOpacity(.5),
+                    size: horSize(7.5, 4),
+                  ),
+                ),
+                tour.buildTime(color: Colors.black, scale: 1.2)
+              ],
+            ),
+            Text(
+              tour.descr.text,
+              maxLines: 3,
+            ),
+            FlatButton(
+              color: color,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(9)),
+              onPressed: () async {
+                String s;
+                if (await MuseumDatabase()
+                    .joinAndDownloadTour(tour.onlineId, searchId: false))
+                  s = "Tour heruntergeladen!";
+                else
+                  s = "Tour konnte nicht heruntergeladen werden...";
+                Scaffold.of(context).showSnackBar(SnackBar(content: Text(s)));
+              },
+              child: Text("Download", style: TextStyle(color: Colors.white)),
+            )
+          ],
+        ),
+        width: horSize(100, 100),
+        //height: verSize(19, 10),
+        padding: EdgeInsets.only(left: 16, right: 16, top: 8),
+        margin: EdgeInsets.only(bottom: 19),
+        borderColor: color,
+      ),
+    );
+
+    /*Column(
+        children: [
+          Text(tour.name.text),
+          Row(),
+          Text(tour.descr.text),
+          FlatButton(
+            onPressed: () {},
+            child: Text("Download"),
+          ),
+        ],
+      )*/
+  }
+}
+
+class DownloadColumn extends StatefulWidget {
+  final Function query;
+  final Color color;
+  final String search;
+
+  DownloadColumn(this.query, {Key key, this.color = COLOR_PROFILE, this.search = ""})
+      : super(key: key);
+
+  @override
+  _DownloadColumnState createState() => _DownloadColumnState();
+}
+
+class _DownloadColumnState extends State<DownloadColumn> {
+  List<TourWithStops> _list = List<TourWithStops>();
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    initList();
+  }
+
+  initList() async {
+    String token = await MuseumDatabase().accessToken();
+    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+    QueryResult result = await _client.query(QueryOptions(
+      documentNode: gql(widget.query(token)),
+      //onError: (e) => print("ERROR_auth: " + e.toString()),
+    ));
+    if (result.hasException) print("EXC: " + result.exception.toString());
+    if (result.loading || result.data == null) return;
+    _loading = result.loading;
+    _list.clear();
+    var d = result.data;
+    //print(d.data[d.keys.first]);
+    for (var m in d[d.keys.first]) {
+      Tour t = Tour(
+          onlineId: m["id"],
+          name: m["name"],
+          author: m["owner"]["username"],
+          difficulty: m["difficulty"].toDouble(),
+          desc: m["description"],
+          creationTime: DateTime.parse(m["creation"]));
+      _list.add(TourWithStops(t, <ActualStop>[]));
+    }
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<Widget> children = _list
+        .where((t) {
+          String srch = widget.search.toLowerCase();
+          String title = t.name.text.toLowerCase();
+          //title = title.substring(0, min(title.length, srch.length));
+          return title.contains(srch);
+        })
+        .map((t) => _DownloadPanel(t, color: widget.color))
+        .toList();
+    if (_list.isEmpty)
+      return Padding(
+        padding: EdgeInsets.only(top: 16),
+        child: CircularProgressIndicator(),
+      );
+    if (children.isEmpty)
+      children = [Text("\n\nEs konnten keine Touren gefunden werden.")];
+    return Column(
+      children: children,
     );
   }
 }

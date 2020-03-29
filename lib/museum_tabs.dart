@@ -111,6 +111,7 @@ enum _OptionType {
   EDIT_IMG,
   LOGIN,
   LOGOUT,
+  PROMOTE,
   ABOUT,
   clear,
   demo
@@ -131,47 +132,52 @@ class MuseumSettings extends StatelessWidget {
     var ctrl = TextEditingController();
     String accesToken = await MuseumDatabase().accessToken();
 
-    showDialog(context: context, builder: (context) => AlertDialog(
-      title: Text("Username ändern"),
-      content: TextFormField(
-        autovalidate: true,
-        controller: ctrl,
-        maxLength: MAX_USERNAME,
-        validator: (input) {
-          if (input.length < MIN_USERNAME) return "Username ist zu kurz";
-          return null;
-        },
-        decoration: InputDecoration(hintText: "Username"),
-      ),
-      actions: [
-        FlatButton(
-          child: Text("Zurück", style: TextStyle(color: COLOR_PROFILE)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        FlatButton(
-          child: Text("Bestätigen", style: TextStyle(color: COLOR_PROFILE)),
-          onPressed: () async {
-            GraphQLClient _client = GraphQLConfiguration().clientToQuery();
-            print(ctrl.text);
-            await _client.mutate(MutationOptions(
-              documentNode: gql(
-                  MutationBackend.changeUsername(accesToken, ctrl.text.trim())),
-              update: (cache, result) => cache,
-              onCompleted: (result) {
-                if (result is LazyCacheMap) {
-                  print(result.data);
-                  if (result.data['changeUsername'] != null) {
-                    MuseumDatabase().updateUsername(ctrl.text.trim());
-                    Navigator.pop(context);
-                  }
-                }
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text("Username ändern"),
+              content: TextFormField(
+                autovalidate: true,
+                controller: ctrl,
+                maxLength: MAX_USERNAME,
+                validator: (input) {
+                  if (input.length < MIN_USERNAME)
+                    return "Username ist zu kurz";
+                  return null;
                 },
-              onError: (e) => print("ERROR "+e.toString()),
+                decoration: InputDecoration(hintText: "Username"),
+              ),
+              actions: [
+                FlatButton(
+                  child: Text("Zurück", style: TextStyle(color: COLOR_PROFILE)),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                FlatButton(
+                  child: Text("Bestätigen",
+                      style: TextStyle(color: COLOR_PROFILE)),
+                  onPressed: () async {
+                    GraphQLClient _client =
+                        GraphQLConfiguration().clientToQuery();
+                    print(ctrl.text);
+                    await _client.mutate(MutationOptions(
+                      documentNode: gql(MutationBackend.changeUsername(
+                          accesToken, ctrl.text.trim())),
+                      update: (cache, result) => cache,
+                      onCompleted: (result) {
+                        if (result is LazyCacheMap) {
+                          print(result.data);
+                          if (result.data['changeUsername'] != null) {
+                            MuseumDatabase().updateUsername(ctrl.text.trim());
+                            Navigator.pop(context);
+                          }
+                        }
+                      },
+                      onError: (e) => print("ERROR " + e.toString()),
+                    ));
+                  },
+                )
+              ],
             ));
-          },
-        )
-      ],
-    ));
   }
 
   Future<void> _editPW(BuildContext context) async {
@@ -196,8 +202,7 @@ class MuseumSettings extends StatelessWidget {
             obscureText: true,
             decoration: InputDecoration(hintText: "Passwort wiederholen"),
             validator: (s) {
-              if (s != ctrl.text)
-                return "Passwörter stimmen nicht überein";
+              if (s != ctrl.text) return "Passwörter stimmen nicht überein";
               return null;
             },
           ),
@@ -269,6 +274,9 @@ class MuseumSettings extends StatelessWidget {
       case _OptionType.LOGOUT:
         showDialog(context: context, builder: _logout);
         break;
+      case _OptionType.PROMOTE:
+        _promote(context);
+        break;
       case _OptionType.LOGIN:
         Navigator.popAndPushNamed(context, "/profile");
         break;
@@ -323,10 +331,53 @@ class MuseumSettings extends StatelessWidget {
       contentPadding: EdgeInsets.symmetric(horizontal: 16),
       actions: [
         FlatButton(
-          child: Text("Schließen"),
+          child: Text("Schließen", style: TextStyle(color: COLOR_PROFILE)),
           onPressed: () => Navigator.pop(context),
         ),
       ],
+    );
+  }
+
+  _promote(context) async {
+    String token = await MuseumDatabase().accessToken();
+    final key = GlobalKey<FormFieldState>();
+    TextEditingController ctrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Erstellercode eingeben"),
+        content: TextFormField(
+          controller: ctrl,
+          key: key,
+          validator: (s) => "Der Code $s wurde nicht akzeptiert",
+        ),
+        actions: [
+          FlatButton(
+            child: Text("Schließen", style: TextStyle(color: COLOR_PROFILE)),
+            onPressed: () => Navigator.pop(context),
+          ),
+          FlatButton(
+            child: Text("Bestätigen", style: TextStyle(color: COLOR_PROFILE)),
+            onPressed: () async {
+              GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+              print(ctrl.text);
+              QueryResult result = await _client.mutate(MutationOptions(
+                  documentNode:
+                      gql(MutationBackend.promote(token, ctrl.text.trim())),
+                  update: (cache, result) => cache));
+              if (result.hasException) print("EXC: "+result.exception.toString());
+              if (result.data is LazyCacheMap) {
+                if (result.data['promoteUser']["ok"]["boolean"] == true) {
+                  print("AAA");
+                  MuseumDatabase().setProducer();
+                  Navigator.pop(context);
+                }
+                else key.currentState.validate();
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -336,8 +387,9 @@ class MuseumSettings extends StatelessWidget {
       stream: MuseumDatabase().watchUser(),
       builder: (context, snap) {
         bool logged = snap.hasData && snap.data.accessToken != "";
+        bool producer = snap.hasData && snap.data.producer;
         return PopupMenuButton(
-          itemBuilder: (context) => _popUpList(logged),
+          itemBuilder: (context) => _popUpList(logged, producer),
           onSelected: (result) => _select(result, context),
           icon: Icon(
             Icons.settings,
@@ -349,7 +401,7 @@ class MuseumSettings extends StatelessWidget {
     );
   }
 
-  _popUpList(bool logged) {
+  _popUpList(bool logged, bool producer) {
     List<PopupMenuItem> base = [
       _myPopUpItem("Einloggen", Icons.redo, _OptionType.LOGIN),
       _myPopUpItem("Über diese App", Icons.info, _OptionType.ABOUT),
@@ -359,6 +411,11 @@ class MuseumSettings extends StatelessWidget {
 
     if (logged) {
       base.removeAt(0);
+      if (!producer)
+        base.insert(
+            0,
+            _myPopUpItem(
+                "Tourersteller werden", Icons.work, _OptionType.PROMOTE));
       base.insert(0, _myPopUpItem("Ausloggen", Icons.undo, _OptionType.LOGOUT));
       base.insert(
           0,

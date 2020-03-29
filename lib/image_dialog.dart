@@ -1,8 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
+import 'package:museum_app/graphql/mutations.dart';
+import 'package:museum_app/graphql/query.dart';
+
+import 'graphql/graphqlConf.dart';
 
 class ImageDialog extends StatefulWidget {
   ImageDialog({Key key}) : super(key: key);
@@ -26,6 +31,28 @@ class _ImageDialogState extends State<ImageDialog> {
     "assets/images/profile_test2.png",
     'assets/images/haupthalle_hlm_blue.png',
   ];
+  List<String> _list = List<String>();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    _initList();
+    super.initState();
+  }
+
+  _initList() async {
+    String token = await MuseumDatabase().accessToken();
+    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+    QueryResult result = await _client.query(QueryOptions(
+      documentNode: gql(QueryBackend.availProfile(token)),
+      //onError: (e) => print("ERROR_auth: " + e.toString()),
+    ));
+    _list.clear();
+    for (var s in result.data.data["availableProfilePictures"]) {
+      _list.add(s.toString());
+    }
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,14 +66,27 @@ class _ImageDialogState extends State<ImageDialog> {
           child: Wrap(
             spacing: 4,
             runSpacing: 6,
-            children: list
+            children: _list
                 .map(
                   (img) => GestureDetector(
-                    onTap: () {
-                      MuseumDatabase().updateImage(img);
-                      Navigator.pop(context);
+                    onTap: () async {
+                      String token = await MuseumDatabase().accessToken();
+                      GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+                      QueryResult result = await _client.mutate(MutationOptions(
+                        documentNode: gql(MutationBackend.chooseProfilePicture(img, token)),
+                      ));
+
+                      if (result.data.data["chooseProfilePicture"]["ok"]["boolean"] == true){
+                        MuseumDatabase().updateImage(img);
+                        Navigator.pop(context);
+                      }
                     },
-                    child: Container(
+                    child: QueryBackend.netWorkImage(
+                      QueryBackend.imageURLProfile(img),
+                      height: verSize(13, 27),
+                      width: horSize(23, 16),
+                    ),
+                    /*child: Container(
                       height: verSize(13, 27),
                       width: horSize(23, 16),
                       decoration: BoxDecoration(
@@ -55,7 +95,7 @@ class _ImageDialogState extends State<ImageDialog> {
                         border: Border.all(color: Colors.black),
                         borderRadius: BorderRadius.circular(9),
                       ),
-                    ),
+                    ),*/
                   ),
                 )
                 .toList(),
