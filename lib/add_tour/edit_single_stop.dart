@@ -213,6 +213,10 @@ class _EditSingleStopState extends State<EditSingleStop> {
             funct: _onTapTask,
             key: _keyTask,
           ),
+          // TODO replace Extra's demo text
+          // TODO MC können nicht geändert werden (tap) [unmod?]
+          // TODO MC speichere "nichts ist richtig" ab
+          // TODO badges
           _withLabel(
             FontAwesomeIcons.fileImage, "Bild",
             funct: widget.stop.stop.images.isEmpty
