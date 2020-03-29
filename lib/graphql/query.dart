@@ -179,8 +179,25 @@ class QueryBackend {
   static String favTours(String token) {
     return """query{
       favouriteTours(token: "$token"){
+        creation
+        currentCheckpoints
+        description
+        difficulty
         id
+        name
+        owner {
+          username
+        }
+        searchId
+        sessionId
+        status
       }
+    }""";
+  }
+
+  static String profilePic(String token, String username) {
+    return """query{
+      profilePicture(token: "$token", username: "$username")
     }""";
   }
 

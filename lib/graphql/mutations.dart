@@ -210,6 +210,9 @@ age
   static String promote(String token, String code) {
     return """mutation{
       promoteUser(token: "$token", code: "$code"){
+        user {
+          producer
+        }
         ok {... on BooleanField{boolean}}
       }
     }""";

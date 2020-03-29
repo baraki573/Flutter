@@ -131,17 +131,35 @@ class _ToursState extends State<Tours> {
 
   @override
   Widget build(BuildContext context) {
-    return MuseumTabs(
-      _topInfo(),
-      {
-        // All (online) tours
-        "Alle": _allTours(), //_bottomInfo((_) => (tour) => true),
-        // Only the local/downloaded ones
-        "Downloads": TourList.downloaded(),
-        // Add a tour via a code
-        "Code": _code(),
+    return FutureBuilder(
+      future: MuseumDatabase().accessToken(),
+      builder: (context, snap) {
+        String token = snap.data ?? "";
+        if (!snap.hasData || token == "")
+          return MuseumTabs.single(
+            _topInfo(),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 80),
+              child: Text(
+                "Sie müssen sich anmelden, um auf die angebotenen Touren zugreifen zu können.",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 17),
+              ),
+            ),
+          );
+        return MuseumTabs(
+          _topInfo(),
+          {
+            // All (online) tours
+            "Alle": _allTours(), //_bottomInfo((_) => (tour) => true),
+            // Only the local/downloaded ones
+            "Downloads": TourList.downloaded(),
+            // Add a tour via a code
+            "Code": _code(),
+          },
+          color: COLOR_TOUR,
+        );
       },
-      color: COLOR_TOUR,
     );
   }
 }

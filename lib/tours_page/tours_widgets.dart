@@ -456,7 +456,6 @@ class _DownloadColumnState extends State<DownloadColumn> {
     _loading = result.loading;
     _list.clear();
     var d = result.data;
-    //print(d.data[d.keys.first]);
     for (var m in d[d.keys.first]) {
       Tour t = Tour(
           onlineId: m["id"],

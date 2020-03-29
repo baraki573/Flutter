@@ -67,7 +67,10 @@ class _LogInState extends State<LogIn> {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    Navigator.popAndPushNamed(context, widget.skippable ? "/" : "/profile");
+    if (widget.skippable) {
+      Navigator.popAndPushNamed(context, "/");
+    }
+
   }
 
   /// Creates the input change buttons used for this widget.

@@ -337,8 +337,6 @@ class MuseumDatabase extends _$MuseumDatabase {
         List<String> images = List<String>();
         for (var e in object["picture"])
           images.add(e["id"]);
-        if (images.isEmpty)
-          print(object["title"]);
         var comp = Stop(
           id: object['objectId'],
           images: images,
@@ -515,35 +513,38 @@ class MuseumDatabase extends _$MuseumDatabase {
       print("LOGIN");
       String access = map['accessToken'];
       String refresh = map['refreshToken'];
-      result = await _client.query(QueryOptions(
-        documentNode: gql(QueryBackend.userInfo(access)),
-        //onError: (e) => print("ERROR_userInfo: " + e.toString()),
+
+      result = await _client.mutate(MutationOptions(
+        documentNode: gql(MutationBackend.promote(access, "")),
       ));
       // badge, profile picture, producer
-      print(result.data.data);
+      print("me "+result.data.data.toString());
       //bool producer = result.data["me"]["producer"];
 
+      // Profile Picture
+      result = await _client.query(QueryOptions(
+        documentNode: gql(QueryBackend.profilePic(access, username)),
+      ));
+      String profilePic = result.data["profilePicture"][0].toString();
+      print(profilePic);
+
+      // Favourite Stops
       result = await _client.query(QueryOptions(
         documentNode: gql(QueryBackend.favStops(access)),
-        //onError: (e) => print("ERROR_me: " + e.toString()),
       ));
       List<String> favStops = List<String>();
       for (var m in result.data["favouriteObjects"])
         favStops.add(m.data["objectId"].toString());
-      //result.data["favouriteObjects"].map((m) => m.data["objectId"].toString()).toList();
       print("FAVSTOPS"+favStops.toString());
 
+      // Favourite Tours
       result = await _client.query(QueryOptions(
         documentNode: gql(QueryBackend.favTours(access)),
-        //onError: (e) => print("ERROR_me: " + e.toString()),
       ));
       List<String> favTours = List<String>();
       for (var m in result.data["favouriteTours"])
         favTours.add(m.data["id"].toString());
-      //result.data["favouriteTours"].map((m) => m.data["id"].toString()).toList();
       print("FAVTOURS"+favTours.toString());
-
-        //favTours.forEach((s) async => await joinAndDownloadTour(s, searchId: false));
 
       var u = UsersCompanion(
         accessToken: Value(access),
@@ -551,14 +552,12 @@ class MuseumDatabase extends _$MuseumDatabase {
         username: Value(username),
         favStops: Value(favStops),
         favTours: Value(favTours),
-        imgPath: Value("assets/images/empty_profile.png"),
+        imgPath: Value(profilePic),
         producer: Value(false),
       );
       await update(users).write(u);
 
       await downloadStops();
-      for (var id in favTours)
-        joinAndDownloadTour(id, searchId: false);
       return Future.value(true);
     }
     return Future.value(false);
@@ -584,7 +583,7 @@ class MuseumDatabase extends _$MuseumDatabase {
         refreshToken: "",
         accessToken: "",
         username: "",
-        imgPath: "assets/images/empty_profile.png",
+        imgPath: "",
         onboardEnd: null,
         favStops: <String>[],
         favTours: <String>[]));

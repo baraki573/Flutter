@@ -79,6 +79,8 @@ class _MuseumTabsState extends State<MuseumTabs> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
+    if (!widget.tabs.containsKey(_currentTab))
+      _currentTab = widget.tabs.keys.toList()[0];
     return ListView(
       children: <Widget>[
         Stack(overflow: Overflow.visible, children: [
@@ -238,7 +240,7 @@ class MuseumSettings extends StatelessWidget {
     return AlertDialog(
       title: Text("Warnung"),
       content: Text("Möchten Sie sich wirklich ausloggen?\n"
-          "Zum Wiederanmelden benötigen Sie Ihre Anmeldedaten."),
+          "Alle heruntergeladenen Touren werden gelöscht."),
       actions: [
         FlatButton(
           child: Text("Zurück", style: TextStyle(color: COLOR_PROFILE)),

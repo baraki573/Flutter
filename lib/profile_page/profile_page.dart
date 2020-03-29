@@ -34,7 +34,11 @@ class _ProfileState extends State<Profile> {
           margin: EdgeInsets.symmetric(horizontal: 16),
           child: ClipOval(
             child: user.imgPath == ""
-                ? Image.asset("assets/images/empty_profile.png")
+                ? Image.asset(
+                    "assets/images/empty_profile.png",
+                    height: 120,
+                    width: 120,
+                  )
                 : QueryBackend.netWorkImage(
                     QueryBackend.imageURLProfile(user.imgPath),
                     height: 120,
@@ -72,10 +76,10 @@ class _ProfileState extends State<Profile> {
     return StreamBuilder(
       stream: MuseumDatabase().watchUser(),
       builder: (context, snap) {
-        User user = snap.data ??
-            User(username: "...", imgPath: "assets/images/empty_profile.png");
+        User user = snap.data ?? User(username: "...", imgPath: "");
         // if no user is currently logged in, show the login-screen
-        if (user.accessToken?.trim() == "") return LogIn(skippable: false);
+        if (!snap.hasData || user.accessToken?.trim() == "")
+          return LogIn(skippable: false);
         // create the tab layout
         return MuseumTabs(
           _topInfo(user),

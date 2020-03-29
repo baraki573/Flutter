@@ -72,11 +72,13 @@ class _FavWidgetState extends State<FavWidget> {
                     highlightColor: division.color.withOpacity(.5),
                     shape: CircleBorder(),
                     onPressed: () => _showStop(stops[index]),
-                    child: ClipOval(child: QueryBackend.netWorkImage(
-                      QueryBackend.imageURLPicture(image),
-                      height: horSize(27, 16),
-                      width: horSize(27, 16),
-                    ),),
+                    child: ClipOval(
+                      child: QueryBackend.netWorkImage(
+                        QueryBackend.imageURLPicture(image),
+                        height: horSize(27, 16),
+                        width: horSize(27, 16),
+                      ),
+                    ),
                   ),
                 );
               }),
@@ -154,30 +156,7 @@ class _FavWidgetState extends State<FavWidget> {
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                     ),
-                    _favTours(),
-                    /*FutureBuilder(
-                      future: MuseumDatabase().accessToken(),
-                      builder: (context, snap) {
-                        if (!snap.hasData) return Text("LOADING");
-                        var token = snap.data;
-                        return Query(
-                          options: QueryOptions(
-                            documentNode: gql(QueryBackend.allPictures(token)),
-                          ),
-                          builder: (QueryResult result, {fetchMore, refetch}) {
-                            if (result.hasException)
-                              return Text("ERR " + result.exception.toString());
-
-                            if (result.data is LazyCacheMap)
-                              print(result.data["availableProfilePictures"]);
-
-                            return Text("JJOJO");
-                            //return Image.network(
-                            //  "http://130.83.247.244/web/file/download?token=$token&type='ProfilePicture'");
-                          },
-                        );
-                      },
-                    ),*/
+                    DownloadColumn(QueryBackend.favTours),
                   ],
             );
           },
