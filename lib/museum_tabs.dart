@@ -170,8 +170,8 @@ class MuseumSettings extends StatelessWidget {
 
                     print(result.data);
                     if (result.data['changeUsername']["ok"]["boolean"] == true) {
-                      MuseumDatabase().updateUsername(ctrl.text.trim());
-                      MuseumDatabase().refreshToken();
+                      MuseumDatabase().updateUsername(ctrl.text.trim(), result.data["changeUsername"]["refreshToken"]);
+                      //MuseumDatabase().refreshToken();
                       Navigator.pop(context);
                     }
                   },
