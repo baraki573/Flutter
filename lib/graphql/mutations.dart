@@ -153,6 +153,7 @@ age
           username
           password
         }
+        refreshToken
       }
     }""";
   }

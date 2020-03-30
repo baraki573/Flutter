@@ -291,14 +291,15 @@ class MuseumDatabase extends _$MuseumDatabase {
     return into(users).insert(uc);
   }
 
-  Future updateUsername(String name) async {
+  Future updateUsername(String name, String refresh) async {
     await initUser();
     String oldName = await select(users).map((u) => u.username).getSingle();
     await batch((batch) {
-      batch.update(users, UsersCompanion(username: Value(name)));
+      batch.update(users, UsersCompanion(username: Value(name), refreshToken: Value(refresh)));
       batch.update(tours, ToursCompanion(author: Value(name)),
           where: ($ToursTable t) => t.author.equals(oldName));
     });
+    refreshAccess();
   }
 
   Future setProducer() {
@@ -406,7 +407,7 @@ class MuseumDatabase extends _$MuseumDatabase {
     User u = await select(users).getSingle();
 
     if (await GraphQLConfiguration.isConnected(u.accessToken))
-      if (await refreshToken() != "") {
+      if (await refreshAccess() != "") {
         await downloadStops();
         await downloadBadges();
       }
@@ -423,7 +424,7 @@ class MuseumDatabase extends _$MuseumDatabase {
 
     String accessToken = await this.accessToken();
     if (!await GraphQLConfiguration.isConnected(accessToken))
-      accessToken = await refreshToken();
+      accessToken = await refreshAccess();
 
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
     QueryResult result = await _client.mutate(MutationOptions(
@@ -441,7 +442,7 @@ class MuseumDatabase extends _$MuseumDatabase {
 
     String accessToken = await this.accessToken();
     if (!await GraphQLConfiguration.isConnected(accessToken))
-      accessToken = await refreshToken();
+      accessToken = await refreshAccess();
 
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
     QueryResult result = await _client.mutate(MutationOptions(
@@ -472,7 +473,7 @@ class MuseumDatabase extends _$MuseumDatabase {
 
     String accessToken = await this.accessToken();
     if (!await GraphQLConfiguration.isConnected(accessToken))
-      accessToken = await refreshToken();
+      accessToken = await refreshAccess();
 
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
     QueryResult result = await _client.mutate(MutationOptions(
@@ -490,7 +491,7 @@ class MuseumDatabase extends _$MuseumDatabase {
 
     String accessToken = await this.accessToken();
     if (!await GraphQLConfiguration.isConnected(accessToken))
-      accessToken = await refreshToken();
+      accessToken = await refreshAccess();
 
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
     QueryResult result = await _client.mutate(MutationOptions(
@@ -883,7 +884,7 @@ class MuseumDatabase extends _$MuseumDatabase {
   Future<bool> _listToServer(List<Object> lst) async {
     String token = await accessToken();
     if (!await GraphQLConfiguration.isConnected(token))
-      token =await refreshToken();
+      token =await refreshAccess();
     if (token == "")
       return Future.value(false);
 
@@ -968,7 +969,7 @@ class MuseumDatabase extends _$MuseumDatabase {
     return Future.value(true);
   }
 
-  Future<String> refreshToken() async {
+  Future<String> refreshAccess() async {
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
     String refresh = await select(users).map((u) => u.refreshToken).getSingle();
 
@@ -994,7 +995,7 @@ class MuseumDatabase extends _$MuseumDatabase {
     String token = await accessToken();
 
     if (!await GraphQLConfiguration.isConnected(token))
-      if (await refreshToken() == "")
+      if (await refreshAccess() == "")
         return Future.value(false);
 
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
