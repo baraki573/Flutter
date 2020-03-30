@@ -245,6 +245,17 @@ class QueryBackend {
     }""";
   }
 
+  static String allBadges(String token) {
+    return """query{
+      availableBadges(token: "$token"){
+        cost
+        description
+        id
+        name
+      }
+    }""";
+  }
+
   static String availProfile(String token) {
     return """query{
       availableProfilePictures(token: "$token")

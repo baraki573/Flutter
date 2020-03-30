@@ -10,6 +10,10 @@ void main() async {
   await MuseumDatabase().init();
   final User user = await MuseumDatabase().getUser();
   final bool onboardEnd = user.onboardEnd;
+  if (user.refreshToken != null && user.refreshToken != "") {
+    bool re = await MuseumDatabase().refreshToken();
+
+  }
 
   runApp(GraphQLProvider(
     client: GraphQLConfiguration().client,
@@ -33,7 +37,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: true,
       locale: Locale('de'),
-      title: 'Museum App',
+      title: 'Geschichte Vernetzt',
       theme: ThemeData(
         buttonTheme: ButtonThemeData(minWidth: 5),
         primarySwatch: Colors.lightBlue,

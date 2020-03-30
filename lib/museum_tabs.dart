@@ -293,7 +293,6 @@ class MuseumSettings extends StatelessWidget {
   }
 
   Widget _about(context) {
-    MuseumDatabase().refreshToken();
     return AlertDialog(
       title: Text("Geschichte Vernetzt"),
       content: Column(

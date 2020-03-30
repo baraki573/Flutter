@@ -18,13 +18,13 @@ class User extends DataClass implements Insertable<User> {
   final bool onboardEnd;
   User(
       {@required this.producer,
-      @required this.accessToken,
-      @required this.refreshToken,
-      @required this.username,
-      @required this.imgPath,
-      @required this.favStops,
-      @required this.favTours,
-      @required this.onboardEnd});
+        @required this.accessToken,
+        @required this.refreshToken,
+        @required this.username,
+        @required this.imgPath,
+        @required this.favStops,
+        @required this.favTours,
+        @required this.onboardEnd});
   factory User.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -32,7 +32,7 @@ class User extends DataClass implements Insertable<User> {
     final stringType = db.typeSystem.forDartType<String>();
     return User(
       producer:
-          boolType.mapFromDatabaseResponse(data['${effectivePrefix}producer']),
+      boolType.mapFromDatabaseResponse(data['${effectivePrefix}producer']),
       accessToken: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}accessToken']),
       refreshToken: stringType
@@ -40,7 +40,7 @@ class User extends DataClass implements Insertable<User> {
       username: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}username']),
       imgPath:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}imgPath']),
+      stringType.mapFromDatabaseResponse(data['${effectivePrefix}imgPath']),
       favStops: $UsersTable.$converter0.mapToDart(stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}favStops'])),
       favTours: $UsersTable.$converter1.mapToDart(stringType
@@ -109,14 +109,14 @@ class User extends DataClass implements Insertable<User> {
   }
 
   User copyWith(
-          {bool producer,
-          String accessToken,
-          String refreshToken,
-          String username,
-          String imgPath,
-          List<String> favStops,
-          List<String> favTours,
-          bool onboardEnd}) =>
+      {bool producer,
+        String accessToken,
+        String refreshToken,
+        String username,
+        String imgPath,
+        List<String> favStops,
+        List<String> favTours,
+        bool onboardEnd}) =>
       User(
         producer: producer ?? this.producer,
         accessToken: accessToken ?? this.accessToken,
@@ -130,15 +130,15 @@ class User extends DataClass implements Insertable<User> {
   @override
   String toString() {
     return (StringBuffer('User(')
-          ..write('producer: $producer, ')
-          ..write('accessToken: $accessToken, ')
-          ..write('refreshToken: $refreshToken, ')
-          ..write('username: $username, ')
-          ..write('imgPath: $imgPath, ')
-          ..write('favStops: $favStops, ')
-          ..write('favTours: $favTours, ')
-          ..write('onboardEnd: $onboardEnd')
-          ..write(')'))
+      ..write('producer: $producer, ')
+      ..write('accessToken: $accessToken, ')
+      ..write('refreshToken: $refreshToken, ')
+      ..write('username: $username, ')
+      ..write('imgPath: $imgPath, ')
+      ..write('favStops: $favStops, ')
+      ..write('favTours: $favTours, ')
+      ..write('onboardEnd: $onboardEnd')
+      ..write(')'))
         .toString();
   }
 
@@ -158,15 +158,15 @@ class User extends DataClass implements Insertable<User> {
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
-      (other is User &&
-          other.producer == this.producer &&
-          other.accessToken == this.accessToken &&
-          other.refreshToken == this.refreshToken &&
-          other.username == this.username &&
-          other.imgPath == this.imgPath &&
-          other.favStops == this.favStops &&
-          other.favTours == this.favTours &&
-          other.onboardEnd == this.onboardEnd);
+          (other is User &&
+              other.producer == this.producer &&
+              other.accessToken == this.accessToken &&
+              other.refreshToken == this.refreshToken &&
+              other.username == this.username &&
+              other.imgPath == this.imgPath &&
+              other.favStops == this.favStops &&
+              other.favTours == this.favTours &&
+              other.onboardEnd == this.onboardEnd);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
@@ -202,13 +202,13 @@ class UsersCompanion extends UpdateCompanion<User> {
         imgPath = Value(imgPath);
   UsersCompanion copyWith(
       {Value<bool> producer,
-      Value<String> accessToken,
-      Value<String> refreshToken,
-      Value<String> username,
-      Value<String> imgPath,
-      Value<List<String>> favStops,
-      Value<List<String>> favTours,
-      Value<bool> onboardEnd}) {
+        Value<String> accessToken,
+        Value<String> refreshToken,
+        Value<String> username,
+        Value<String> imgPath,
+        Value<List<String>> favStops,
+        Value<List<String>> favTours,
+        Value<bool> onboardEnd}) {
     return UsersCompanion(
       producer: producer ?? this.producer,
       accessToken: accessToken ?? this.accessToken,
@@ -239,7 +239,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   }
 
   final VerificationMeta _accessTokenMeta =
-      const VerificationMeta('accessToken');
+  const VerificationMeta('accessToken');
   GeneratedTextColumn _accessToken;
   @override
   GeneratedTextColumn get accessToken =>
@@ -250,7 +250,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   }
 
   final VerificationMeta _refreshTokenMeta =
-      const VerificationMeta('refreshToken');
+  const VerificationMeta('refreshToken');
   GeneratedTextColumn _refreshToken;
   @override
   GeneratedTextColumn get refreshToken =>
@@ -313,15 +313,15 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
 
   @override
   List<GeneratedColumn> get $columns => [
-        producer,
-        accessToken,
-        refreshToken,
-        username,
-        imgPath,
-        favStops,
-        favTours,
-        onboardEnd
-      ];
+    producer,
+    accessToken,
+    refreshToken,
+    username,
+    imgPath,
+    favStops,
+    favTours,
+    onboardEnd
+  ];
   @override
   $UsersTable get asDslTable => this;
   @override
@@ -417,9 +417,9 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   }
 
   static TypeConverter<List<String>, String> $converter0 =
-      StringListConverter();
+  StringListConverter();
   static TypeConverter<List<String>, String> $converter1 =
-      StringListConverter();
+  StringListConverter();
 }
 
 class Badge extends DataClass implements Insertable<Badge> {
@@ -430,10 +430,10 @@ class Badge extends DataClass implements Insertable<Badge> {
   final String imgPath;
   Badge(
       {@required this.name,
-      @required this.current,
-      @required this.toGet,
-      @required this.color,
-      @required this.imgPath});
+        @required this.current,
+        @required this.toGet,
+        @required this.color,
+        @required this.imgPath});
   factory Badge.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -443,9 +443,9 @@ class Badge extends DataClass implements Insertable<Badge> {
     return Badge(
       name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
       current:
-          doubleType.mapFromDatabaseResponse(data['${effectivePrefix}current']),
+      doubleType.mapFromDatabaseResponse(data['${effectivePrefix}current']),
       toGet:
-          doubleType.mapFromDatabaseResponse(data['${effectivePrefix}to_get']),
+      doubleType.mapFromDatabaseResponse(data['${effectivePrefix}to_get']),
       color: $BadgesTable.$converter0.mapToDart(
           intType.mapFromDatabaseResponse(data['${effectivePrefix}color'])),
       imgPath: stringType
@@ -483,9 +483,9 @@ class Badge extends DataClass implements Insertable<Badge> {
           ? const Value.absent()
           : Value(current),
       toGet:
-          toGet == null && nullToAbsent ? const Value.absent() : Value(toGet),
+      toGet == null && nullToAbsent ? const Value.absent() : Value(toGet),
       color:
-          color == null && nullToAbsent ? const Value.absent() : Value(color),
+      color == null && nullToAbsent ? const Value.absent() : Value(color),
       imgPath: imgPath == null && nullToAbsent
           ? const Value.absent()
           : Value(imgPath),
@@ -493,11 +493,11 @@ class Badge extends DataClass implements Insertable<Badge> {
   }
 
   Badge copyWith(
-          {String name,
-          double current,
-          double toGet,
-          Color color,
-          String imgPath}) =>
+      {String name,
+        double current,
+        double toGet,
+        Color color,
+        String imgPath}) =>
       Badge(
         name: name ?? this.name,
         current: current ?? this.current,
@@ -508,12 +508,12 @@ class Badge extends DataClass implements Insertable<Badge> {
   @override
   String toString() {
     return (StringBuffer('Badge(')
-          ..write('name: $name, ')
-          ..write('current: $current, ')
-          ..write('toGet: $toGet, ')
-          ..write('color: $color, ')
-          ..write('imgPath: $imgPath')
-          ..write(')'))
+      ..write('name: $name, ')
+      ..write('current: $current, ')
+      ..write('toGet: $toGet, ')
+      ..write('color: $color, ')
+      ..write('imgPath: $imgPath')
+      ..write(')'))
         .toString();
   }
 
@@ -525,12 +525,12 @@ class Badge extends DataClass implements Insertable<Badge> {
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
-      (other is Badge &&
-          other.name == this.name &&
-          other.current == this.current &&
-          other.toGet == this.toGet &&
-          other.color == this.color &&
-          other.imgPath == this.imgPath);
+          (other is Badge &&
+              other.name == this.name &&
+              other.current == this.current &&
+              other.toGet == this.toGet &&
+              other.color == this.color &&
+              other.imgPath == this.imgPath);
 }
 
 class BadgesCompanion extends UpdateCompanion<Badge> {
@@ -557,10 +557,10 @@ class BadgesCompanion extends UpdateCompanion<Badge> {
         imgPath = Value(imgPath);
   BadgesCompanion copyWith(
       {Value<String> name,
-      Value<double> current,
-      Value<double> toGet,
-      Value<Color> color,
-      Value<String> imgPath}) {
+        Value<double> current,
+        Value<double> toGet,
+        Value<Color> color,
+        Value<String> imgPath}) {
     return BadgesCompanion(
       name: name ?? this.name,
       current: current ?? this.current,
@@ -580,8 +580,11 @@ class $BadgesTable extends Badges with TableInfo<$BadgesTable, Badge> {
   @override
   GeneratedTextColumn get name => _name ??= _constructName();
   GeneratedTextColumn _constructName() {
-    return GeneratedTextColumn('name', $tableName, false,
-        minTextLength: 3, maxTextLength: 15);
+    return GeneratedTextColumn(
+      'name',
+      $tableName,
+      false,
+    );
   }
 
   final VerificationMeta _currentMeta = const VerificationMeta('current');
@@ -717,17 +720,17 @@ class Stop extends DataClass implements Insertable<Stop> {
   final String interContext;
   Stop(
       {@required this.id,
-      @required this.images,
-      @required this.name,
-      @required this.descr,
-      this.time,
-      this.creator,
-      this.division,
-      this.artType,
-      this.material,
-      this.size,
-      this.location,
-      this.interContext});
+        @required this.images,
+        @required this.name,
+        @required this.descr,
+        this.time,
+        this.creator,
+        this.division,
+        this.artType,
+        this.material,
+        this.size,
+        this.location,
+        this.interContext});
   factory Stop.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -738,10 +741,10 @@ class Stop extends DataClass implements Insertable<Stop> {
           stringType.mapFromDatabaseResponse(data['${effectivePrefix}images'])),
       name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
       descr:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}descr']),
+      stringType.mapFromDatabaseResponse(data['${effectivePrefix}descr']),
       time: stringType.mapFromDatabaseResponse(data['${effectivePrefix}time']),
       creator:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}creator']),
+      stringType.mapFromDatabaseResponse(data['${effectivePrefix}creator']),
       division: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}division']),
       artType: stringType
@@ -797,10 +800,10 @@ class Stop extends DataClass implements Insertable<Stop> {
     return StopsCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       images:
-          images == null && nullToAbsent ? const Value.absent() : Value(images),
+      images == null && nullToAbsent ? const Value.absent() : Value(images),
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
       descr:
-          descr == null && nullToAbsent ? const Value.absent() : Value(descr),
+      descr == null && nullToAbsent ? const Value.absent() : Value(descr),
       time: time == null && nullToAbsent ? const Value.absent() : Value(time),
       creator: creator == null && nullToAbsent
           ? const Value.absent()
@@ -825,18 +828,18 @@ class Stop extends DataClass implements Insertable<Stop> {
   }
 
   Stop copyWith(
-          {String id,
-          List<String> images,
-          String name,
-          String descr,
-          String time,
-          String creator,
-          String division,
-          String artType,
-          String material,
-          String size,
-          String location,
-          String interContext}) =>
+      {String id,
+        List<String> images,
+        String name,
+        String descr,
+        String time,
+        String creator,
+        String division,
+        String artType,
+        String material,
+        String size,
+        String location,
+        String interContext}) =>
       Stop(
         id: id ?? this.id,
         images: images ?? this.images,
@@ -854,19 +857,19 @@ class Stop extends DataClass implements Insertable<Stop> {
   @override
   String toString() {
     return (StringBuffer('Stop(')
-          ..write('id: $id, ')
-          ..write('images: $images, ')
-          ..write('name: $name, ')
-          ..write('descr: $descr, ')
-          ..write('time: $time, ')
-          ..write('creator: $creator, ')
-          ..write('division: $division, ')
-          ..write('artType: $artType, ')
-          ..write('material: $material, ')
-          ..write('size: $size, ')
-          ..write('location: $location, ')
-          ..write('interContext: $interContext')
-          ..write(')'))
+      ..write('id: $id, ')
+      ..write('images: $images, ')
+      ..write('name: $name, ')
+      ..write('descr: $descr, ')
+      ..write('time: $time, ')
+      ..write('creator: $creator, ')
+      ..write('division: $division, ')
+      ..write('artType: $artType, ')
+      ..write('material: $material, ')
+      ..write('size: $size, ')
+      ..write('location: $location, ')
+      ..write('interContext: $interContext')
+      ..write(')'))
         .toString();
   }
 
@@ -896,19 +899,19 @@ class Stop extends DataClass implements Insertable<Stop> {
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
-      (other is Stop &&
-          other.id == this.id &&
-          other.images == this.images &&
-          other.name == this.name &&
-          other.descr == this.descr &&
-          other.time == this.time &&
-          other.creator == this.creator &&
-          other.division == this.division &&
-          other.artType == this.artType &&
-          other.material == this.material &&
-          other.size == this.size &&
-          other.location == this.location &&
-          other.interContext == this.interContext);
+          (other is Stop &&
+              other.id == this.id &&
+              other.images == this.images &&
+              other.name == this.name &&
+              other.descr == this.descr &&
+              other.time == this.time &&
+              other.creator == this.creator &&
+              other.division == this.division &&
+              other.artType == this.artType &&
+              other.material == this.material &&
+              other.size == this.size &&
+              other.location == this.location &&
+              other.interContext == this.interContext);
 }
 
 class StopsCompanion extends UpdateCompanion<Stop> {
@@ -957,17 +960,17 @@ class StopsCompanion extends UpdateCompanion<Stop> {
         descr = Value(descr);
   StopsCompanion copyWith(
       {Value<String> id,
-      Value<List<String>> images,
-      Value<String> name,
-      Value<String> descr,
-      Value<String> time,
-      Value<String> creator,
-      Value<String> division,
-      Value<String> artType,
-      Value<String> material,
-      Value<String> size,
-      Value<String> location,
-      Value<String> interContext}) {
+        Value<List<String>> images,
+        Value<String> name,
+        Value<String> descr,
+        Value<String> time,
+        Value<String> creator,
+        Value<String> division,
+        Value<String> artType,
+        Value<String> material,
+        Value<String> size,
+        Value<String> location,
+        Value<String> interContext}) {
     return StopsCompanion(
       id: id ?? this.id,
       images: images ?? this.images,
@@ -1119,7 +1122,7 @@ class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
   }
 
   final VerificationMeta _interContextMeta =
-      const VerificationMeta('interContext');
+  const VerificationMeta('interContext');
   GeneratedTextColumn _interContext;
   @override
   GeneratedTextColumn get interContext =>
@@ -1134,19 +1137,19 @@ class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
 
   @override
   List<GeneratedColumn> get $columns => [
-        id,
-        images,
-        name,
-        descr,
-        time,
-        creator,
-        division,
-        artType,
-        material,
-        size,
-        location,
-        interContext
-      ];
+    id,
+    images,
+    name,
+    descr,
+    time,
+    creator,
+    division,
+    artType,
+    material,
+    size,
+    location,
+    interContext
+  ];
   @override
   $StopsTable get asDslTable => this;
   @override
@@ -1270,7 +1273,7 @@ class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
   }
 
   static TypeConverter<List<String>, String> $converter0 =
-      StringListConverter();
+  StringListConverter();
 }
 
 class Division extends DataClass implements Insertable<Division> {
@@ -1310,20 +1313,20 @@ class Division extends DataClass implements Insertable<Division> {
     return DivisionsCompanion(
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
       color:
-          color == null && nullToAbsent ? const Value.absent() : Value(color),
+      color == null && nullToAbsent ? const Value.absent() : Value(color),
     );
   }
 
   Division copyWith({String name, Color color}) => Division(
-        name: name ?? this.name,
-        color: color ?? this.color,
-      );
+    name: name ?? this.name,
+    color: color ?? this.color,
+  );
   @override
   String toString() {
     return (StringBuffer('Division(')
-          ..write('name: $name, ')
-          ..write('color: $color')
-          ..write(')'))
+      ..write('name: $name, ')
+      ..write('color: $color')
+      ..write(')'))
         .toString();
   }
 
@@ -1332,9 +1335,9 @@ class Division extends DataClass implements Insertable<Division> {
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
-      (other is Division &&
-          other.name == this.name &&
-          other.color == this.color);
+          (other is Division &&
+              other.name == this.name &&
+              other.color == this.color);
 }
 
 class DivisionsCompanion extends UpdateCompanion<Division> {
@@ -1443,12 +1446,12 @@ class Tour extends DataClass implements Insertable<Tour> {
   final String desc;
   Tour(
       {@required this.id,
-      @required this.onlineId,
-      @required this.name,
-      @required this.author,
-      @required this.difficulty,
-      @required this.creationTime,
-      @required this.desc});
+        @required this.onlineId,
+        @required this.name,
+        @required this.author,
+        @required this.difficulty,
+        @required this.creationTime,
+        @required this.desc});
   factory Tour.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -1462,7 +1465,7 @@ class Tour extends DataClass implements Insertable<Tour> {
           .mapFromDatabaseResponse(data['${effectivePrefix}online_id']),
       name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
       author:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}author']),
+      stringType.mapFromDatabaseResponse(data['${effectivePrefix}author']),
       difficulty: doubleType
           .mapFromDatabaseResponse(data['${effectivePrefix}difficulty']),
       creationTime: dateTimeType
@@ -1506,7 +1509,7 @@ class Tour extends DataClass implements Insertable<Tour> {
           : Value(onlineId),
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
       author:
-          author == null && nullToAbsent ? const Value.absent() : Value(author),
+      author == null && nullToAbsent ? const Value.absent() : Value(author),
       difficulty: difficulty == null && nullToAbsent
           ? const Value.absent()
           : Value(difficulty),
@@ -1518,13 +1521,13 @@ class Tour extends DataClass implements Insertable<Tour> {
   }
 
   Tour copyWith(
-          {int id,
-          String onlineId,
-          String name,
-          String author,
-          double difficulty,
-          DateTime creationTime,
-          String desc}) =>
+      {int id,
+        String onlineId,
+        String name,
+        String author,
+        double difficulty,
+        DateTime creationTime,
+        String desc}) =>
       Tour(
         id: id ?? this.id,
         onlineId: onlineId ?? this.onlineId,
@@ -1537,14 +1540,14 @@ class Tour extends DataClass implements Insertable<Tour> {
   @override
   String toString() {
     return (StringBuffer('Tour(')
-          ..write('id: $id, ')
-          ..write('onlineId: $onlineId, ')
-          ..write('name: $name, ')
-          ..write('author: $author, ')
-          ..write('difficulty: $difficulty, ')
-          ..write('creationTime: $creationTime, ')
-          ..write('desc: $desc')
-          ..write(')'))
+      ..write('id: $id, ')
+      ..write('onlineId: $onlineId, ')
+      ..write('name: $name, ')
+      ..write('author: $author, ')
+      ..write('difficulty: $difficulty, ')
+      ..write('creationTime: $creationTime, ')
+      ..write('desc: $desc')
+      ..write(')'))
         .toString();
   }
 
@@ -1562,14 +1565,14 @@ class Tour extends DataClass implements Insertable<Tour> {
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
-      (other is Tour &&
-          other.id == this.id &&
-          other.onlineId == this.onlineId &&
-          other.name == this.name &&
-          other.author == this.author &&
-          other.difficulty == this.difficulty &&
-          other.creationTime == this.creationTime &&
-          other.desc == this.desc);
+          (other is Tour &&
+              other.id == this.id &&
+              other.onlineId == this.onlineId &&
+              other.name == this.name &&
+              other.author == this.author &&
+              other.difficulty == this.difficulty &&
+              other.creationTime == this.creationTime &&
+              other.desc == this.desc);
 }
 
 class ToursCompanion extends UpdateCompanion<Tour> {
@@ -1605,12 +1608,12 @@ class ToursCompanion extends UpdateCompanion<Tour> {
         desc = Value(desc);
   ToursCompanion copyWith(
       {Value<int> id,
-      Value<String> onlineId,
-      Value<String> name,
-      Value<String> author,
-      Value<double> difficulty,
-      Value<DateTime> creationTime,
-      Value<String> desc}) {
+        Value<String> onlineId,
+        Value<String> name,
+        Value<String> author,
+        Value<double> difficulty,
+        Value<DateTime> creationTime,
+        Value<String> desc}) {
     return ToursCompanion(
       id: id ?? this.id,
       onlineId: onlineId ?? this.onlineId,
@@ -1685,7 +1688,7 @@ class $ToursTable extends Tours with TableInfo<$ToursTable, Tour> {
   }
 
   final VerificationMeta _creationTimeMeta =
-      const VerificationMeta('creationTime');
+  const VerificationMeta('creationTime');
   GeneratedDateTimeColumn _creationTime;
   @override
   GeneratedDateTimeColumn get creationTime =>
@@ -1822,9 +1825,9 @@ class TourStop extends DataClass implements Insertable<TourStop> {
     return TourStop(
       id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
       id_tour:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}id_tour']),
+      intType.mapFromDatabaseResponse(data['${effectivePrefix}id_tour']),
       id_stop:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}id_stop']),
+      stringType.mapFromDatabaseResponse(data['${effectivePrefix}id_stop']),
     );
   }
   factory TourStop.fromJson(Map<String, dynamic> json,
@@ -1860,17 +1863,17 @@ class TourStop extends DataClass implements Insertable<TourStop> {
   }
 
   TourStop copyWith({int id, int id_tour, String id_stop}) => TourStop(
-        id: id ?? this.id,
-        id_tour: id_tour ?? this.id_tour,
-        id_stop: id_stop ?? this.id_stop,
-      );
+    id: id ?? this.id,
+    id_tour: id_tour ?? this.id_tour,
+    id_stop: id_stop ?? this.id_stop,
+  );
   @override
   String toString() {
     return (StringBuffer('TourStop(')
-          ..write('id: $id, ')
-          ..write('id_tour: $id_tour, ')
-          ..write('id_stop: $id_stop')
-          ..write(')'))
+      ..write('id: $id, ')
+      ..write('id_tour: $id_tour, ')
+      ..write('id_stop: $id_stop')
+      ..write(')'))
         .toString();
   }
 
@@ -1880,10 +1883,10 @@ class TourStop extends DataClass implements Insertable<TourStop> {
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
-      (other is TourStop &&
-          other.id == this.id &&
-          other.id_tour == this.id_tour &&
-          other.id_stop == this.id_stop);
+          (other is TourStop &&
+              other.id == this.id &&
+              other.id_tour == this.id_tour &&
+              other.id_stop == this.id_stop);
 }
 
 class TourStopsCompanion extends UpdateCompanion<TourStop> {
@@ -2019,13 +2022,13 @@ class Extra extends DataClass implements Insertable<Extra> {
   final List<int> answerCor;
   Extra(
       {@required this.pos_extra,
-      @required this.pos_stop,
-      @required this.id_tour,
-      @required this.id_stop,
-      @required this.textInfo,
-      this.type,
-      this.answerOpt,
-      this.answerCor});
+        @required this.pos_stop,
+        @required this.id_tour,
+        @required this.id_stop,
+        @required this.textInfo,
+        this.type,
+        this.answerOpt,
+        this.answerCor});
   factory Extra.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -2033,13 +2036,13 @@ class Extra extends DataClass implements Insertable<Extra> {
     final stringType = db.typeSystem.forDartType<String>();
     return Extra(
       pos_extra:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}pos_extra']),
+      intType.mapFromDatabaseResponse(data['${effectivePrefix}pos_extra']),
       pos_stop:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}pos_stop']),
+      intType.mapFromDatabaseResponse(data['${effectivePrefix}pos_stop']),
       id_tour:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}id_tour']),
+      intType.mapFromDatabaseResponse(data['${effectivePrefix}id_tour']),
       id_stop:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}id_stop']),
+      stringType.mapFromDatabaseResponse(data['${effectivePrefix}id_stop']),
       textInfo: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}text_info']),
       type: $ExtrasTable.$converter0.mapToDart(
@@ -2108,14 +2111,14 @@ class Extra extends DataClass implements Insertable<Extra> {
   }
 
   Extra copyWith(
-          {int pos_extra,
-          int pos_stop,
-          int id_tour,
-          String id_stop,
-          String textInfo,
-          ExtraType type,
-          List<String> answerOpt,
-          List<int> answerCor}) =>
+      {int pos_extra,
+        int pos_stop,
+        int id_tour,
+        String id_stop,
+        String textInfo,
+        ExtraType type,
+        List<String> answerOpt,
+        List<int> answerCor}) =>
       Extra(
         pos_extra: pos_extra ?? this.pos_extra,
         pos_stop: pos_stop ?? this.pos_stop,
@@ -2129,15 +2132,15 @@ class Extra extends DataClass implements Insertable<Extra> {
   @override
   String toString() {
     return (StringBuffer('Extra(')
-          ..write('pos_extra: $pos_extra, ')
-          ..write('pos_stop: $pos_stop, ')
-          ..write('id_tour: $id_tour, ')
-          ..write('id_stop: $id_stop, ')
-          ..write('textInfo: $textInfo, ')
-          ..write('type: $type, ')
-          ..write('answerOpt: $answerOpt, ')
-          ..write('answerCor: $answerCor')
-          ..write(')'))
+      ..write('pos_extra: $pos_extra, ')
+      ..write('pos_stop: $pos_stop, ')
+      ..write('id_tour: $id_tour, ')
+      ..write('id_stop: $id_stop, ')
+      ..write('textInfo: $textInfo, ')
+      ..write('type: $type, ')
+      ..write('answerOpt: $answerOpt, ')
+      ..write('answerCor: $answerCor')
+      ..write(')'))
         .toString();
   }
 
@@ -2157,15 +2160,15 @@ class Extra extends DataClass implements Insertable<Extra> {
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
-      (other is Extra &&
-          other.pos_extra == this.pos_extra &&
-          other.pos_stop == this.pos_stop &&
-          other.id_tour == this.id_tour &&
-          other.id_stop == this.id_stop &&
-          other.textInfo == this.textInfo &&
-          other.type == this.type &&
-          other.answerOpt == this.answerOpt &&
-          other.answerCor == this.answerCor);
+          (other is Extra &&
+              other.pos_extra == this.pos_extra &&
+              other.pos_stop == this.pos_stop &&
+              other.id_tour == this.id_tour &&
+              other.id_stop == this.id_stop &&
+              other.textInfo == this.textInfo &&
+              other.type == this.type &&
+              other.answerOpt == this.answerOpt &&
+              other.answerCor == this.answerCor);
 }
 
 class ExtrasCompanion extends UpdateCompanion<Extra> {
@@ -2203,13 +2206,13 @@ class ExtrasCompanion extends UpdateCompanion<Extra> {
         textInfo = Value(textInfo);
   ExtrasCompanion copyWith(
       {Value<int> pos_extra,
-      Value<int> pos_stop,
-      Value<int> id_tour,
-      Value<String> id_stop,
-      Value<String> textInfo,
-      Value<ExtraType> type,
-      Value<List<String>> answerOpt,
-      Value<List<int>> answerCor}) {
+        Value<int> pos_stop,
+        Value<int> id_tour,
+        Value<String> id_stop,
+        Value<String> textInfo,
+        Value<ExtraType> type,
+        Value<List<String>> answerOpt,
+        Value<List<int>> answerCor}) {
     return ExtrasCompanion(
       pos_extra: pos_extra ?? this.pos_extra,
       pos_stop: pos_stop ?? this.pos_stop,
@@ -2319,15 +2322,15 @@ class $ExtrasTable extends Extras with TableInfo<$ExtrasTable, Extra> {
 
   @override
   List<GeneratedColumn> get $columns => [
-        pos_extra,
-        pos_stop,
-        id_tour,
-        id_stop,
-        textInfo,
-        type,
-        answerOpt,
-        answerCor
-      ];
+    pos_extra,
+    pos_stop,
+    id_tour,
+    id_stop,
+    textInfo,
+    type,
+    answerOpt,
+    answerCor
+  ];
   @override
   $ExtrasTable get asDslTable => this;
   @override
@@ -2425,7 +2428,7 @@ class $ExtrasTable extends Extras with TableInfo<$ExtrasTable, Extra> {
 
   static TypeConverter<ExtraType, int> $converter0 = TaskTypeConverter();
   static TypeConverter<List<String>, String> $converter1 =
-      StringListConverter();
+  StringListConverter();
   static TypeConverter<List<int>, String> $converter2 = IntListConverter();
 }
 
@@ -2438,11 +2441,11 @@ class StopFeature extends DataClass implements Insertable<StopFeature> {
   final bool showDetails;
   StopFeature(
       {@required this.id,
-      @required this.id_tour,
-      @required this.id_stop,
-      @required this.showImages,
-      @required this.showText,
-      @required this.showDetails});
+        @required this.id_tour,
+        @required this.id_stop,
+        @required this.showImages,
+        @required this.showText,
+        @required this.showDetails});
   factory StopFeature.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -2452,13 +2455,13 @@ class StopFeature extends DataClass implements Insertable<StopFeature> {
     return StopFeature(
       id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
       id_tour:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}id_tour']),
+      intType.mapFromDatabaseResponse(data['${effectivePrefix}id_tour']),
       id_stop:
-          stringType.mapFromDatabaseResponse(data['${effectivePrefix}id_stop']),
+      stringType.mapFromDatabaseResponse(data['${effectivePrefix}id_stop']),
       showImages: boolType
           .mapFromDatabaseResponse(data['${effectivePrefix}show_images']),
       showText:
-          boolType.mapFromDatabaseResponse(data['${effectivePrefix}show_text']),
+      boolType.mapFromDatabaseResponse(data['${effectivePrefix}show_text']),
       showDetails: boolType
           .mapFromDatabaseResponse(data['${effectivePrefix}show_details']),
     );
@@ -2511,12 +2514,12 @@ class StopFeature extends DataClass implements Insertable<StopFeature> {
   }
 
   StopFeature copyWith(
-          {int id,
-          int id_tour,
-          String id_stop,
-          bool showImages,
-          bool showText,
-          bool showDetails}) =>
+      {int id,
+        int id_tour,
+        String id_stop,
+        bool showImages,
+        bool showText,
+        bool showDetails}) =>
       StopFeature(
         id: id ?? this.id,
         id_tour: id_tour ?? this.id_tour,
@@ -2528,13 +2531,13 @@ class StopFeature extends DataClass implements Insertable<StopFeature> {
   @override
   String toString() {
     return (StringBuffer('StopFeature(')
-          ..write('id: $id, ')
-          ..write('id_tour: $id_tour, ')
-          ..write('id_stop: $id_stop, ')
-          ..write('showImages: $showImages, ')
-          ..write('showText: $showText, ')
-          ..write('showDetails: $showDetails')
-          ..write(')'))
+      ..write('id: $id, ')
+      ..write('id_tour: $id_tour, ')
+      ..write('id_stop: $id_stop, ')
+      ..write('showImages: $showImages, ')
+      ..write('showText: $showText, ')
+      ..write('showDetails: $showDetails')
+      ..write(')'))
         .toString();
   }
 
@@ -2550,13 +2553,13 @@ class StopFeature extends DataClass implements Insertable<StopFeature> {
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
-      (other is StopFeature &&
-          other.id == this.id &&
-          other.id_tour == this.id_tour &&
-          other.id_stop == this.id_stop &&
-          other.showImages == this.showImages &&
-          other.showText == this.showText &&
-          other.showDetails == this.showDetails);
+          (other is StopFeature &&
+              other.id == this.id &&
+              other.id_tour == this.id_tour &&
+              other.id_stop == this.id_stop &&
+              other.showImages == this.showImages &&
+              other.showText == this.showText &&
+              other.showDetails == this.showDetails);
 }
 
 class StopFeaturesCompanion extends UpdateCompanion<StopFeature> {
@@ -2586,11 +2589,11 @@ class StopFeaturesCompanion extends UpdateCompanion<StopFeature> {
         id_stop = Value(id_stop);
   StopFeaturesCompanion copyWith(
       {Value<int> id,
-      Value<int> id_tour,
-      Value<String> id_stop,
-      Value<bool> showImages,
-      Value<bool> showText,
-      Value<bool> showDetails}) {
+        Value<int> id_tour,
+        Value<String> id_stop,
+        Value<bool> showImages,
+        Value<bool> showText,
+        Value<bool> showDetails}) {
     return StopFeaturesCompanion(
       id: id ?? this.id,
       id_tour: id_tour ?? this.id_tour,
@@ -2653,7 +2656,7 @@ class $StopFeaturesTable extends StopFeatures
   }
 
   final VerificationMeta _showDetailsMeta =
-      const VerificationMeta('showDetails');
+  const VerificationMeta('showDetails');
   GeneratedBoolColumn _showDetails;
   @override
   GeneratedBoolColumn get showDetails =>

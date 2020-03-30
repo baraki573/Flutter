@@ -139,7 +139,8 @@ class _FavWidgetState extends State<FavWidget> {
             if (!snapStop.hasData)
               favStops.add(CircularProgressIndicator());
             else if (stops.isEmpty)
-              favStops.add(Text("Keine Objekte favorisiert!\n", style: TextStyle(fontSize: 16)));
+              favStops.add(Text("Keine Objekte favorisiert!\n",
+                  style: TextStyle(fontSize: 16)));
 
             return Column(
               children: <Widget>[
@@ -156,7 +157,10 @@ class _FavWidgetState extends State<FavWidget> {
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                     ),
-                    DownloadColumn(QueryBackend.favTours, notFoundText: "Keine Touren favorisiert.",),
+                    DownloadColumn(
+                      QueryBackend.favTours,
+                      notFoundText: "Keine Touren favorisiert.",
+                    ),
                   ],
             );
           },
@@ -256,21 +260,21 @@ class _BadgeWidgetState extends State<BadgeWidget> {
         Container(
           width: horSize(63, 50) * (popUp ? 1.3 : 1) / _perLine,
           height: horSize(63, 50) * (popUp ? 1.3 : 1) / _perLine,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            image: DecorationImage(
-              image: AssetImage(b.imgPath),
-              fit: BoxFit.fill,
-            ),
-          ),
+          decoration: BoxDecoration(shape: BoxShape.circle),
           child: FlatButton(
+            padding: EdgeInsets.zero,
             splashColor: b.color.withOpacity(.1),
             highlightColor: b.color.withOpacity(.05),
             onPressed: () => _badgePopUp(b),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(80.0),
             ),
-            child: null,
+            child: QueryBackend.netWorkImage(
+              QueryBackend.imageURLBadge(b.imgPath),
+              fit: BoxFit.fill,
+              width: horSize(63, 50) * (popUp ? 1.3 : 1) / _perLine,
+              height: horSize(63, 50) * (popUp ? 1.3 : 1) / _perLine,
+            ),
           ),
         ),
       ],
