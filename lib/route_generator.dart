@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:museum_app/bottom_navigationbar/navigationbar_pattern.dart';
-import 'package:museum_app/home_page/tutorials.dart';
 import 'package:museum_app/login_page/login_page.dart';
 import 'package:museum_app/onboarding/onboarding.dart';
-
-
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -18,8 +15,16 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => LogIn());
       case '/':
         return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample());
-      case '/tutorials':
-        return MaterialPageRoute(builder: (_) => Tutorials());
+      case '/home':
+        return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample.fromIndex(0));
+      case '/tours':
+        return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample.fromIndex(1));
+      case '/add':
+        return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample.fromIndex(2));
+      case '/profile':
+        return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample.fromIndex(3));
+      case '/loading':
+        return MaterialPageRoute(builder: (_) => Center(child: CircularProgressIndicator()));
       // case '/second':
       //   // Validation of correct data type
       //   if (args is String) {

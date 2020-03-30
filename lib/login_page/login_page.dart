@@ -1,30 +1,41 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:museum_app/SizeConfig.dart';
-import 'package:museum_app/bottom_navigationbar/navigationbar_pattern.dart';
+import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
+import 'package:museum_app/graphql/mutations.dart';
 
 class LogIn extends StatefulWidget {
-  LogIn({Key key}) : super(key: key);
+  final bool skippable;
+
+  LogIn({this.skippable = true, Key key}) : super(key: key);
 
   @override
   _LogInState createState() => _LogInState();
 }
 
-enum FormType { login, signup }
+/// Models the two possible actions for this widget
+enum LogInType { LOGIN, SIGNUP }
 
 class _LogInState extends State<LogIn> {
-  FormType _form;
-  String _us, _pw, _pw2;
-  final usCtrl = TextEditingController();
-  final pwCtrl = TextEditingController();
-  final pw2Ctrl = TextEditingController();
+  /// the current state
+  LogInType _type = LogInType.LOGIN;
+
+  /// controller for the username form
+  final _usCtrl = TextEditingController();
+
+  /// controller for the first password form
+  final _pwCtrl = TextEditingController();
+
+  /// controller for the second password form
+  final _pw2Ctrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _form = FormType.login;
+    // only displayed in portrait-mode
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -33,27 +44,22 @@ class _LogInState extends State<LogIn> {
 
   @override
   void dispose() {
+    // set the orientation settings to normal
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    usCtrl.dispose();
-    pwCtrl.dispose();
-    pw2Ctrl.dispose();
+    _usCtrl.dispose();
+    _pwCtrl.dispose();
+    _pw2Ctrl.dispose();
     super.dispose();
   }
 
-  bool _getUS() {
-    setState(() {
-      _us = usCtrl.text;
-      _pw = pwCtrl.text;
-      _pw2 = pw2Ctrl.text;
-    });
-    return _us != "" && _pw != "";
-  }
-
+  /// Proceeds to the next screen.
+  /// If the LogIn can be skipped -> go to home-screen
+  /// else -> go to profile-screen
   void _nextScreen() {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
@@ -61,110 +67,117 @@ class _LogInState extends State<LogIn> {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => BottomBarNavigationPatternExample()),
-    );
-    MuseumDatabase.get().demoUser();
-    MuseumDatabase.get().updateOnboard(true);
+    if (widget.skippable) {
+      Navigator.popAndPushNamed(context, "/");
+    }
+
   }
 
-  Widget _customButtons(text, funct) {
+  /// Creates the input change buttons used for this widget.
+  ///
+  /// The button's [text] and [function] can be defined.
+  /// If [function] is null, the [text] will be displayed in upper case.
+  Widget _customButtons(String text, function) {
     return FlatButton(
       //color: Colors.grey[300],
       textColor: Colors.black54,
       disabledColor: Colors.blue,
       disabledTextColor: Colors.white,
       splashColor: Colors.blueAccent,
-      child: Text(text),
-      onPressed: funct,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18.0),
-        //side: BorderSide(color: Colors.red)
-      ),
+      child: Text(function == null ? text.toUpperCase() : text),
+      onPressed: function,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.0)),
     );
   }
 
+  /// Creates the two state changing buttons.
   Widget _topButtons() {
-    String s1 = _form == FormType.login ? 'LOGIN' : 'LogIn';
-    var funct1 = _form == FormType.login
-        ? null
-        : () => setState(() {
-              _form = FormType.login;
-            });
-    String s2 = _form == FormType.signup ? 'SIGNUP' : 'SignUp';
-    var funct2 = _form == FormType.signup
-        ? null
-        : () => setState(() {
-              _form = FormType.signup;
-            });
-    return new Container(
+    var funct1, funct2;
+    // the button's functions depend on the current state
+    switch (_type) {
+      case LogInType.LOGIN:
+        funct2 = () => setState(() => _type = LogInType.SIGNUP);
+        break;
+      case LogInType.SIGNUP:
+        funct1 = () => setState(() => _type = LogInType.LOGIN);
+        break;
+    }
+    return Container(
       margin: EdgeInsets.only(right: size(88, 216), left: size(88, 216)),
       height: 35,
-      decoration: new BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.grey,
-        borderRadius: new BorderRadius.circular(40.0),
+        borderRadius: BorderRadius.circular(40.0),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
+        children: [
           // LogIn-Button
-          _customButtons(s1, funct1),
+          _customButtons("Login", funct1),
           // SignUp-Button
-          _customButtons(s2, funct2),
+          _customButtons("SignUp", funct2),
         ],
       ),
     );
   }
 
-  Widget _customTextField(ctrl, icon, text, obscure) {
+  /// Creates a single text field used in this widget.
+  ///
+  /// The [icon] is displayed left to the text field. The [text] is displayed as
+  /// the field's label. Set [pwField] to true to create a password-field.
+  Widget _customTextField(
+      TextEditingController ctrl, IconData icon, String text,
+      {bool pwField = false}) {
     return Container(
-      margin: EdgeInsets.only(top: 16, left: 16, right: 16),
-      padding: EdgeInsets.only(left: 10, right: 15),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(30.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.8),
-            spreadRadius: 1,
-            blurRadius: 1,
-          ),
-        ],
-      ),
+      height: verSize(pwField ? 10 : 14, 15),
+      margin: EdgeInsets.only(top: 15.5, left: 16, right: 16),
+      //padding: EdgeInsets.only(left: 10, right: 15),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(30.0)),
       child: TextFormField(
+        onChanged: (_) => setState(() {}),
         controller: ctrl,
-        obscureText: obscure,
+        obscureText: pwField,
+        autovalidate: true,
+        maxLength: pwField ? null : MAX_USERNAME,
+        validator: pwField ? null : _userVal,
         decoration: InputDecoration(
-          border: InputBorder.none,
-          icon: Icon(icon),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0)),
+          prefixIcon: Icon(icon),
           labelText: text,
         ),
       ),
     );
   }
 
+  /// The username's validator.
+  String _userVal(String s) {
+    if (1 <= s.length) return null;
+    return "Username zu kurz";
+  }
+
+  /// Creates the two/three text fields.
   Widget _textFields() {
     return Container(
       margin: const EdgeInsets.only(right: 15, left: 15),
       child: Column(
-        children: <Widget>[
+        children: [
           // Username field
-          _customTextField(
-              usCtrl, Icons.account_circle, 'Username eingeben', false),
+          _customTextField(_usCtrl, Icons.account_circle, 'Username eingeben'),
           // Password field
-          _customTextField(pwCtrl, Icons.mail, 'Passwort eingeben', true),
+          _customTextField(_pwCtrl, Icons.mail, 'Passwort eingeben',
+              pwField: true),
           // Retype Password field [SignUp]
-          _form == FormType.signup
+          _type == LogInType.SIGNUP
               ? _customTextField(
-                  pw2Ctrl, Icons.fiber_pin, 'Passwort bestätigen', true)
+                  _pw2Ctrl, Icons.fiber_pin, 'Passwort bestätigen',
+                  pwField: true)
               : Container(),
         ],
       ),
     );
   }
 
+  /// Displays a dialog after the user wants to skip the login-process.
   void _skipDialog() {
     showDialog(
       context: context,
@@ -173,13 +186,11 @@ class _LogInState extends State<LogIn> {
           title: Text("Hinweis"),
           content:
               Text("Möchten Sie wirklich ohne Accountverbindung fortfahen?\n"
-                  "Sie verpassen so spannende Sammelaufgaben, blah blah"),
-          actions: <Widget>[
+                  "Sie benötigen einen Account für Rundgänge, können diesen aber auch später einrichten."),
+          actions: [
             FlatButton(
               child: Text("Zurück"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
             FlatButton(
               child: Text("Fortfahren"),
@@ -191,73 +202,79 @@ class _LogInState extends State<LogIn> {
     );
   }
 
-  void _submitDialog() {
-    _getUS();
-    if (_us == "" || _pw == "" || _pw2 == "" || _pw != _pw2)
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Hinweis"),
-            content: Text(_pw != _pw2
-                ? "Die eingegebenen Passwörter stimmen nicht überein."
-                : "Bitte füllen Sie alle Felder aus."),
-            actions: <Widget>[
-              FlatButton(
-                child: Text("Schließen"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+  /// Displays the signup-confirmation dialog
+  void _signUpDialog() {
+    var content;
+    // not all fields filled
+    if (_usCtrl.text == "" || _pwCtrl.text == "" || _pw2Ctrl.text == "")
+      content = Text("Bitte füllen Sie alle Felder aus.");
+    // the two passwords dont match
+    else if (_pwCtrl.text != _pw2Ctrl.text)
+      content = Text("Die eingegebenen Passwörter stimmen nicht überein.");
+    // everything ok
     else
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Anmerkung"),
-            content: RichText(
-              text: TextSpan(
-                style: new TextStyle(
-                  fontSize: 18.0,
-                  color: Colors.black,
-                ),
-                children: <TextSpan>[
-                  TextSpan(
-                      text: "Gehen Sie sicher, dass Sie für den Benutzernamen "
-                          "keine persönlichen Informationen verwenden.\n"
-                          "Eingegeben: "),
-                  TextSpan(
-                      text: "$_us",
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
-            actions: <Widget>[
-              FlatButton(
-                child: Text("Zurück"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              FlatButton(
-                child: Text("Weiter"),
-                onPressed: _nextScreen,
-              ),
-            ],
-          );
-        },
+      content = RichText(
+        text: TextSpan(
+          style: TextStyle(fontSize: 18.0, color: Colors.black),
+          children: [
+            TextSpan(
+                text: "Gehen Sie sicher, dass Sie für den Benutzernamen "
+                    "keine persönlichen Informationen verwenden.\n"
+                    "Eingabe: "),
+            TextSpan(
+                text: _usCtrl.text,
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
       );
+
+    // If something went wrong, only be able to close the alert
+    var actions = <Widget>[
+      FlatButton(
+        child: Text("Schließen"),
+        onPressed: () => Navigator.of(context).pop(),
+      ),
+    ];
+
+    // ... else be able to confirm the data
+    if (!(content is Text))
+      actions.add(
+        Mutation(
+          options: MutationOptions(
+              documentNode:
+                  gql(MutationBackend.createUser(_pwCtrl.text, _usCtrl.text)),
+              onError: (e) =>
+                  print("Signup-Error: " + e.clientException.toString()),
+              onCompleted: (result) async {
+                var map = result.data['createUser'];
+                Navigator.pop(context);
+                if (map['ok'] == true) {
+                  print("SIGNUP COMPLETE");
+                  setState(() {
+                    _pwCtrl.clear();
+                    _pw2Ctrl.clear();
+                    _type = LogInType.LOGIN;
+                  });
+                } else
+                  _failedLogin();
+              }),
+          builder: (runMutation, result) => FlatButton(
+            child: Text("Weiter"),
+            onPressed: () => runMutation({}),
+          ),
+        ),
+      );
+
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+            title: Text("Hinweis"), content: content, actions: actions));
   }
 
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
-      //backgroundColor: Colors.amber,
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
@@ -266,79 +283,91 @@ class _LogInState extends State<LogIn> {
           ),
         ),
         padding: const EdgeInsets.only(right: 16, left: 16),
-        child: Center(
-          child: Stack(
-            overflow: Overflow.visible,
-            children: <Widget>[
-              // LogIn-Box
-              Container(
-                height: SizeConfig.safeBlockVertical *
-                    (_form == FormType.signup ? 50 : 38),
-                margin: const EdgeInsets.only(bottom: 27),
-                padding: const EdgeInsets.only(top: 16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(18.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.8),
-                      spreadRadius: 1,
-                      blurRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: <Widget>[
-                    //Container(height: 10),
-                    _topButtons(),
-                    _textFields(),
-                    //Container(height: 30),
-                  ],
-                ),
-              ),
-              // Submit-Button
-              Positioned.fill(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  //(0, _form==FormType.login?1.35:0.65),
-                  child: RaisedButton(
-                    padding: EdgeInsets.only(
-                        left: 25, right: 25, top: 10, bottom: 10),
-                    textColor: Colors.white,
-                    color: Colors.blue,
-                    splashColor: Colors.blueAccent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18.0),
-                      //side: BorderSide(color: Colors.red)
-                    ),
-                    child: Text(
-                      "Submit",
-                      textScaleFactor: 1.3,
-                    ),
-                    onPressed:
-                        _form == FormType.signup ? _submitDialog : _nextScreen,
+        alignment: Alignment.center,
+        child: Stack(
+          children: [
+            // LogIn-Box
+            Container(
+              height: SizeConfig.safeBlockVertical *
+                  (_type == LogInType.SIGNUP ? 55.5 : 42.5),
+              margin: const EdgeInsets.only(bottom: 27),
+              padding: const EdgeInsets.only(top: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(18.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.8),
+                    spreadRadius: 1,
+                    blurRadius: 2,
                   ),
+                ],
+              ),
+              child: Column(children: [_topButtons(), _textFields()]),
+            ),
+            // Submit-Button
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: RaisedButton(
+                  padding: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+                  textColor: Colors.white,
+                  color: Colors.blue,
+                  disabledTextColor: Colors.white.withOpacity(.6),
+                  disabledColor: Colors.blue.withOpacity(.6),
+                  splashColor: Colors.blue[200].withOpacity(.4),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18.0),
+                  ),
+                  child: Text("Bestätigen", textScaleFactor: 1.3),
+                  onPressed: _userVal(_usCtrl.text) != null
+                      ? null
+                      : (_type == LogInType.SIGNUP ? _signUpDialog : _login),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-      floatingActionButton: FlatButton(
-        textColor: Colors.white,
-        color: Colors.blue,
-        splashColor: Colors.blueAccent,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Text("Skip"),
-            Icon(Icons.skip_next),
+            ),
           ],
         ),
-        onPressed: _skipDialog,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18.0),
-        ),
+      ),
+      floatingActionButton: widget.skippable
+          ? FlatButton(
+              textColor: Colors.white,
+              color: Colors.blue,
+              splashColor: Colors.blueAccent,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [Text("Skip"), Icon(Icons.skip_next)],
+              ),
+              onPressed: _skipDialog,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18.0),
+              ),
+            )
+          : null,
+    );
+  }
+
+  /// Tries to login using the controller's current contents.
+  _login() async {
+    bool b = await MuseumDatabase().logIn(_usCtrl.text, _pwCtrl.text);
+    if (b) _nextScreen();
+    else _failedLogin();
+  }
+
+  /// Displays an error dialog
+  _failedLogin() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Hinweis"),
+        content: Text(
+            "Die eingegebenen Benutzerdaten sind nicht korrekt. Überprüfen Sie die Eingaben und versuchen es erneut!"),
+        actions: [
+          FlatButton(
+            child: Text("Schließen"),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
       ),
     );
   }

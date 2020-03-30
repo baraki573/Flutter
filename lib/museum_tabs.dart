@@ -1,9 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:museum_app/graphql/mutations.dart';
 
 import 'SizeConfig.dart';
 import 'constants.dart';
 import 'database/database.dart';
+import 'graphql/graphqlConf.dart';
 import 'image_dialog.dart';
 
 class MuseumTabs extends StatefulWidget {
@@ -76,6 +79,8 @@ class _MuseumTabsState extends State<MuseumTabs> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
+    if (!widget.tabs.containsKey(_currentTab))
+      _currentTab = widget.tabs.keys.toList()[0];
     return ListView(
       children: <Widget>[
         Stack(overflow: Overflow.visible, children: [
@@ -102,7 +107,17 @@ class _MuseumTabsState extends State<MuseumTabs> with TickerProviderStateMixin {
   }
 }
 
-enum _OptionType { EDIT_US, EDIT_PW, EDIT_IMG, ABOUT, clear, demo }
+enum _OptionType {
+  EDIT_US,
+  EDIT_PW,
+  EDIT_IMG,
+  LOGIN,
+  LOGOUT,
+  PROMOTE,
+  ABOUT,
+  clear,
+  demo
+}
 
 class MuseumSettings extends StatelessWidget {
   PopupMenuItem _myPopUpItem(String s, IconData i, _OptionType t) {
@@ -115,30 +130,128 @@ class MuseumSettings extends StatelessWidget {
     );
   }
 
-  Widget _editUS(BuildContext context) {
+  Future<void> _editUS(BuildContext context) async {
     var ctrl = TextEditingController();
-    return AlertDialog(
-      title: Text("Username ändern"),
-      content: TextFormField(
-        autovalidate: true,
-        controller: ctrl,
-        validator: (input) {
-          if (input.length < MIN_USERNAME) return "Username ist zu kurz";
-          if (input.length > MAX_USERNAME) return "Username ist zu lang";
-          return null;
-        },
+    String accesToken = await MuseumDatabase().accessToken();
+
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text("Username ändern"),
+              content: TextFormField(
+                autovalidate: true,
+                controller: ctrl,
+                maxLength: MAX_USERNAME,
+                validator: (input) {
+                  if (input.length < MIN_USERNAME)
+                    return "Username ist zu kurz";
+                  return null;
+                },
+                decoration: InputDecoration(hintText: "Username"),
+              ),
+              actions: [
+                FlatButton(
+                  child: Text("Zurück", style: TextStyle(color: COLOR_PROFILE)),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                FlatButton(
+                  child: Text("Bestätigen",
+                      style: TextStyle(color: COLOR_PROFILE)),
+                  onPressed: () async {
+                    GraphQLClient _client =
+                        GraphQLConfiguration().clientToQuery();
+                    print(ctrl.text);
+                    await _client.mutate(MutationOptions(
+                      documentNode: gql(MutationBackend.changeUsername(
+                          accesToken, ctrl.text.trim())),
+                      update: (cache, result) => cache,
+                      onCompleted: (result) {
+                        if (result is LazyCacheMap) {
+                          print(result.data);
+                          if (result.data['changeUsername'] != null) {
+                            MuseumDatabase().updateUsername(ctrl.text.trim());
+                            Navigator.pop(context);
+                          }
+                        }
+                      },
+                      onError: (e) => print("ERROR " + e.toString()),
+                    ));
+                  },
+                )
+              ],
+            ));
+  }
+
+  Future<void> _editPW(BuildContext context) async {
+    var ctrl = TextEditingController();
+    var ctrl2 = TextEditingController();
+    final key = GlobalKey<FormFieldState>();
+    String accesToken = await MuseumDatabase().accessToken();
+
+    var dialog = AlertDialog(
+      title: Text("Passwort ändern"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextFormField(
+            controller: ctrl,
+            obscureText: true,
+            decoration: InputDecoration(hintText: "Passwort"),
+          ),
+          TextFormField(
+            key: key,
+            controller: ctrl2,
+            obscureText: true,
+            decoration: InputDecoration(hintText: "Passwort wiederholen"),
+            validator: (s) {
+              if (s != ctrl.text) return "Passwörter stimmen nicht überein";
+              return null;
+            },
+          ),
+        ],
       ),
       actions: [
         FlatButton(
-          child: Text("Zurück"),
+          child: Text("Zurück", style: TextStyle(color: COLOR_PROFILE)),
           onPressed: () => Navigator.pop(context),
         ),
         FlatButton(
-          child: Text("Bestätigen"),
-          onPressed: () {
-            MuseumDatabase.get().updateUsername(ctrl.text);
-            ctrl.clear();
+          child: Text("Bestätigen", style: TextStyle(color: COLOR_PROFILE)),
+          onPressed: () async {
+            if (!key.currentState.validate()) return;
+            GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+            print(ctrl.text);
+            await _client.mutate(MutationOptions(
+              documentNode: gql(
+                  MutationBackend.changePassword(accesToken, ctrl.text.trim())),
+              update: (cache, result) => cache,
+              onCompleted: (result) => Navigator.pop(context),
+              onError: (e) => print("ERROR"),
+            ));
+          },
+        ),
+      ],
+    );
+
+    showDialog(context: context, builder: (context) => dialog);
+  }
+
+  Widget _logout(BuildContext context) {
+    return AlertDialog(
+      title: Text("Warnung"),
+      content: Text("Möchten Sie sich wirklich ausloggen?\n"
+          "Alle heruntergeladenen Touren werden gelöscht."),
+      actions: [
+        FlatButton(
+          child: Text("Zurück", style: TextStyle(color: COLOR_PROFILE)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        FlatButton(
+          child: Text("Abmelden", style: TextStyle(color: COLOR_PROFILE)),
+          onPressed: () async {
+            await MuseumDatabase().logOut();
             Navigator.pop(context);
+            Navigator.popAndPushNamed(context, "/profile");
           },
         )
       ],
@@ -147,18 +260,30 @@ class MuseumSettings extends StatelessWidget {
 
   void _select(val, BuildContext context) {
     switch (val) {
-      // TODO build own about dialog in german. Maybe general dialog, val determines content
       case _OptionType.EDIT_IMG:
         showDialog(context: context, builder: (_) => ImageDialog());
         break;
       case _OptionType.EDIT_US:
-        showDialog(context: context, builder: _editUS);
+        _editUS(context);
+        //showDialog(context: context, builder: _editUS);
+        break;
+      case _OptionType.EDIT_PW:
+        _editPW(context);
         break;
       case _OptionType.ABOUT:
-        showAboutDialog(context: context);
+        showDialog(context: context, builder: _about);
+        break;
+      case _OptionType.LOGOUT:
+        showDialog(context: context, builder: _logout);
+        break;
+      case _OptionType.PROMOTE:
+        _promote(context);
+        break;
+      case _OptionType.LOGIN:
+        Navigator.popAndPushNamed(context, "/profile");
         break;
       case _OptionType.clear:
-        MuseumDatabase.get().clear();
+        MuseumDatabase().clear();
         break;
       case _OptionType.demo:
         demo();
@@ -167,28 +292,141 @@ class MuseumSettings extends StatelessWidget {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton(
-      itemBuilder: (context) => [
-        _myPopUpItem("Profilbild ändern", Icons.image, _OptionType.EDIT_IMG),
-        _myPopUpItem("Username ändern", Icons.person, _OptionType.EDIT_US),
-        _myPopUpItem("Passwort ändern", Icons.fiber_pin, _OptionType.EDIT_PW),
-        _myPopUpItem("Über diese App", Icons.info, _OptionType.ABOUT),
-        _myPopUpItem(
-            "DEBUG clear", Icons.restore_from_trash, _OptionType.clear),
-        _myPopUpItem("DEBUG demo", Icons.play_arrow, _OptionType.demo),
+  Widget _about(context) {
+    return AlertDialog(
+      title: Text("Geschichte Vernetzt"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "Teil des Projekts MINTplus²: Systematischer und vernetzter Kompetenzaufbau in der Lehrerbildung im Umgang mit Digitalisierung und Heterogenität",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontSize: horSize(4, 2),
+                fontFamily: "Nunito",
+                fontWeight: FontWeight.w300,
+                fontStyle: FontStyle.italic,
+                color: Color(0xFF1A1A1A)),
+          ),
+          Image.asset('assets/images/photo_2020-01-19.jpeg',
+              width: horSize(35, 30), height: verSize(15, 10)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                margin: EdgeInsets.only(left: 7, right: 7),
+                alignment: Alignment.center,
+                child: Image.asset('assets/images/Logo_MINTplus_182x0.jpg',
+                    width: horSize(28, 30), height: verSize(10, 20)),
+              ),
+              Container(
+                margin: EdgeInsets.only(left: 7, right: 7),
+                alignment: Alignment.center,
+                child: Image.asset('assets/images/serveimage.png',
+                    width: horSize(28, 30), height: verSize(10, 20)),
+              ),
+            ],
+          ),
+        ],
+      ),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16),
+      actions: [
+        FlatButton(
+          child: Text("Schließen", style: TextStyle(color: COLOR_PROFILE)),
+          onPressed: () => Navigator.pop(context),
+        ),
       ],
-      onSelected: (result) => _select(result, context),
-      /*onPressed: () {
-                print("Options");
-              },
-              iconSize: 35,*/
-      icon: Icon(
-        Icons.settings,
-        size: 35,
-        color: Colors.white,
+    );
+  }
+
+  _promote(context) async {
+    String token = await MuseumDatabase().accessToken();
+    final key = GlobalKey<FormFieldState>();
+    TextEditingController ctrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Erstellercode eingeben"),
+        content: TextFormField(
+          controller: ctrl,
+          key: key,
+          validator: (s) => "Der Code $s wurde nicht akzeptiert",
+        ),
+        actions: [
+          FlatButton(
+            child: Text("Schließen", style: TextStyle(color: COLOR_PROFILE)),
+            onPressed: () => Navigator.pop(context),
+          ),
+          FlatButton(
+            child: Text("Bestätigen", style: TextStyle(color: COLOR_PROFILE)),
+            onPressed: () async {
+              GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+              print(ctrl.text);
+              QueryResult result = await _client.mutate(MutationOptions(
+                  documentNode:
+                      gql(MutationBackend.promote(token, ctrl.text.trim())),
+                  update: (cache, result) => cache));
+              if (result.hasException) print("EXC: "+result.exception.toString());
+              if (result.data is LazyCacheMap) {
+                if (result.data['promoteUser']["ok"]["boolean"] == true) {
+                  MuseumDatabase().setProducer();
+                  Navigator.pop(context);
+                }
+                else key.currentState.validate();
+              }
+            },
+          ),
+        ],
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: MuseumDatabase().watchUser(),
+      builder: (context, snap) {
+        bool logged = snap.hasData && snap.data.accessToken != "";
+        bool producer = snap.hasData && snap.data.producer;
+        return PopupMenuButton(
+          itemBuilder: (context) => _popUpList(logged, producer),
+          onSelected: (result) => _select(result, context),
+          icon: Icon(
+            Icons.settings,
+            size: 35,
+            color: Colors.white,
+          ),
+        );
+      },
+    );
+  }
+
+  _popUpList(bool logged, bool producer) {
+    List<PopupMenuItem> base = [
+      _myPopUpItem("Einloggen", Icons.redo, _OptionType.LOGIN),
+      _myPopUpItem("Über diese App", Icons.info, _OptionType.ABOUT),
+      _myPopUpItem("DEBUG clear", Icons.clear, _OptionType.clear),
+      _myPopUpItem("DEBUG demo", Icons.play_arrow, _OptionType.demo),
+    ];
+
+    if (logged) {
+      base.removeAt(0);
+      if (!producer)
+        base.insert(
+            0,
+            _myPopUpItem(
+                "Tourersteller werden", Icons.work, _OptionType.PROMOTE));
+      base.insert(0, _myPopUpItem("Ausloggen", Icons.undo, _OptionType.LOGOUT));
+      base.insert(
+          0,
+          _myPopUpItem(
+              "Passwort ändern", Icons.fiber_pin, _OptionType.EDIT_PW));
+      base.insert(0,
+          _myPopUpItem("Username ändern", Icons.person, _OptionType.EDIT_US));
+      base.insert(0,
+          _myPopUpItem("Profilbild ändern", Icons.image, _OptionType.EDIT_IMG));
+    }
+
+    return base;
   }
 }

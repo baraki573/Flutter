@@ -1,27 +1,18 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:museum_app/database/database.dart';
+import 'package:museum_app/graphql/query.dart';
 import 'package:photo_view/photo_view.dart';
 
 import 'SizeConfig.dart';
 
 class ImageCaroussel extends StatefulWidget {
-  final List<AssetImage> images;
+  final List<String> imagePaths;
 
-  const ImageCaroussel.fromImages(this.images, {Key key}) : super(key: key);
+  //const ImageCaroussel.fromImages(this.images, {Key key}) : imagePaths = const <String>[], super(key: key);
 
-  ImageCaroussel.fromStrings(List<String> list, {Key key})
-      : images = List<AssetImage>(),
-        super(key: key) {
-    for (var s in list) {
-      try {
-        AssetImage a = AssetImage(s);
-        images.add(a);
-      } catch (e) {
-        continue;
-      }
-    }
-  }
+  ImageCaroussel.fromStrings(this.imagePaths, {Key key}) : super(key: key);
 
   @override
   _ImageCarouselState createState() => _ImageCarouselState();
@@ -29,11 +20,51 @@ class ImageCaroussel extends StatefulWidget {
 
 class _ImageCarouselState extends State<ImageCaroussel> {
   int _currentImage = 0;
+  List<Image> _images = List<Image>();
+
+  var _copy;
+
+  @override
+  void initState() {
+    _initList();
+    super.initState();
+  }
+
+  @override
+  dispose() {
+    _images.clear();
+    super.dispose();
+  }
+
+  _initList() async {
+    String token = await MuseumDatabase().accessToken();
+    _images.clear();
+    for (var s in widget.imagePaths) {
+      _images.add(Image.network(
+        QueryBackend.imageURLPicture(s),
+        //GraphQLConfiguration().imageURLProfile("5e7e091dbef4a100e3735722"),
+        headers: {"Authorization": "Bearer $token"},
+        fit: BoxFit.contain,
+        width: horSize(100, 100),
+        //height: 50.toDouble(),
+      ));
+    }
+    _copy = widget.imagePaths;
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.images == null || widget.images.isEmpty) return Container();
+    if (widget.imagePaths == null || widget.imagePaths.isEmpty) return Container();
+    //print(widget.imagePaths);
     var tag = DateTime.now().toString();
+    if (_copy != widget.imagePaths) {
+      _initList();
+      _copy = widget.imagePaths;
+      _currentImage = 0;
+      return Container();
+    }
+
     return Column(children: [
       CarouselSlider(
         //enlargeCenterPage: true,
@@ -41,35 +72,68 @@ class _ImageCarouselState extends State<ImageCaroussel> {
         viewportFraction: 1.0,
         height: verSize(52, 68.5),
         enableInfiniteScroll: false,
-        items: widget.images
+        items: _images
             .map(
               (img) => GestureDetector(
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => _ImageDetail(tag, img))),
-                //_ImageDetail("A", img))),
-                //onTap: () => _imagePopup(widget.stop.imgs[_currentImage]),
-                child: Container(
-                  //color: Colors.green,
-                  //height: verSize(52, 68.5),
-                  //margin: EdgeInsets.symmetric(horizontal: 16),
-                  //height: SizeConfig.safeBlockVertical * 40,
-                  //width: SizeConfig.safeBlockHorizontal * 100,
-                  //decoration: BoxDecoration(
-                  //borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                  //border: Border.all(color: Colors.black),
-                  //image: DecorationImage(image: img, fit: BoxFit.cover),
-                  //),
-                  child: Hero(
-                    transitionOnUserGestures: true,
-                    child: Image(
-                        //height: verSize(57, 68.5),
-                        width: horSize(100, 100),
-                        image: img,
-                        fit: BoxFit.cover),
-                    tag: tag,
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => _ImageDetail(tag, img.image))),
+                child: Hero(
+                  transitionOnUserGestures: true,
+                  child: Container(
+                    color: Colors.white.withOpacity(.3),
+                      child: img,
+                  ),
+                  tag: tag,
+                ),
+              ),
+            )
+            .toList(),
+      ),
+      // Dot Indicator
+      widget.imagePaths.length > 1
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                widget.imagePaths.length,
+                (index) => Container(
+                  width: 8.0,
+                  height: 8.0,
+                  margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentImage == index
+                        ? Colors.black
+                        : Colors.white.withOpacity(0.8),
                   ),
                 ),
-                /*Positioned(
+              ),
+            )
+          : Container(),
+    ]);
+  }
+}
+
+//color: Colors.green,
+//height: verSize(52, 68.5),
+//margin: EdgeInsets.symmetric(horizontal: 16),
+//height: SizeConfig.safeBlockVertical * 40,
+//width: SizeConfig.safeBlockHorizontal * 100,
+//decoration: BoxDecoration(
+//borderRadius: BorderRadius.all(Radius.circular(20.0)),
+//border: Border.all(color: Colors.black),
+//image: DecorationImage(image: img, fit: BoxFit.cover),
+//),
+//_ImageDetail("A", img))),
+//onTap: () => _imagePopup(widget.stop.imgs[_currentImage]),
+/*Image(
+                        //height: verSize(57, 68.5),
+                        width: horSize(100, 100),
+                        image: img.image,
+                        fit: BoxFit.cover)*/
+
+/*Positioned(
                       top: 7,
                       right: 23,
                       height: SizeConfig.safeBlockVertical * 6,
@@ -85,31 +149,6 @@ class _ImageCarouselState extends State<ImageCaroussel> {
                           _imagePopup(widget.stop.imgs[_currentImage]);
                         },
                       ),*/
-              ),
-            )
-            .toList(),
-      ),
-      // Dot Indicator
-      widget.images.length > 1 ? Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(
-          widget.images.length,
-          (index) => Container(
-            width: 8.0,
-            height: 8.0,
-            margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _currentImage == index
-                  ? Colors.black
-                  : Colors.grey.withOpacity(0.75),
-            ),
-          ),
-        ),
-      ) : Container(),
-    ]);
-  }
-}
 
 class _ImageDetail extends StatelessWidget {
   final ImageProvider _img;

@@ -75,7 +75,9 @@ class _BottomBarNavigationPatternExampleState
           barItems: widget.barItems,
           animationDuration: const Duration(milliseconds: 150),
           barStyle: BarStyle(fontSize: 16.0, iconSize: 25.0),
-          onBarTap: (index) => setState(() => selectedBarIndex = index)),
+          onBarTap: (index) => setState(() => selectedBarIndex = index),
+        startIndex: widget.startIndex,
+      ),
     );
   }
 }

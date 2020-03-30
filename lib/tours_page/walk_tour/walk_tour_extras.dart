@@ -174,7 +174,13 @@ class _TourExtraState extends State<TourExtra> {
                   value: e.valB,
                   onChanged: widget.result
                       ? null
-                      : (newVal) => setState(() => e.valB = newVal),
+                      : (newVal) => setState(() {
+                            if (newVal)
+                              t.correct.add(id);
+                            else
+                              t.correct.remove(id);
+                            e.valB = newVal;
+                          }),
                   title: label(e),
                   secondary: widget.result
                       ? Padding(
@@ -195,7 +201,11 @@ class _TourExtraState extends State<TourExtra> {
                     value: id,
                     onChanged: widget.result
                         ? null
-                        : (newVal) => setState(() => t.selected = id),
+                        : (newVal) => setState(() {
+                              t.correct.clear();
+                              t.correct.add(id);
+                              t.selected = id;
+                            }),
                     title: label(e),
                     groupValue: t.selected,
                     secondary: widget.result

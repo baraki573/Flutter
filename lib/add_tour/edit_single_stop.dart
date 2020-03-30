@@ -78,7 +78,7 @@ class _EditSingleStopState extends State<EditSingleStop> {
     return Container(
         color: Colors.white,
         child: StreamBuilder(
-          stream: MuseumDatabase.get().getCustomStop(),
+          stream: MuseumDatabase().getCustomStop(),
           builder: (context, snap) {
             Stop stop = snap.data?.stop;
             return DropdownButton(
@@ -106,7 +106,7 @@ class _EditSingleStopState extends State<EditSingleStop> {
                   ),
                 ),
               ],
-              onChanged: (value) {
+              onChanged: (value) async {
                 switch(value) {
                   case 0: _action(); break;
                   case 1: _setStop(stop); break;
@@ -213,10 +213,13 @@ class _EditSingleStopState extends State<EditSingleStop> {
             funct: _onTapTask,
             key: _keyTask,
           ),
+          // TODO replace Extra's demo text
+          // TODO MC können nicht geändert werden (tap) [unmod?]
+          // TODO MC speichere "nichts ist richtig" ab
+          // TODO badges
           _withLabel(
             FontAwesomeIcons.fileImage, "Bild",
-            //TODO block for individuell
-            funct: widget.stop.isCustom()
+            funct: widget.stop.stop.images.isEmpty
                 ? null
                 : () => setState(() => widget.stop.extras.add(ActualExtra(
                     ExtraType.IMAGE,
