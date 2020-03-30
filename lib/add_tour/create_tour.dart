@@ -198,7 +198,9 @@ class _CreateTourState extends State<CreateTour> {
                       }),
                   IconButton(
                     padding: EdgeInsets.zero,
-                    onPressed: () {if (widget.tour.stops.length > 1) _removeStop(elem);},
+                    onPressed: () {
+                      if (widget.tour.stops.length > 1) _removeStop(elem);
+                    },
                     icon: Icon(Icons.remove_circle),
                     iconSize: 50,
                     color: COLOR_ADD,
@@ -305,19 +307,16 @@ class _CreateTourState extends State<CreateTour> {
                       borderRadius: BorderRadius.circular(10)),
                   textColor: Colors.white,
                   color: COLOR_ADD,
-                  onPressed: () {
+                  onPressed: () async {
                     widget.tour.creationTime = DateTime.now();
-                    /*for (var s in widget.tour.stops)
-                      for (var e in s.extras)
-                        if (e.task != null)
-                          e.task.*/
-                    MuseumDatabase().writeTourStops(widget.tour, upload: true).then(
-                        (val) {
+                    bool ok = await MuseumDatabase()
+                        .writeTourStops(widget.tour, upload: true);
+                    if (ok) {
                       widget.goBack();
                       Scaffold.of(context).showSnackBar(SnackBar(
                         content: Text("Tour hinzugefügt!"),
                       ));
-                    });
+                    }
                   },
                   child: Text("Fertigstellen"),
                 ),
@@ -396,21 +395,25 @@ class _CreateTourState extends State<CreateTour> {
         break;
     }
     return WillPopScope(
-      onWillPop: () {funct(); return Future.value(false);},
+      onWillPop: () {
+        funct();
+        return Future.value(false);
+      },
       child: Container(
-      width: horSize(25, 30),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          IconButton(
-            onPressed: funct,
-            icon: Icon(Icons.arrow_back),
-            iconSize: 30,
-          ),
-          Text(label),
-        ],
+        width: horSize(25, 30),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            IconButton(
+              onPressed: funct,
+              icon: Icon(Icons.arrow_back),
+              iconSize: 30,
+            ),
+            Text(label),
+          ],
+        ),
       ),
-    ),);
+    );
   }
 
   void _confirmBack() {

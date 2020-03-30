@@ -10,10 +10,6 @@ void main() async {
   await MuseumDatabase().init();
   final User user = await MuseumDatabase().getUser();
   final bool onboardEnd = user.onboardEnd;
-  if (user.refreshToken != null && user.refreshToken != "") {
-    bool re = await MuseumDatabase().refreshToken();
-
-  }
 
   runApp(GraphQLProvider(
     client: GraphQLConfiguration().client,

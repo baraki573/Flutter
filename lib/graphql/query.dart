@@ -283,6 +283,11 @@ class QueryBackend {
               );
             return Image.network(
               url,
+              /*loadingBuilder: (context, b, c) => Image.asset(
+                "assets/images/empty_profile.png",
+                width: width.toDouble(),
+                height: height.toDouble(),
+              ),*/
               //GraphQLConfiguration().imageURLProfile("5e7e091dbef4a100e3735722"),
               headers: {"Authorization": "Bearer $token"},
               fit: fit,
