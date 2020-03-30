@@ -115,7 +115,7 @@ class ActualExtra {
   final ActualTask task;
   final ExtraType type;
 
-  ActualExtra(this.type, {text = "", sel = const [""], correct = const <int>{}}) : task = ActualTask(type, answerNames: sel, correct: correct) {
+  ActualExtra(this.type, {text = "", sel = const [""], correct}) : task = ActualTask(type, answerNames: sel, correct: correct) {
     textInfo.text = text;
   }
 }

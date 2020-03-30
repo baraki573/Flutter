@@ -74,7 +74,6 @@ class _EditSingleStopState extends State<EditSingleStop> {
   }
 
   Widget _selecter() {
-
     return Container(
         color: Colors.white,
         child: StreamBuilder(
@@ -82,7 +81,7 @@ class _EditSingleStopState extends State<EditSingleStop> {
           builder: (context, snap) {
             Stop stop = snap.data?.stop;
             return DropdownButton(
-              hint: Text("  "+widget.stop.stop?.name),
+              hint: Text("  " + widget.stop.stop?.name),
               isExpanded: true,
               items: [
                 DropdownMenuItem(
@@ -107,9 +106,13 @@ class _EditSingleStopState extends State<EditSingleStop> {
                 ),
               ],
               onChanged: (value) async {
-                switch(value) {
-                  case 0: _action(); break;
-                  case 1: _setStop(stop); break;
+                switch (value) {
+                  case 0:
+                    _action();
+                    break;
+                  case 1:
+                    _setStop(stop);
+                    break;
                   default:
                 }
               },
@@ -204,8 +207,8 @@ class _EditSingleStopState extends State<EditSingleStop> {
           _withLabel(
             Icons.text_fields,
             "Textfeld",
-            funct: () => setState(() => widget.stop.extras.add(
-                ActualExtra(ExtraType.TEXT, text: "Textfreifeld"))),
+            funct: () => setState(() => widget.stop.extras
+                .add(ActualExtra(ExtraType.TEXT, text: "Textfreifeld"))),
           ),
           _withLabel(
             Icons.playlist_add,
@@ -213,11 +216,10 @@ class _EditSingleStopState extends State<EditSingleStop> {
             funct: _onTapTask,
             key: _keyTask,
           ),
-          // TODO replace Extra's demo text
-          // TODO MC können nicht geändert werden (tap) [unmod?]
           // TODO MC speichere "nichts ist richtig" ab
           _withLabel(
-            FontAwesomeIcons.fileImage, "Bild",
+            FontAwesomeIcons.fileImage,
+            "Bild",
             funct: widget.stop.stop.images.isEmpty
                 ? null
                 : () => setState(() => widget.stop.extras.add(ActualExtra(
@@ -261,23 +263,32 @@ class _EditSingleStopState extends State<EditSingleStop> {
     switch (prov.menuTitle) {
       case "Text":
         setState(() => widget.stop.extras.add(
-              ActualExtra(ExtraType.TASK_TEXT,
-                  text: "Aufgabentext",
-                  sel: ["Antwort"]),
+              ActualExtra(
+                ExtraType.TASK_TEXT,
+                text: "Aufgabentext",
+                sel: ["Antwort"],
+                correct: <int>{},
+              ),
             ));
         break;
       case "Multi":
         setState(() => widget.stop.extras.add(
-              ActualExtra(ExtraType.TASK_MULTI,
-                  text: "Aufgabentext",
-                  sel: ["Antwort"]),
+              ActualExtra(
+                ExtraType.TASK_MULTI,
+                text: "Aufgabentext",
+                sel: ["Antwort"],
+                correct: <int>{},
+              ),
             ));
         break;
       case "Single":
         setState(() => widget.stop.extras.add(
-              ActualExtra(ExtraType.TASK_SINGLE,
-                  text: "Aufgabentext",
-                  sel: ["Antwort"]),
+              ActualExtra(
+                ExtraType.TASK_SINGLE,
+                text: "Aufgabentext",
+                sel: ["Antwort"],
+                correct: <int>{},
+              ),
             ));
         break;
     }

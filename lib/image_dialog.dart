@@ -35,7 +35,6 @@ class _ImageDialogState extends State<ImageDialog> {
 
   @override
   void initState() {
-    // TODO: implement initState
     _initList();
     super.initState();
   }

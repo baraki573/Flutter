@@ -122,7 +122,6 @@ class _TourListState extends State<TourList> {
     );
   }
 
-  //TODO schöner machen -> soll animiert sein
   void _showTour(TourWithStops t) {
     showGeneralDialog(
       barrierColor: Colors.grey.withOpacity(0.7),

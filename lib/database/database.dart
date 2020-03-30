@@ -80,7 +80,6 @@ class Tours extends Table {
   TextColumn get author =>
       text().withLength(min: MIN_USERNAME, max: MAX_USERNAME)();
 
-  //TODO convert to difficulty
   RealColumn get difficulty => real()();
 
   DateTimeColumn get creationTime => dateTime()();
@@ -100,10 +99,6 @@ class Stops extends Table {
   TextColumn get name => text()();
 
   TextColumn get descr => text()();
-
-  //TODO add Map<String, String>-Converter
-
-  //TextColumn get invId => text().nullable()();
 
   TextColumn get time => text().nullable()();
 
@@ -613,14 +608,6 @@ class MuseumDatabase extends _$MuseumDatabase {
   }
 
   Stream<StopFeature> getStopFeature(int num, String stop_id, int tour_id) {
-    //TODO PART1
-    /*if (stop_id == customID)
-      return Stream.value(StopFeature(
-          id_tour: tour_id,
-          id_stop: stop_id,
-          showImages: false,
-          showText: true,
-          showDetails: false));*/
     final query = select(stopFeatures)
       ..where((f) => f.id.equals(num))
       ..where((f) => f.id_stop.equals(stop_id))
@@ -948,13 +935,18 @@ class MuseumDatabase extends _$MuseumDatabase {
           case ExtraType.TASK_SINGLE:
             String labels = "[\"" + o.answerOpt.join("\", \"") + "\"]";
             var cor = o.answerCor;
+            if (cor.isEmpty)
+              cor.add(-1);
             mutation = MutationBackend.createMCTask(token, o.id_stop, tourId,
-                o.answerCor.toString(), 1, labels, o.textInfo);
+                cor.toString(), 1, labels, o.textInfo);
             break;
           case ExtraType.TASK_MULTI:
             String labels = "[\"" + o.answerOpt.join("\", \"") + "\"]";
+            var cor = o.answerCor;
+            if (cor.isEmpty)
+              cor.add(-1);
             mutation = MutationBackend.createMCTask(token, o.id_stop, tourId,
-                o.answerCor.toString(), o.answerOpt.length, labels, o.textInfo);
+                cor.toString(), o.answerOpt.length, labels, o.textInfo);
             break;
           case ExtraType.IMAGE:
             mutation = MutationBackend.createImageExtra(token, tourId);
