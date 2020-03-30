@@ -1175,7 +1175,22 @@ class _HomeState extends State<Home> {
                   ),
                 ),
                 margin: EdgeInsets.only(left: 16.0, right: 16),
-                padding: EdgeInsets.all(15))
+                padding: EdgeInsets.all(15)),
+            Container(
+              width: horSize(100, 60),
+              margin: EdgeInsets.only(left: 16, right: 16, top: 15, bottom: 15),
+              child: Text(
+                "Used Flutter Packages in this Project:\ncupertino_icons, gradient_text, flutter_circular_chart, flutter_rating_bar, photo_view, carousel_slider, graphql_flutter, expandable, intl, expandable_bottom_bar, keyboard_visibility, moor, moor_ffi, path_provider, path, provider, reorderables, rxdart, md2_tab_indicator, font_awesome_flutter, popup_menu, open_file, url_launcher, carousel_pro, flutter_keyboard_visibility",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: SizeConfig.orientationDevice == Orientation.portrait
+                      ? SizeConfig.safeBlockHorizontal * 4
+                      : SizeConfig.safeBlockHorizontal * 2,
+                  fontFamily: "Nunito",
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
           ],
         ),
         showSetting: false);

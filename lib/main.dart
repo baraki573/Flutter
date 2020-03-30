@@ -4,7 +4,6 @@ import 'package:museum_app/database/database.dart';
 import 'package:museum_app/graphql/graphqlConf.dart';
 import 'package:museum_app/route_generator.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await MuseumDatabase().init();
@@ -31,7 +30,7 @@ class MyApp extends StatelessWidget {
         AssetImage("assets/images/orientierungsplan_high.png"), context);
 
     return MaterialApp(
-      debugShowCheckedModeBanner: true,
+      debugShowCheckedModeBanner: false,
       locale: Locale('de'),
       title: 'Geschichte Vernetzt',
       theme: ThemeData(
