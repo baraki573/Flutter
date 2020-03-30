@@ -115,8 +115,6 @@ enum _OptionType {
   LOGOUT,
   PROMOTE,
   ABOUT,
-  clear,
-  demo
 }
 
 class MuseumSettings extends StatelessWidget {
@@ -131,8 +129,8 @@ class MuseumSettings extends StatelessWidget {
   }
 
   Future<void> _editUS(BuildContext context) async {
-    var ctrl = TextEditingController();
     String accesToken = await MuseumDatabase().accessToken();
+    var ctrl = TextEditingController();
 
     showDialog(
         context: context,
@@ -282,17 +280,12 @@ class MuseumSettings extends StatelessWidget {
       case _OptionType.LOGIN:
         Navigator.popAndPushNamed(context, "/profile");
         break;
-      case _OptionType.clear:
-        MuseumDatabase().clear();
-        break;
-      case _OptionType.demo:
-        demo();
-        break;
       default:
     }
   }
 
   Widget _about(context) {
+
     return AlertDialog(
       title: Text("Geschichte Vernetzt"),
       content: Column(
@@ -366,7 +359,7 @@ class MuseumSettings extends StatelessWidget {
                   documentNode:
                       gql(MutationBackend.promote(token, ctrl.text.trim())),
                   update: (cache, result) => cache));
-              if (result.hasException) print("EXC: "+result.exception.toString());
+              if (result.hasException) print("EXC_promote: "+result.exception.toString());
               if (result.data is LazyCacheMap) {
                 if (result.data['promoteUser']["ok"]["boolean"] == true) {
                   MuseumDatabase().setProducer();
@@ -405,8 +398,8 @@ class MuseumSettings extends StatelessWidget {
     List<PopupMenuItem> base = [
       _myPopUpItem("Einloggen", Icons.redo, _OptionType.LOGIN),
       _myPopUpItem("Über diese App", Icons.info, _OptionType.ABOUT),
-      _myPopUpItem("DEBUG clear", Icons.clear, _OptionType.clear),
-      _myPopUpItem("DEBUG demo", Icons.play_arrow, _OptionType.demo),
+      //_myPopUpItem("DEBUG clear", Icons.clear, _OptionType.clear),
+      //_myPopUpItem("DEBUG demo", Icons.play_arrow, _OptionType.demo),
     ];
 
     if (logged) {

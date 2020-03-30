@@ -7,6 +7,9 @@ const MaterialAccentColor COLOR_TOUR = Colors.pinkAccent;
 const MaterialColor COLOR_ADD = Colors.orange;
 const MaterialColor COLOR_PROFILE = Colors.teal;
 
+const String SERVER_ADDRESS = "http://130.83.247.244";
+const String DB_ADDRESS = "http://130.83.247.244/app/";
+
 // DB constants
 const int MIN_USERNAME = 4;
 const int MAX_USERNAME = 15;

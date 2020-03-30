@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:flutter/material.dart' as m;
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:moor/moor.dart';
 import 'package:moor_ffi/moor_ffi.dart';
@@ -81,7 +79,6 @@ class Tours extends Table {
   TextColumn get author =>
       text().withLength(min: MIN_USERNAME, max: MAX_USERNAME)();
 
-  //TODO convert to difficulty
   RealColumn get difficulty => real()();
 
   DateTimeColumn get creationTime => dateTime()();
@@ -101,10 +98,6 @@ class Stops extends Table {
   TextColumn get name => text()();
 
   TextColumn get descr => text()();
-
-  //TODO add Map<String, String>-Converter
-
-  //TextColumn get invId => text().nullable()();
 
   TextColumn get time => text().nullable()();
 
@@ -409,9 +402,14 @@ class MuseumDatabase extends _$MuseumDatabase {
 
   Future init() async {
     await initUser();
-    await demoDivisions();
-    await downloadStops();
-    await downloadBadges();
+    await setDivisions();
+    User u = await select(users).getSingle();
+
+    if (await GraphQLConfiguration.isConnected(u.accessToken))
+      if (await refreshToken() != "") {
+        await downloadStops();
+        await downloadBadges();
+      }
   }
 
   Future initUser() async {
@@ -424,6 +422,9 @@ class MuseumDatabase extends _$MuseumDatabase {
     stopIds.add(id);
 
     String accessToken = await this.accessToken();
+    if (!await GraphQLConfiguration.isConnected(accessToken))
+      accessToken = await refreshToken();
+
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
     QueryResult result = await _client.mutate(MutationOptions(
       documentNode: gql(MutationBackend.addFavStop(accessToken, id)),
@@ -439,6 +440,9 @@ class MuseumDatabase extends _$MuseumDatabase {
     stopIds.remove(id);
 
     String accessToken = await this.accessToken();
+    if (!await GraphQLConfiguration.isConnected(accessToken))
+      accessToken = await refreshToken();
+
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
     QueryResult result = await _client.mutate(MutationOptions(
       documentNode: gql(MutationBackend.removeFavStop(accessToken, id)),
@@ -467,6 +471,9 @@ class MuseumDatabase extends _$MuseumDatabase {
     tourIds.add(id);
 
     String accessToken = await this.accessToken();
+    if (!await GraphQLConfiguration.isConnected(accessToken))
+      accessToken = await refreshToken();
+
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
     QueryResult result = await _client.mutate(MutationOptions(
       documentNode: gql(MutationBackend.addFavTour(accessToken, id)),
@@ -482,6 +489,9 @@ class MuseumDatabase extends _$MuseumDatabase {
     tourIds.remove(id);
 
     String accessToken = await this.accessToken();
+    if (!await GraphQLConfiguration.isConnected(accessToken))
+      accessToken = await refreshToken();
+
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
     QueryResult result = await _client.mutate(MutationOptions(
       documentNode: gql(MutationBackend.removeFavTour(accessToken, id)),
@@ -536,7 +546,7 @@ class MuseumDatabase extends _$MuseumDatabase {
       if (process is Map) {
         for (var e in process.entries) {
           (update(badges)..where((b) => b.name.equals(e.key)))
-              .write(BadgesCompanion(current: Value(e.value.toInt())));
+              .write(BadgesCompanion(current: Value(e.value.toDouble())));
         }
       }
       String profilePic = (me["profilePicture"] ?? {"id": ""})["id"].toString();
@@ -614,14 +624,6 @@ class MuseumDatabase extends _$MuseumDatabase {
   }
 
   Stream<StopFeature> getStopFeature(int num, String stop_id, int tour_id) {
-    //TODO PART1
-    /*if (stop_id == customID)
-      return Stream.value(StopFeature(
-          id_tour: tour_id,
-          id_stop: stop_id,
-          showImages: false,
-          showText: true,
-          showDetails: false));*/
     final query = select(stopFeatures)
       ..where((f) => f.id.equals(num))
       ..where((f) => f.id_stop.equals(stop_id))
@@ -824,7 +826,6 @@ class MuseumDatabase extends _$MuseumDatabase {
         .join([innerJoin(stops, stops.id.equalsExp(tourStops.id_stop))])
           ..where(tourStops.id_tour.equals(id));
 
-    //final tourStream = tourQuery.watchSingle();
     final contentStream = contentQuery
         .watch()
         .map((rows) => rows.map((row) => row.readTable(stops)).toList());
@@ -846,47 +847,7 @@ class MuseumDatabase extends _$MuseumDatabase {
         <ActualExtra>[]));
   }
 
-  /*Future<bool> writeTourToServer(TourWithStops entry) async {
-    String accessToken = await this.accessToken();
-
-    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
-    QueryResult result = await _client.mutate(MutationOptions(
-      documentNode: gql(MutationBackend.createTour(entry, accessToken)),
-      onError: (e) => print("ERROR: " + e.toString()),
-    ));
-
-    if (result.hasException) {
-      print(result.exception.toString());
-      return Future.value(false);
-    }
-    if (result.loading) return Future.value(false);
-    var d = result.data;
-    if (d?.data == null) return Future.value(false);
-    var id;
-    if (d is LazyCacheMap) {
-      id = result.data["createTour"]["tour"]["id"];
-    }
-
-    for (var s in entry.stops) {
-      writeStopToServer(s);
-    }
-
-    return Future.value(true);
-  }
-
-  Future writeStopToServer(ActualStop stop) async {
-    String accessToken = await this.accessToken();
-
-    /*GraphQLClient _client = GraphQLConfiguration().clientToQuery();
-    QueryResult result = await _client.mutate(MutationOptions(
-      documentNode: gql(MutationBackend.createTour(entry, accessToken)),
-      onError: (e) => print("ERROR: " + e.toString()),
-    ));*/
-
-    return Future.value(true);
-  }*/
-
-  Future tourToServer(int tourId) async {
+  Future<bool> tourToServer(int tourId) async {
     final t =
         await (select(tours)..where((t) => t.id.equals(tourId))).getSingle();
 
@@ -914,14 +875,18 @@ class MuseumDatabase extends _$MuseumDatabase {
       if (e is Extra) return prev + e.textInfo;
       return prev;
     });
-
     print(s);
 
-    _listToServer(lst);
+    return _listToServer(lst);
   }
 
-  Future _listToServer(List<Object> lst) async {
+  Future<bool> _listToServer(List<Object> lst) async {
     String token = await accessToken();
+    if (!await GraphQLConfiguration.isConnected(token))
+      token =await refreshToken();
+    if (token == "")
+      return Future.value(false);
+
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
     var tourId;
     for (var o in lst) {
@@ -949,13 +914,16 @@ class MuseumDatabase extends _$MuseumDatabase {
           case ExtraType.TASK_SINGLE:
             String labels = "[\"" + o.answerOpt.join("\", \"") + "\"]";
             var cor = o.answerCor;
+            if (cor.isEmpty) cor.add(-1);
             mutation = MutationBackend.createMCTask(token, o.id_stop, tourId,
-                o.answerCor.toString(), 1, labels, o.textInfo);
+                cor.toString(), 1, labels, o.textInfo);
             break;
           case ExtraType.TASK_MULTI:
             String labels = "[\"" + o.answerOpt.join("\", \"") + "\"]";
+            var cor = o.answerCor;
+            if (cor.isEmpty) cor.add(-1);
             mutation = MutationBackend.createMCTask(token, o.id_stop, tourId,
-                o.answerCor.toString(), o.answerOpt.length, labels, o.textInfo);
+                cor.toString(), o.answerOpt.length, labels, o.textInfo);
             break;
           case ExtraType.IMAGE:
             mutation = MutationBackend.createImageExtra(token, tourId);
@@ -976,9 +944,10 @@ class MuseumDatabase extends _$MuseumDatabase {
         },
       ));
 
-      if (result.hasException)
+      if (result.hasException) {
         print("EXC: " + result.exception.toString());
-      else if (result.loading)
+        return Future.value(false);
+      } else if (result.loading)
         print("Loading");
       else if (o is Tour) {
         var d = result.data['createTour'];
@@ -988,7 +957,6 @@ class MuseumDatabase extends _$MuseumDatabase {
           (update(tours)..where((t) => t.id.equals(o.id)))
               .write(ToursCompanion(onlineId: Value(tourId)));
         }
-        //print("ID: $tourId");
       }
     }
 
@@ -996,32 +964,39 @@ class MuseumDatabase extends _$MuseumDatabase {
       documentNode: gql(MutationBackend.joinTour(token, tourId)),
       onError: (e) => print("ERROR: " + e.toString()),
     ));
+
+    return Future.value(true);
   }
 
-  Future<bool> refreshToken() async {
+  Future<String> refreshToken() async {
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
     String refresh = await select(users).map((u) => u.refreshToken).getSingle();
 
     QueryResult result = await _client.mutate(MutationOptions(
       documentNode: gql(MutationBackend.refresh(refresh)),
-      onError: (e) => print("ERROR_REFRESH: " + e.toString()),
     ));
 
     if (result.hasException)
-      print("EXC: " + result.exception.toString());
+      print("EXC_refresh: " + result.exception.toString());
     else if (result.loading)
       print("LOADING");
     else {
       String newToken = result.data['refresh'].data["newToken"];
       update(users).write(UsersCompanion(accessToken: Value(newToken)));
       print("NEW TOKEN");
-      return Future.value(true);
+      downloadStops();
+      return Future.value(newToken);
     }
-    return Future.value(false);
+    return Future.value("");
   }
 
   Future<bool> joinAndDownloadTour(String id, {bool searchId = true}) async {
     String token = await accessToken();
+
+    if (!await GraphQLConfiguration.isConnected(token))
+      if (await refreshToken() == "")
+        return Future.value(false);
+
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
 
     String tourId = id;
@@ -1073,12 +1048,6 @@ class MuseumDatabase extends _$MuseumDatabase {
   }
 
   Future<bool> _listToLocal(List<Map> list) async {
-    /*List<int> idStops = list
-        .where((m) => m.containsKey("museumObject") && m.containsKey("index"))
-        .map((m) => m["index"] as int)
-        .toList();
-    print(idStops);*/
-
     TourWithStops tour;
 
     for (var m in list) {
@@ -1161,12 +1130,10 @@ class MuseumDatabase extends _$MuseumDatabase {
           "]");
     }
 
-    writeTourStops(tour);
-
-    return Future.value(true);
+    return writeTourStops(tour);
   }
 
-  Future<void> writeTourStops(TourWithStops entry,
+  Future<bool> writeTourStops(TourWithStops entry,
       {bool upload = false, bool review = false}) {
     return transaction(() async {
       final tour = entry.createToursCompanion(true);
@@ -1204,20 +1171,12 @@ class MuseumDatabase extends _$MuseumDatabase {
         }
       }
 
-      if (upload) tourToServer(id);
+      if (upload) return tourToServer(id);
+      return Future.value(true);
     });
   }
 
-  Future demoUser() {
-    customStatement("DELETE FROM users");
-    return into(users).insert(UsersCompanion.insert(
-        username: "Maria123_XD",
-        imgPath: "assets/images/profile_test.png",
-        accessToken: Value("ABC"),
-        producer: true));
-  }
-
-  Future<void> demoDivisions() async {
+  Future<void> setDivisions() async {
     await batch((batch) {
       batch.insertAll(
           divisions,
@@ -1308,111 +1267,4 @@ class MuseumDatabase extends _$MuseumDatabase {
           mode: InsertMode.insertOrReplace);
     });
   }
-
-  Future<void> demoStops() async {
-    //customStatement("DELETE FROM stops");
-    await into(stops).insert(StopsCompanion.insert(
-        id: customID, images: <String>[], name: customName, descr: ""));
-    await batch((batch) {
-      batch.insertAll(
-          stops,
-          List.generate(4, (i) {
-                String s = (i % 3 == 0 ? "" : "2");
-                return StopsCompanion.insert(
-                  id: "Zoo$i",
-                  name: "Zoologisch $i",
-                  division: Value("Zoologisch"),
-                  descr: "Description foo",
-                  images: [
-                    'assets/images/profile_test' + s + '.png',
-                    'assets/images/profile_test.png'
-                  ],
-                  creator: Value("Me"),
-                  material: Value("Holz"),
-                  size: Value("32m x 45m"),
-                  interContext: Value("Wurde von Napoleon besucht"),
-                  location: Value("Zuhause"),
-                );
-              }) +
-              List.generate(2, (i) {
-                String s = (i % 2 == 0 ? "" : "2");
-                return StopsCompanion.insert(
-                  id: "Skul$i",
-                  name: "Skulpturen $i",
-                  descr: "More descr",
-                  images: ['assets/images/profile_test' + s + '.png'],
-                  division: Value("Skulpturen"),
-                  creator: Value("DaVinci"),
-                );
-              }) +
-              List.generate(10, (i) {
-                String s = (i % 3 == 0 ? "" : "2");
-                return StopsCompanion.insert(
-                  id: "Bil$i",
-                  name: "Bilder $i",
-                  division: Value("Bilder"),
-                  descr: "Interessante Details",
-                  images: [
-                    'assets/images/profile_test' + s + '.png',
-                    'assets/images/profile_test' + s + '.png',
-                    'assets/images/profile_test2.png'
-                  ],
-                  creator: Value("Artist"),
-                );
-              }) +
-              List.generate(1, (i) {
-                return StopsCompanion.insert(
-                    id: "Bo$i",
-                    name: "Bonus $i",
-                    descr:
-                        "Mit dieser Tour werden Sie interessante neue Fakten kennenlernen. Sie werden das Museum so erkunden, wie es bis heute noch kein Mensch getan hat. Nebenbei werden Sie spannende Aufgaben lösen.",
-                    images: ['assets/images/haupthalle_hlm_blue.png'],
-                    division: Value("Bonus"),
-                    creator: Value("VanGogh"));
-              }),
-          mode: InsertMode.insertOrReplace);
-    });
-  }
-
-  Future<void> demoBadges() async {
-    //customStatement("DELETE FROM badges");
-    await batch((batch) {
-      batch.insertAll(
-        badges,
-        List.generate(
-          16,
-          (i) => BadgesCompanion.insert(
-            name: "Badge $i",
-            toGet: 16.0,
-            color: Value(m.Colors.primaries[i]),
-            imgPath: "assets/images/profile_test.png",
-            current: Value(i.roundToDouble()),
-          ),
-        ),
-        mode: InsertMode.insertOrReplace,
-      );
-    });
-  }
-}
-
-void demo() {
-  var db = MuseumDatabase();
-  //db.clear();
-  db.demoUser();
-  db.demoDivisions().catchError((_) => print("divisionError"));
-  db.demoStops().catchError((_) => print("stopError"));
-  db.demoBadges().catchError((_) => print("badgeError"));
-  //db.demoTours().catchError((_) => print("tourError"));
-  //db.demoTourStops().catchError((_) => print("tourStopsError"));
-}
-
-void init() {
-  var u = UsersCompanion(
-      username: Value("ABC"), imgPath: Value("assets/images/profile_test.png"));
-  MuseumDatabase().setUser(u);
-}
-
-void reset() {
-  MuseumDatabase().clear();
-  //MuseumDatabase.get().reset(UsersCompanion(username: Value("TEST"), imgPath: Value("testPath")));
 }

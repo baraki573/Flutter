@@ -1,6 +1,8 @@
 import "package:flutter/material.dart";
 import "package:graphql_flutter/graphql_flutter.dart";
+import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
+import 'package:museum_app/graphql/query.dart';
 
 class GraphQLConfiguration {
   static GraphQLConfiguration _gc;
@@ -14,7 +16,7 @@ class GraphQLConfiguration {
 
   static HttpLink httpLink =
       //HttpLink(uri: 'https://countries.trevorblades.com/');
-  HttpLink(uri: 'http://130.83.247.244/app/');
+  HttpLink(uri: DB_ADDRESS);
 
   static AuthLink _authLink = AuthLink(
      getToken: () async {
@@ -37,5 +39,14 @@ class GraphQLConfiguration {
       cache: OptimisticCache(dataIdFromObject: typenameDataIdFromObject),
       link: httpLink,
     );
+  }
+
+  static Future<bool> isConnected(String token) async {
+    var r = await GraphQLConfiguration().clientToQuery().query(QueryOptions(
+        documentNode: gql(QueryBackend.userInfo(token))
+    ));
+    if (token != "" && (r.hasException || r.data == null))
+      return Future.value(false);
+    return Future.value(true);
   }
 }

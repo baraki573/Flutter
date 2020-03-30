@@ -58,25 +58,22 @@ class _FavWidgetState extends State<FavWidget> {
                   height: horSize(27, 16),
                   width: horSize(27, 16),
                   decoration: BoxDecoration(
-                    color: Colors.blue,
-                    border: Border.all(color: division.color, width: 3),
+                    color: Colors.white,
+                    border: Border.all(color: division.color, width: 2),
                     shape: BoxShape.circle,
                     //image: DecorationImage(
                     //image: AssetImage(image),
                     //fit: BoxFit.cover,
                     //),
                   ),
-                  child: MaterialButton(
-                    padding: EdgeInsets.zero,
-                    splashColor: division.color.withOpacity(.5),
-                    highlightColor: division.color.withOpacity(.5),
-                    shape: CircleBorder(),
-                    onPressed: () => _showStop(stops[index]),
-                    child: ClipOval(
-                      child: QueryBackend.netWorkImage(
+                  child: ClipOval(
+                    child: GestureDetector(
+                    onTap: () => _showStop(stops[index]),
+                    child: QueryBackend.netWorkImage(
                         QueryBackend.imageURLPicture(image),
                         height: horSize(27, 16),
                         width: horSize(27, 16),
+                      fit: BoxFit.cover,
                       ),
                     ),
                   ),

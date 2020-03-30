@@ -53,7 +53,6 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
               //color: Colors.orange,
               alignment: Alignment.centerLeft,
               width: horSize(17, 10),
-              //TODO info-icon for non "Stops"
               child: _currentItem < length
                   ? Text(
                       "Station\n" +

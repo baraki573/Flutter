@@ -115,7 +115,7 @@ class ActualExtra {
   final ActualTask task;
   final ExtraType type;
 
-  ActualExtra(this.type, {text = "", sel = const [""], correct = const <int>{}}) : task = ActualTask(type, answerNames: sel, correct: correct) {
+  ActualExtra(this.type, {text = "", sel = const [""], correct}) : task = ActualTask(type, answerNames: sel, correct: correct) {
     textInfo.text = text;
   }
 }
@@ -133,6 +133,7 @@ class ActualTask {
   int selected;
 
   factory ActualTask(type, {answerNames = const [""], correct}) {
+    correct ??= <int>{};
     switch (type) {
       case ExtraType.TASK_TEXT: return ActualTask.text(answerNames, correct: correct);
       case ExtraType.TASK_MULTI:

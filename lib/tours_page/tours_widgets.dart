@@ -122,7 +122,6 @@ class _TourListState extends State<TourList> {
     );
   }
 
-  //TODO schöner machen -> soll animiert sein
   void _showTour(TourWithStops t) {
     showGeneralDialog(
       barrierColor: Colors.grey.withOpacity(0.7),
@@ -448,12 +447,14 @@ class _DownloadColumnState extends State<DownloadColumn> {
   initList() async {
     String token = await MuseumDatabase().accessToken();
     if (token == null || token == "") return;
+    if (!await GraphQLConfiguration.isConnected(token))
+      await MuseumDatabase().refreshToken();
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
     QueryResult result = await _client.query(QueryOptions(
       documentNode: gql(widget.query(token)),
       //onError: (e) => print("ERROR_auth: " + e.toString()),
     ));
-    if (result.hasException) print("EXC: " + result.exception.toString());
+    if (result.hasException) print("EXC_downColumn: " + result.exception.toString());
     if (result.loading || result.data == null) return;
     _loading = result.loading;
     _list.clear();

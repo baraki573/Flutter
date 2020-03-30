@@ -175,10 +175,12 @@ class _TourExtraState extends State<TourExtra> {
                   onChanged: widget.result
                       ? null
                       : (newVal) => setState(() {
-                            if (newVal)
-                              t.correct.add(id);
-                            else
-                              t.correct.remove(id);
+                            if (widget.edit) {
+                              if (newVal)
+                                t.correct.add(id);
+                              else
+                                t.correct.remove(id);
+                            }
                             e.valB = newVal;
                           }),
                   title: label(e),
@@ -202,8 +204,10 @@ class _TourExtraState extends State<TourExtra> {
                     onChanged: widget.result
                         ? null
                         : (newVal) => setState(() {
-                              t.correct.clear();
-                              t.correct.add(id);
+                              if (widget.edit) {
+                                t.correct.clear();
+                                t.correct.add(id);
+                              }
                               t.selected = id;
                             }),
                     title: label(e),
