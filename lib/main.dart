@@ -3,6 +3,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:museum_app/database/database.dart';
 import 'package:museum_app/graphql/graphqlConf.dart';
 import 'package:museum_app/route_generator.dart';
+import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +26,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     precacheImage(AssetImage('assets/images/haupthalle_hlm_blue.png'), context);
     precacheImage(
         AssetImage("assets/images/orientierungsplan_high.png"), context);
