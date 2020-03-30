@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -536,7 +535,7 @@ class MuseumDatabase extends _$MuseumDatabase {
       if (process is Map) {
         for (var e in process.entries) {
           (update(badges)..where((b) => b.name.equals(e.key)))
-              .write(BadgesCompanion(current: Value(e.value.toInt())));
+              .write(BadgesCompanion(current: Value(e.value.toDouble())));
         }
       }
       String profilePic = (me["profilePicture"] ?? {"id": ""})["id"].toString();
@@ -1015,6 +1014,7 @@ class MuseumDatabase extends _$MuseumDatabase {
       String newToken = result.data['refresh'].data["newToken"];
       update(users).write(UsersCompanion(accessToken: Value(newToken)));
       print("NEW TOKEN");
+      downloadStops();
       return Future.value(true);
     }
     return Future.value(false);

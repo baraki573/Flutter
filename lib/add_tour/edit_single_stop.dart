@@ -205,7 +205,7 @@ class _EditSingleStopState extends State<EditSingleStop> {
             Icons.text_fields,
             "Textfeld",
             funct: () => setState(() => widget.stop.extras.add(
-                ActualExtra(ExtraType.TEXT, text: "ICH füge hier Sachen ein"))),
+                ActualExtra(ExtraType.TEXT, text: "Textfreifeld"))),
           ),
           _withLabel(
             Icons.playlist_add,
@@ -216,7 +216,6 @@ class _EditSingleStopState extends State<EditSingleStop> {
           // TODO replace Extra's demo text
           // TODO MC können nicht geändert werden (tap) [unmod?]
           // TODO MC speichere "nichts ist richtig" ab
-          // TODO badges
           _withLabel(
             FontAwesomeIcons.fileImage, "Bild",
             funct: widget.stop.stop.images.isEmpty
@@ -263,21 +262,21 @@ class _EditSingleStopState extends State<EditSingleStop> {
       case "Text":
         setState(() => widget.stop.extras.add(
               ActualExtra(ExtraType.TASK_TEXT,
-                  text: "HALLO " + DateTime.now().toIso8601String(),
+                  text: "Aufgabentext",
                   sel: ["Antwort"]),
             ));
         break;
       case "Multi":
         setState(() => widget.stop.extras.add(
               ActualExtra(ExtraType.TASK_MULTI,
-                  text: "HALLO " + DateTime.now().toIso8601String(),
+                  text: "Aufgabentext",
                   sel: ["Antwort"]),
             ));
         break;
       case "Single":
         setState(() => widget.stop.extras.add(
               ActualExtra(ExtraType.TASK_SINGLE,
-                  text: "HALLO " + DateTime.now().toIso8601String(),
+                  text: "Aufgabentext",
                   sel: ["Antwort"]),
             ));
         break;
