@@ -159,21 +159,21 @@ class MuseumSettings extends StatelessWidget {
                     GraphQLClient _client =
                         GraphQLConfiguration().clientToQuery();
                     print(ctrl.text);
-                    await _client.mutate(MutationOptions(
+                    QueryResult result = await _client.mutate(MutationOptions(
                       documentNode: gql(MutationBackend.changeUsername(
                           accesToken, ctrl.text.trim())),
                       update: (cache, result) => cache,
-                      onCompleted: (result) {
-                        if (result is LazyCacheMap) {
-                          print(result.data);
-                          if (result.data['changeUsername'] != null) {
-                            MuseumDatabase().updateUsername(ctrl.text.trim());
-                            Navigator.pop(context);
-                          }
-                        }
-                      },
-                      onError: (e) => print("ERROR " + e.toString()),
+                      onError: (e) => print("ERROR_changeUS " + e.toString()),
                     ));
+
+                    if (result.hasException || result.data == null) return;
+
+                    print(result.data);
+                    if (result.data['changeUsername']["ok"]["boolean"] == true) {
+                      MuseumDatabase().updateUsername(ctrl.text.trim());
+                      MuseumDatabase().refreshToken();
+                      Navigator.pop(context);
+                    }
                   },
                 )
               ],
@@ -285,7 +285,6 @@ class MuseumSettings extends StatelessWidget {
   }
 
   Widget _about(context) {
-
     return AlertDialog(
       title: Text("Geschichte Vernetzt"),
       content: Column(
@@ -359,13 +358,14 @@ class MuseumSettings extends StatelessWidget {
                   documentNode:
                       gql(MutationBackend.promote(token, ctrl.text.trim())),
                   update: (cache, result) => cache));
-              if (result.hasException) print("EXC_promote: "+result.exception.toString());
+              if (result.hasException)
+                print("EXC_promote: " + result.exception.toString());
               if (result.data is LazyCacheMap) {
                 if (result.data['promoteUser']["ok"]["boolean"] == true) {
                   MuseumDatabase().setProducer();
                   Navigator.pop(context);
-                }
-                else key.currentState.validate();
+                } else
+                  key.currentState.validate();
               }
             },
           ),

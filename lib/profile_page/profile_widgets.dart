@@ -5,7 +5,6 @@ import 'package:flutter_circular_chart/flutter_circular_chart.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
-import 'package:museum_app/database/modelling.dart';
 import 'package:museum_app/graphql/query.dart';
 import 'package:museum_app/tours_page/tours_widgets.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_content.dart';
@@ -47,11 +46,11 @@ class _FavWidgetState extends State<FavWidget> {
               itemCount: stops.length,
               // One "bubble"
               itemBuilder: (context, index) {
-                String image;
+                ImageProvider image;
                 try {
-                  image = stops[index].images.first;
+                  image = Image.network(QueryBackend.imageURLPicture(stops[index].images.first)).image;
                 } catch (e) {
-                  image = "assets/images/empty_profile.png";
+                  image = Image.asset("assets/images/empty_profile.png").image;
                 }
                 return Container(
                   margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -65,16 +64,20 @@ class _FavWidgetState extends State<FavWidget> {
                     //image: AssetImage(image),
                     //fit: BoxFit.cover,
                     //),
+                    image: DecorationImage(image: image, fit: BoxFit.cover)
                   ),
                   child: ClipOval(
-                    child: GestureDetector(
-                    onTap: () => _showStop(stops[index]),
-                    child: QueryBackend.netWorkImage(
+                    child: FlatButton(
+                    onPressed: () => _showStop(stops[index]),
+                    splashColor: division.color.withOpacity(.4),
+                    highlightColor: division.color.withOpacity(.2),
+                    /*child: QueryBackend.netWorkImage(
                         QueryBackend.imageURLPicture(image),
-                        height: horSize(27, 16),
-                        width: horSize(27, 16),
+                        height: bubbleWidth,
+                        width: bubbleWidth,
                       fit: BoxFit.cover,
-                      ),
+                      ),*/
+                    child: Container(),
                     ),
                   ),
                 );
@@ -115,6 +118,7 @@ class _FavWidgetState extends State<FavWidget> {
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     return StreamBuilder(
       stream: MuseumDatabase().getDivisions(),
       builder: (context, snapDev) {
@@ -162,18 +166,6 @@ class _FavWidgetState extends State<FavWidget> {
             );
           },
         );
-      },
-    );
-  }
-
-  Widget _favTours() {
-    return StreamBuilder(
-      stream: MuseumDatabase().watchFavTours(),
-      builder: (context, snap) {
-        var tours = snap.data ?? List<TourWithStops>();
-        if (!snap.hasData) return CircularProgressIndicator();
-        if (tours.isEmpty) return Text("Keine Touren favorisiert!\n");
-        return TourList.fromList(tours);
       },
     );
   }

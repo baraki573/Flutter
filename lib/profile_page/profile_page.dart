@@ -24,7 +24,7 @@ class _ProfileState extends State<Profile> {
     Widget label = Container();
     if (user.producer)
       label = Positioned(
-        top: verSize(13.5, 20, top: true),
+        top: verSize(16.5, 20, top: true),
         right: horSize(17.5, 49, right: true),
         child: Text(
           "Ersteller-Status",

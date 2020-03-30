@@ -8,6 +8,7 @@ import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
 import 'package:museum_app/database/modelling.dart';
+import 'package:museum_app/graphql/query.dart';
 import 'package:museum_app/map/map_page.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_content.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_extras.dart';
@@ -138,13 +139,17 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                   width: horSize(35, 30),
                   height: verSize(17, 20),
                   decoration: BoxDecoration(
-                    image: DecorationImage(
+                    /*image: DecorationImage(
                         image: AssetImage(stops[index].stop.images.isNotEmpty
                             ? stops[index].stop.images[0]
                             : "assets/images/profile_test.png"),
-                        fit: BoxFit.cover),
+                        fit: BoxFit.cover),*/
                     border: Border(right: BorderSide(color: Colors.black)),
                   ),
+                  child: QueryBackend.netWorkImage(QueryBackend.imageURLPicture(
+                      stops[index].stop.images.isNotEmpty
+                          ? stops[index].stop.images[0]
+                          : "")),
                 ),
                 Container(
                   //color: Colors.yellow,
