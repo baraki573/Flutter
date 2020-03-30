@@ -127,6 +127,7 @@ class _EditSingleStopState extends State<EditSingleStop> {
       builder: (context) => AlertDialog(
         contentPadding: EdgeInsets.only(left: 15, right: 15, top: 15),
         content: Container(
+          width: horSize(100, 100),
           height: verSize(53, 50),
           child: MuseumSearch(_setStop, _ctrlSearch),
         ),

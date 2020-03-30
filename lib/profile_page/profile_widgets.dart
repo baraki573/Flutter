@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_circular_chart/flutter_circular_chart.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/constants.dart';
@@ -48,36 +49,37 @@ class _FavWidgetState extends State<FavWidget> {
               itemBuilder: (context, index) {
                 ImageProvider image;
                 try {
-                  image = Image.network(QueryBackend.imageURLPicture(stops[index].images.first)).image;
+                  image = Image.network(QueryBackend.imageURLPicture(
+                          stops[index].images.first))
+                      .image;
                 } catch (e) {
                   image = Image.asset("assets/images/empty_profile.png").image;
                 }
                 return Container(
                   margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   height: horSize(27, 16),
-                  width: horSize(27, 16),
+                  width: horSize(25.5, 16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: division.color, width: 2),
-                    shape: BoxShape.circle,
-                    //image: DecorationImage(
-                    //image: AssetImage(image),
-                    //fit: BoxFit.cover,
-                    //),
-                    image: DecorationImage(image: image, fit: BoxFit.cover)
-                  ),
+                      color: Colors.white,
+                      border: Border.all(color: division.color, width: 3),
+                      shape: BoxShape.circle,
+                      //image: DecorationImage(
+                      //image: AssetImage(image),
+                      //fit: BoxFit.cover,
+                      //),
+                      image: DecorationImage(image: image, fit: BoxFit.cover)),
                   child: ClipOval(
                     child: FlatButton(
-                    onPressed: () => _showStop(stops[index]),
-                    splashColor: division.color.withOpacity(.4),
-                    highlightColor: division.color.withOpacity(.2),
-                    /*child: QueryBackend.netWorkImage(
+                      onPressed: () => _showStop(stops[index]),
+                      splashColor: division.color.withOpacity(.4),
+                      highlightColor: division.color.withOpacity(.2),
+                      /*child: QueryBackend.netWorkImage(
                         QueryBackend.imageURLPicture(image),
                         height: bubbleWidth,
                         width: bubbleWidth,
                       fit: BoxFit.cover,
                       ),*/
-                    child: Container(),
+                      child: Container(),
                     ),
                   ),
                 );
@@ -95,7 +97,11 @@ class _FavWidgetState extends State<FavWidget> {
       context: context,
       builder: (context) => AlertDialog(
         contentPadding: EdgeInsets.only(bottom: 2),
-        content: SingleChildScrollView(child: TourWalkerContent.fromStop(s)),
+        content: Container(
+          height: verSize(90, 90),
+          width: horSize(100, 100),
+          child: SingleChildScrollView(child: TourWalkerContent.fromStop(s)),
+        ),
         actions: [
           FlatButton(
             child: Text("Schließen", style: TextStyle(color: COLOR_PROFILE)),

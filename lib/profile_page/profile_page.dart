@@ -25,7 +25,7 @@ class _ProfileState extends State<Profile> {
     if (user.producer)
       label = Positioned(
         top: verSize(16.5, 20, top: true),
-        right: horSize(17.5, 49, right: true),
+        left: verSize(20, 19) + 35,
         child: Text(
           "Ersteller-Status",
           style: TextStyle(
@@ -54,13 +54,13 @@ class _ProfileState extends State<Profile> {
                 child: user.imgPath == ""
                     ? Image.asset(
                         "assets/images/empty_profile.png",
-                        height: 120,
-                        width: 120,
+                        height: verSize(20, 19),
+                        width: verSize(20, 19),
                       )
                     : QueryBackend.netWorkImage(
                         QueryBackend.imageURLProfile(user.imgPath),
-                        height: 120,
-                        width: 120,
+                        height: verSize(20, 19),
+                        width: verSize(20, 19),
                       ),
               ),
             ),
@@ -101,9 +101,9 @@ class _ProfileState extends State<Profile> {
             "Meine Touren": DownloadColumn(
               QueryBackend.created,
               notFoundText: "\n\nSie haben noch keine Touren erstellt.",
+              showSearchId: true,
             ),
             "Erfolge": BadgeWidget(),
-            //"Statistik": StatWidget(),
           },
           color: COLOR_PROFILE,
         );

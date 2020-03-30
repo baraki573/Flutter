@@ -5,54 +5,6 @@ import '../constants.dart';
 import 'graphqlConf.dart';
 
 class QueryBackend {
-  String fileUpload(String token) {
-    return r"""
-      query{
-        favouriteTours(token: "$token"){
-          creation
-          currentCheckpoints
-          description
-          difficulty
-          id
-          name
-          owner{
-            username
-          }
-          searchId
-          sessionId
-          status
-          users{
-            username
-          }
-        }
-        
-      }""";
-  }
-
-  String favObjects(String token) {
-    //picture is wrong. needs subfield??
-    return r"""
-      query{
-  favouriteObjects(token: "$token"){
-    additionalInformation
-    artType
-    category
-    creator
-    description
-    interdisciplinaryContext
-    location
-    material
-    objectId
-    size
-    subCategory
-    timeRange
-    title
-    year
-    picture 
-  }
-}
-    """;
-  }
 
   static String allObjects(String token) {
     return """query{

@@ -1,18 +1,6 @@
 import 'package:flutter/material.dart';
 
 class MutationBackend {
-  static String addPerson(String id, String name, String lastName, int age) {
-    return """
-mutation{
-addPerson(id: "$id", name: "$name", lastName: "$lastName", age: "$age"){
-id
-name
-lastName
-age
-}
-}
-""";
-  }
 
   static String createTour(String token, String name, String description, int difficulty, String id) {
     //var d = t.descr.text;

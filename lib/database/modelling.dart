@@ -16,9 +16,10 @@ class TourWithStops {
   DateTime creationTime;
   final int id;
   final String onlineId;
+  final String searchId;
   final List<ActualStop> stops;
 
-  TourWithStops(Tour t, this.stops) : id = t.id, author = t.author, onlineId = t.onlineId {
+  TourWithStops(Tour t, this.stops, {this.searchId}) : id = t.id, author = t.author, onlineId = t.onlineId {
     this.name.text = t.name;
     this.descr.text = t.desc;
     difficulty = t.difficulty;

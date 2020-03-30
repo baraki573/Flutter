@@ -382,6 +382,12 @@ class _DownloadPanel extends StatelessWidget {
               tour.descr.text,
               maxLines: 3,
             ),
+            (tour.searchId != null
+                ? Text(
+                    "Such-ID: " + tour.searchId,
+                    style: TextStyle(fontStyle: FontStyle.italic),
+                  )
+                : Container()),
             FlatButton(
               color: color,
               shape: RoundedRectangleBorder(
@@ -406,18 +412,6 @@ class _DownloadPanel extends StatelessWidget {
         borderColor: color,
       ),
     );
-
-    /*Column(
-        children: [
-          Text(tour.name.text),
-          Row(),
-          Text(tour.descr.text),
-          FlatButton(
-            onPressed: () {},
-            child: Text("Download"),
-          ),
-        ],
-      )*/
   }
 }
 
@@ -426,8 +420,14 @@ class DownloadColumn extends StatefulWidget {
   final Color color;
   final String search;
   final String notFoundText;
+  final bool showSearchId;
 
-  DownloadColumn(this.query, {Key key, this.color = COLOR_PROFILE, this.search = "", this.notFoundText = "\n\nEs konnten keine Touren gefunden werden."})
+  DownloadColumn(this.query,
+      {Key key,
+      this.showSearchId = false,
+      this.color = COLOR_PROFILE,
+      this.search = "",
+      this.notFoundText = "\n\nEs konnten keine Touren gefunden werden."})
       : super(key: key);
 
   @override
@@ -454,7 +454,8 @@ class _DownloadColumnState extends State<DownloadColumn> {
       documentNode: gql(widget.query(token)),
       //onError: (e) => print("ERROR_auth: " + e.toString()),
     ));
-    if (result.hasException) print("EXC_downColumn: " + result.exception.toString());
+    if (result.hasException)
+      print("EXC_downColumn: " + result.exception.toString());
     if (result.loading || result.data == null) return;
     _loading = result.loading;
     _list.clear();
@@ -467,7 +468,8 @@ class _DownloadColumnState extends State<DownloadColumn> {
           difficulty: m["difficulty"].toDouble(),
           desc: m["description"],
           creationTime: DateTime.parse(m["creation"]));
-      _list.add(TourWithStops(t, <ActualStop>[]));
+      _list.add(TourWithStops(t, <ActualStop>[],
+          searchId: widget.showSearchId ? m["searchId"] : null));
     }
     setState(() {});
   }

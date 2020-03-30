@@ -588,16 +588,6 @@ class MuseumDatabase extends _$MuseumDatabase {
     return Future.value(false);
   }
 
-/*
-  Future logIn(String accesToken, String refreshToken, String username) {
-    return update(users).write(User(
-        refreshToken: refreshToken,
-        accessToken: accesToken,
-        username: username,
-        imgPath: "assets/images/empty_profile.png",
-        onboardEnd: null));
-  }*/
-
   Future logOut() {
     delete(tourStops);
     //customStatement("DELETE FROM tourStops");
@@ -653,12 +643,6 @@ class MuseumDatabase extends _$MuseumDatabase {
     if (e.task != null) {
       var list = e.task.correct.toList();
 
-      /*if (e.type == ExtraType.TASK_MULTI)
-        for (int i = 0; i < e.task.entries.length; i++)
-          if (e.task.entries[i].valB == true) list.add(i);
-
-      if (e.type == ExtraType.TASK_SINGLE) list.add(e.task.selected);
-*/
       return into(extras).insert(
           ExtrasCompanion.insert(
               pos_extra: pos_extra,
@@ -782,22 +766,22 @@ class MuseumDatabase extends _$MuseumDatabase {
       // search for division
       if (part.startsWith(RegExp("div:?"))) {
         part = part.replaceAll(RegExp("div:?"), "").trim();
-        query.where((s) => s.division.like(part + "%"));
+        query.where((s) => s.division.like("%" + part + "%"));
       }
       // search for object's creator
       else if (part.startsWith(RegExp("cre:?"))) {
         part = part.replaceAll(RegExp("cre:?"), "").trim();
-        query.where((s) => s.creator.like(part + "%"));
+        query.where((s) => s.creator.like("%" + part + "%"));
       }
       // search for object's art type
       else if (part.startsWith(RegExp("art:?"))) {
         part = part.replaceAll(RegExp("art:?"), "").trim();
-        query.where((s) => s.artType.like(part + "%"));
+        query.where((s) => s.artType.like("%" + part + "%"));
       }
       // search for object's material
       else if (part.startsWith(RegExp("mat:?"))) {
         part = part.replaceAll(RegExp("mat:?"), "").trim();
-        query.where((s) => s.material.like(part + "%"));
+        query.where((s) => s.material.like("%" + part + "%"));
       }
       // search for object's inv number
       else if (part.startsWith(RegExp("inv:?"))) {
@@ -895,6 +879,7 @@ class MuseumDatabase extends _$MuseumDatabase {
       if (o is Tour) {
         var id = o.author.substring(0, min(3, o.author.length)) +
             o.name.substring(0, min(4, o.name.length)) +
+            (o.name.length + o.difficulty).toString() +
             o.id.toString();
         mutation = MutationBackend.createTour(
             token, o.name, o.desc, o.difficulty.toInt(), id);
