@@ -68,6 +68,7 @@ class _LogInState extends State<LogIn> {
       DeviceOrientation.portraitDown,
     ]);
     if (widget.skippable) {
+      Navigator.pop(context);
       Navigator.popAndPushNamed(context, "/");
     }
 
@@ -352,6 +353,11 @@ class _LogInState extends State<LogIn> {
     bool b = await MuseumDatabase().logIn(_usCtrl.text, _pwCtrl.text);
     if (b) _nextScreen();
     else _failedLogin();
+
+    if (b && widget.skippable) {
+      MuseumDatabase().downloadBadges();
+      MuseumDatabase().downloadStops();
+    }
   }
 
   /// Displays an error dialog

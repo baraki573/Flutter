@@ -404,8 +404,11 @@ class MuseumDatabase extends _$MuseumDatabase {
   Future init() async {
     await initUser();
     await demoDivisions();
-    await downloadStops();
-    await downloadBadges();
+    User u = await select(users).getSingle();
+    if (u.accessToken != null && u.accessToken != "") {
+      await downloadStops();
+      await downloadBadges();
+    }
   }
 
   Future initUser() async {
@@ -810,7 +813,6 @@ class MuseumDatabase extends _$MuseumDatabase {
         .join([innerJoin(stops, stops.id.equalsExp(tourStops.id_stop))])
           ..where(tourStops.id_tour.equals(id));
 
-    //final tourStream = tourQuery.watchSingle();
     final contentStream = contentQuery
         .watch()
         .map((rows) => rows.map((row) => row.readTable(stops)).toList());
@@ -831,46 +833,6 @@ class MuseumDatabase extends _$MuseumDatabase {
             showDetails: false),
         <ActualExtra>[]));
   }
-
-  /*Future<bool> writeTourToServer(TourWithStops entry) async {
-    String accessToken = await this.accessToken();
-
-    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
-    QueryResult result = await _client.mutate(MutationOptions(
-      documentNode: gql(MutationBackend.createTour(entry, accessToken)),
-      onError: (e) => print("ERROR: " + e.toString()),
-    ));
-
-    if (result.hasException) {
-      print(result.exception.toString());
-      return Future.value(false);
-    }
-    if (result.loading) return Future.value(false);
-    var d = result.data;
-    if (d?.data == null) return Future.value(false);
-    var id;
-    if (d is LazyCacheMap) {
-      id = result.data["createTour"]["tour"]["id"];
-    }
-
-    for (var s in entry.stops) {
-      writeStopToServer(s);
-    }
-
-    return Future.value(true);
-  }
-
-  Future writeStopToServer(ActualStop stop) async {
-    String accessToken = await this.accessToken();
-
-    /*GraphQLClient _client = GraphQLConfiguration().clientToQuery();
-    QueryResult result = await _client.mutate(MutationOptions(
-      documentNode: gql(MutationBackend.createTour(entry, accessToken)),
-      onError: (e) => print("ERROR: " + e.toString()),
-    ));*/
-
-    return Future.value(true);
-  }*/
 
   Future tourToServer(int tourId) async {
     final t =
@@ -900,7 +862,6 @@ class MuseumDatabase extends _$MuseumDatabase {
       if (e is Extra) return prev + e.textInfo;
       return prev;
     });
-
     print(s);
 
     _listToServer(lst);
