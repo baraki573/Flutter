@@ -131,8 +131,8 @@ class MuseumSettings extends StatelessWidget {
   }
 
   Future<void> _editUS(BuildContext context) async {
-    var ctrl = TextEditingController();
     String accesToken = await MuseumDatabase().accessToken();
+    var ctrl = TextEditingController();
 
     showDialog(
         context: context,
@@ -293,6 +293,7 @@ class MuseumSettings extends StatelessWidget {
   }
 
   Widget _about(context) {
+
     return AlertDialog(
       title: Text("Geschichte Vernetzt"),
       content: Column(

@@ -133,6 +133,7 @@ class ActualTask {
   int selected;
 
   factory ActualTask(type, {answerNames = const [""], correct}) {
+    correct ??= <int>{};
     switch (type) {
       case ExtraType.TASK_TEXT: return ActualTask.text(answerNames, correct: correct);
       case ExtraType.TASK_MULTI:

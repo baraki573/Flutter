@@ -2,6 +2,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:museum_app/database/database.dart';
+import 'package:museum_app/graphql/graphqlConf.dart';
 import 'package:museum_app/graphql/query.dart';
 import 'package:photo_view/photo_view.dart';
 
@@ -38,6 +39,8 @@ class _ImageCarouselState extends State<ImageCaroussel> {
 
   _initList() async {
     String token = await MuseumDatabase().accessToken();
+    bool connected = await GraphQLConfiguration.isConnected(token);
+    if (!connected) return;
     _images.clear();
     for (var s in widget.imagePaths) {
       _images.add(Image.network(

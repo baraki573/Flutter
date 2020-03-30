@@ -1,22 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:museum_app/database/database.dart';
 
+import '../constants.dart';
+import 'graphqlConf.dart';
+
 class QueryBackend {
-
-  String getContinents() {
-    // for my testing, we can delete it later
-    return r"""
-      query GetContinent($code : String!){
-        continent(code:$code){
-          name
-          countries{
-            name
-          }
-        }
-      }
-      """;
-  }
-
   String fileUpload(String token) {
     return r"""
       query{
@@ -67,7 +55,7 @@ class QueryBackend {
   }
 
   static String allObjects(String token) {
-    return """ query{
+    return """query{
       allObjects(token: "$token"){
         additionalInformation
         artType
@@ -114,7 +102,7 @@ class QueryBackend {
       }
     }""";
   }
-  
+
   static String checkpointTour(String token, String tourId) {
     return """query{
       checkpointsTour(token: "$token", tourId: "$tourId"){
@@ -275,22 +263,33 @@ class QueryBackend {
   }
 
   static String imageURL(String type, String id) {
-    return "http://130.83.247.244/file/download?type=$type&id=$id";
+    return "$SERVER_ADDRESS/file/download?type=$type&id=$id";
   }
 
-  static Widget netWorkImage(String url, {width = 50, height = 50, fit = BoxFit.cover}) {
+  static Widget netWorkImage(String url,
+      {width = 50, height = 50, fit = BoxFit.cover}) {
     return FutureBuilder(
       future: MuseumDatabase().accessToken(),
       builder: (context, snap) {
         String token = snap.data ?? "";
-        if (token=="") return Container();
-        return Image.network(
-          url,
-          //GraphQLConfiguration().imageURLProfile("5e7e091dbef4a100e3735722"),
-          headers: {"Authorization": "Bearer $token"},
-          fit: fit,
-          width: width.toDouble(),
-          height: height.toDouble(),
+        return FutureBuilder(
+          future: GraphQLConfiguration.isConnected(token),
+          builder: (context, snap) {
+            bool connected = snap.hasData && snap.data;
+            if (!connected)
+              return Container(
+                width: width.toDouble(),
+                height: height.toDouble(),
+              );
+            return Image.network(
+              url,
+              //GraphQLConfiguration().imageURLProfile("5e7e091dbef4a100e3735722"),
+              headers: {"Authorization": "Bearer $token"},
+              fit: fit,
+              width: width.toDouble(),
+              height: height.toDouble(),
+            );
+          },
         );
       },
     );
