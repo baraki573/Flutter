@@ -1,16 +1,21 @@
-# museum_app
+# Geschichte Vernetzt (History Connects)
 
-A new Flutter project.
+A Flutter project for the museum lovers.
 
-## Getting Started
+## About Project
 
-This project is a starting point for a Flutter application.
+This project is part of our bachelor project at TU Darmstadt.
 
-A few resources to get you started if this is your first Flutter project:
+There are situation that teacher wants to take his/her students for a visit in a museum but the teacher wants to have a custom tour. A tour with some questions and a custom routing. This app makes this happen. This app enables teachers to create custom tours in any museum. In version 1.0.0 we have worked closely with Hessisches Landesmuseum Darmstadt to be able to enable teachers to create their own custom tours.
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+The App is eqipped with gamification so there is always a challenge in the background and you can earn badges/points and if you are good enough you can unlock some limited edtion profile pictures.
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+The Project is accompanied with backend and web admin portal to support this application.
+
+## Acknowledgment
+
+Thanks to everyone who has helped us in this project.
+
+## Contact
+
+Mo Masoumi (mohammadrahim.masoumi@stud.tu-darmstadt.de), Robert Cieslinski (robert.cieslinski@stud.tudarmstadt.de), Shayan Davari Fard (shayan.davarifard@stud.tudarmstadt.de), Patrick Dzubba (Patrick.Dzubba@stud.tudarmstadt.de)
