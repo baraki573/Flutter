@@ -1,10 +1,8 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:expandable_bottom_bar/expandable_bottom_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -385,7 +383,7 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Möchtest Du Deine Antworten als TXT-Datei speichern?\nDie Tour wird auf jeden Fall geschlossen.",
+                    "Möchtest Du Deine Antworten als TXT-Datei speichern?",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: horSize(4, 2),
@@ -419,10 +417,10 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                     for (var stop in widget.tour.stops)
                       for (var extra in stop.extras)
                         if (extra.task != null) extra.task.reset();
-                    Navigator.pop(context);
-                    Navigator.pop(context);
                     saveAndReturnTxt(s)
                         .then((file) => OpenFile.open(file.path));
+                    //Navigator.pop(context);
+                    //Navigator.pop(context);
                   },
                 ),
                 FlatButton(
@@ -445,11 +443,11 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
     final Directory directory = await getApplicationDocumentsDirectory();
     final File file = File('${directory.path}/results.txt');
     await file.writeAsString(text);
-    Directory tempDir = await getTemporaryDirectory();
-    File tempFile = File('${tempDir.path}/results_temp.txt');
-    ByteData bd = await rootBundle.load('${directory.path}/results.txt');
-    await tempFile.writeAsBytes(bd.buffer.asUint8List(), flush: true);
-    return tempFile;
+    //Directory tempDir = await getTemporaryDirectory();
+    //File tempFile = File('${tempDir.path}/results_temp.txt');
+    //ByteData bd = await rootBundle.load('${directory.path}/results.txt');
+    //await tempFile.writeAsBytes(bd.buffer.asUint8List(), flush: true);
+    return file;
   }
 
   Widget _results() {

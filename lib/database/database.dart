@@ -1079,8 +1079,7 @@ class MuseumDatabase extends _$MuseumDatabase {
   Future<bool> joinAndDownloadTour(String id, {bool searchId = true}) async {
     String token = await accessToken();
 
-    if (!await GraphQLConfiguration.isConnected(
-        token)) if (await refreshAccess() == "") return Future.value(false);
+    if (!await GraphQLConfiguration.isConnected(token)) if (await refreshAccess() == "") return Future.value(false);
 
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
 
@@ -1092,12 +1091,12 @@ class MuseumDatabase extends _$MuseumDatabase {
       if (result.data["tourSearchId"] is List &&
           result.data["tourSearchId"].length > 0)
         tourId = result.data["tourSearchId"][0];
-      else
+      else {
         return Future.value(false);
-
+      }
       print("TOUR FOUND: $tourId");
     }
-
+    print(tourId);
     var l =
         await (select(tours)..where((t) => t.onlineId.equals(tourId))).get();
     if (l.isNotEmpty) return Future.value(true);
@@ -1128,7 +1127,6 @@ class MuseumDatabase extends _$MuseumDatabase {
       if (o is Map) list.add(o);
     });
 
-    //print(list);
     return _listToLocal(list);
   }
 
@@ -1202,6 +1200,7 @@ class MuseumDatabase extends _$MuseumDatabase {
       }
     }
 
+    print("AAA");
     if (tour == null || tour.stops.isEmpty) return Future.value(false);
 
     print(tour.id.toString() + tour.name.text + tour.author + tour.descr.text);
