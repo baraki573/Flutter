@@ -43,9 +43,9 @@ class MutationBackend {
     }""";
   }
 
-  static String createImageExtra(String token, String tourId) {
+  static String createImageExtra(String token, String tourId, String img) {
     return """mutation{
-      createPictureCheckpoint(pictureId: "", text: "", token: "$token", tourId: "$tourId){
+      createPictureCheckpoint(pictureId: "$img", text: "", token: "$token", tourId: "$tourId"){
         checkpoint {
           id
         }

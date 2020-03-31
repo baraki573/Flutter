@@ -818,7 +818,7 @@ class MuseumDatabase extends _$MuseumDatabase {
     return contentStream;
   }
 
-  Stream<ActualStop> getCustomStop() {
+  Stream<ActualStop> watchCustomStop() {
     final query = select(stops)..where((stop) => stop.name.equals(customName));
     return query.watchSingle().map((stop) => ActualStop(
         stop,
@@ -830,6 +830,11 @@ class MuseumDatabase extends _$MuseumDatabase {
             showText: true,
             showDetails: false),
         <ActualExtra>[]));
+  }
+
+  Future<Stop> getCustomStop() {
+    final query = select(stops)..where((stop) => stop.name.equals(customName));
+    return query.getSingle();
   }
 
   Future<bool> tourToServer(int tourId) async {
@@ -912,7 +917,8 @@ class MuseumDatabase extends _$MuseumDatabase {
                 cor.toString(), o.answerOpt.length, labels, o.textInfo);
             break;
           case ExtraType.IMAGE:
-            mutation = MutationBackend.createImageExtra(token, tourId);
+            String img = await (select(stops)..where((s) => s.id.equals(o.id_stop))).map((s) => s.images[0]).getSingle();
+            mutation = MutationBackend.createImageExtra(token, tourId, img);
             break;
           case ExtraType.TEXT:
             mutation =

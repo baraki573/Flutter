@@ -182,7 +182,7 @@ class _CreateTourState extends State<CreateTour> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   StreamBuilder(
-                      stream: MuseumDatabase().getCustomStop(),
+                      stream: MuseumDatabase().watchCustomStop(),
                       builder: (context, snap) {
                         var stop = snap.data ?? ActualStop.custom();
                         return IconButton(

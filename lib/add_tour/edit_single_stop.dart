@@ -77,7 +77,7 @@ class _EditSingleStopState extends State<EditSingleStop> {
     return Container(
         color: Colors.white,
         child: StreamBuilder(
-          stream: MuseumDatabase().getCustomStop(),
+          stream: MuseumDatabase().watchCustomStop(),
           builder: (context, snap) {
             Stop stop = snap.data?.stop;
             return DropdownButton(
@@ -111,7 +111,7 @@ class _EditSingleStopState extends State<EditSingleStop> {
                     _action();
                     break;
                   case 1:
-                    _setStop(stop);
+                    _setStop((await MuseumDatabase().getCustomStop()));
                     break;
                   default:
                 }
@@ -142,12 +142,13 @@ class _EditSingleStopState extends State<EditSingleStop> {
   }
 
   void _setStop(Stop s) {
+    print(s);
     setState(() {
       widget.stop.stop = s;
       widget.stop.features = StopFeature(
         id: null,
         id_tour: null,
-        id_stop: s.id,
+        id_stop: s?.id ?? customName,
         showImages: !widget.stop.isCustom(),
         showText: true,
         showDetails: !widget.stop.isCustom(),

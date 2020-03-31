@@ -38,7 +38,7 @@ class _AddTourState extends State<AddTour> {
           switch (_type) {
             case AddType.CREATE:
               return StreamBuilder(
-                stream: MuseumDatabase().getCustomStop(),
+                stream: MuseumDatabase().watchCustomStop(),
                 builder: (context, snap) {
                   var stop = snap.data ?? ActualStop.custom();
                   if (_tour == null || _tour.author != name) {
