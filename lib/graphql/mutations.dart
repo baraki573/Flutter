@@ -206,4 +206,26 @@ class MutationBackend {
       }
     }""";
   }
+
+  static String uploadAnswer(String token, String answer, String questionID) {
+    return """mutation{
+      createAnswer(answer: "$answer", questionId: "$questionID", token: "$token"){
+        answer{
+          id
+        }
+        ok {... on BooleanField{boolean}}
+      }
+    }""";
+  }
+
+  static String uploadMCAnswer(String token, List<int> answer, String questionId) {
+    return """mutation{
+      createMcAnswer(answer: """+ answer.toString() +""", questionId: "$questionId", token: "$token"){
+        answer{
+          id
+        }
+        ok {... on  BooleanField{boolean}}
+      }
+    }""";
+  }
 }

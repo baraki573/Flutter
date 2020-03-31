@@ -1,17 +1,25 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:expandable_bottom_bar/expandable_bottom_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
 import 'package:museum_app/database/modelling.dart';
+import 'package:museum_app/graphql/graphqlConf.dart';
 import 'package:museum_app/graphql/query.dart';
 import 'package:museum_app/map/map_page.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_content.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_extras.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 
 class TourWalker extends StatefulWidget {
   final TourWithStops tour;
@@ -309,14 +317,14 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                   ),
                   Spacer(flex: 2),
                   FlatButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_currentItem == length - 1)
                         _toResults();
                       else if (_currentItem == length) {
-                        for (var stop in widget.tour.stops)
-                          for (var extra in stop.extras)
-                            if (extra.task != null) extra.task.reset();
-                        Navigator.pop(context);
+                        // UPLOAD ANSWERS
+                        await MuseumDatabase().uploadAnswers(widget.tour);
+
+                        finishTour();
                       } else
                         setState(() => _currentItem++);
                     },
@@ -366,6 +374,82 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
         ),
       ),
     );
+  }
+
+  void finishTour() {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text("Tour Antworten speichern"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Möchtest Du Deine Antworten als TXT-Datei speichern?\nDie Tour wird auf jeden Fall geschlossen.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: horSize(4, 2),
+                        fontFamily: "Nunito",
+                        fontWeight: FontWeight.w300,
+                        fontStyle: FontStyle.italic,
+                        color: Color(0xFF1A1A1A)),
+                  ),
+                ],
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 16),
+              actions: [
+                FlatButton(
+                  child: Text("Ja", style: TextStyle(color: COLOR_TOUR)),
+                  onPressed: () async {
+                    GraphQLClient _client =
+                        GraphQLConfiguration().clientToQuery();
+                    User user = await MuseumDatabase().getUser();
+
+                    QueryResult result = await _client.query(QueryOptions(
+                      documentNode: gql(QueryBackend.exportResult(
+                          user.accessToken,
+                          widget.tour.onlineId,
+                          user.username)),
+                    ));
+
+                    var s = result.data["exportAnswers"];
+                    print(s);
+
+                    // reset
+                    for (var stop in widget.tour.stops)
+                      for (var extra in stop.extras)
+                        if (extra.task != null) extra.task.reset();
+                    Navigator.pop(context);
+                    Navigator.pop(context);
+                    saveAndReturnTxt(s)
+                        .then((file) => OpenFile.open(file.path));
+                  },
+                ),
+                FlatButton(
+                  child: Text("Nein", style: TextStyle(color: COLOR_TOUR)),
+                  onPressed: () {
+                    // reset
+                    for (var stop in widget.tour.stops)
+                      for (var extra in stop.extras)
+                        if (extra.task != null) extra.task.reset();
+                    Navigator.pop(context);
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ));
+  }
+
+  //save String to txt file and return file
+  Future<File> saveAndReturnTxt(String text) async {
+    final Directory directory = await getApplicationDocumentsDirectory();
+    final File file = File('${directory.path}/results.txt');
+    await file.writeAsString(text);
+    Directory tempDir = await getTemporaryDirectory();
+    File tempFile = File('${tempDir.path}/results_temp.txt');
+    ByteData bd = await rootBundle.load('${directory.path}/results.txt');
+    await tempFile.writeAsBytes(bd.buffer.asUint8List(), flush: true);
+    return tempFile;
   }
 
   Widget _results() {

@@ -295,7 +295,8 @@ class MuseumDatabase extends _$MuseumDatabase {
     await initUser();
     String oldName = await select(users).map((u) => u.username).getSingle();
     await batch((batch) {
-      batch.update(users, UsersCompanion(username: Value(name), refreshToken: Value(refresh)));
+      batch.update(users,
+          UsersCompanion(username: Value(name), refreshToken: Value(refresh)));
       batch.update(tours, ToursCompanion(author: Value(name)),
           where: ($ToursTable t) => t.author.equals(oldName));
     });
@@ -406,11 +407,11 @@ class MuseumDatabase extends _$MuseumDatabase {
     await setDivisions();
     User u = await select(users).getSingle();
 
-    if (await GraphQLConfiguration.isConnected(u.accessToken))
-      if (await refreshAccess() != "") {
-        await downloadStops();
-        await downloadBadges();
-      }
+    if (await GraphQLConfiguration.isConnected(
+        u.accessToken)) if (await refreshAccess() != "") {
+      await downloadStops();
+      await downloadBadges();
+    }
   }
 
   Future initUser() async {
@@ -603,6 +604,97 @@ class MuseumDatabase extends _$MuseumDatabase {
         onboardEnd: null,
         favStops: <String>[],
         favTours: <String>[]));
+  }
+
+  Future uploadAnswers(TourWithStops tour) async {
+    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+    String token = await accessToken();
+    if (!await GraphQLConfiguration.isConnected(token))
+      token = await refreshAccess();
+    if (token == "") {
+      print("EXIT AAA");
+      return;
+    }
+
+    //print(result.data.data);
+    int totalId = 0;
+    for (int stopInd = 0; stopInd < tour.stops.length; stopInd++) {
+      ActualStop stop = tour.stops[stopInd];
+      totalId++;
+      for (int extrInd = 0; extrInd < stop.extras.length; extrInd++) {
+        totalId++;
+        ActualExtra extra = stop.extras[extrInd];
+        switch (extra.type) {
+          case ExtraType.TASK_TEXT:
+            QueryResult result = await _client.query(QueryOptions(
+              documentNode:
+                  gql(QueryBackend.questionId(token, tour.onlineId, totalId)),
+            ));
+            String questionId;
+            try {
+              questionId =
+                  result.data["questionId"][0]; // GET_ID(tour_id, totalId)
+            } catch (e) {
+              continue;
+            }
+            String answer =
+                extra.task.entries.map((e) => e.valA.text + ": " + e.valB.text).join("; ");
+
+            result = await _client.mutate(MutationOptions(
+              documentNode:
+                  gql(MutationBackend.uploadAnswer(token, answer, questionId)),
+              onError: (e) =>
+                  print("ERROR_uplAnsw: " + e.clientException.toString()),
+            ));
+            print("UPL_ANSW: [$answer] " +
+                result.data["createAnswer"]["ok"]["boolean"].toString());
+            break;
+          case ExtraType.TASK_SINGLE:
+          case ExtraType.TASK_MULTI:
+            QueryResult result = await _client.query(QueryOptions(
+              documentNode:
+                  gql(QueryBackend.questionId(token, tour.onlineId, totalId)),
+            ));
+            String questionId;
+            try {
+              questionId =
+                  result.data["questionId"][0]; // GET_ID(tour_id, totalId)
+            } catch (e) {
+              print("$totalId:   $stopInd, $extrInd");
+              print(result.data.data);
+              continue;
+            }
+
+            List<int> answer = List<int>();
+            if (extra.type == ExtraType.TASK_MULTI) {
+              for (int i = 0; i < extra.task.entries.length; i++) {
+                if (extra.task.entries[i].valB == true) {
+                  answer.add(i);
+                }
+              }
+            }
+            else if (extra.task.selected != null) answer.add(extra.task.selected);
+            print(answer.toString());
+
+            result = await _client.mutate(MutationOptions(
+              documentNode: gql(
+                  MutationBackend.uploadMCAnswer(token, answer, questionId)),
+              onError: (e) =>
+                  print("ERROR_uplAnsw_MC: " + e.clientException.toString()),
+            ));
+            if (result.hasException)
+              continue;
+            print(questionId);
+            print(result.data.data);
+
+            print("UPL_ANSW_MC: " +
+                answer.toString() +
+                result.data["createMcAnswer"]["ok"]["boolean"].toString());
+            break;
+          default:
+        }
+      }
+    }
   }
 
   void clear() {
@@ -873,9 +965,8 @@ class MuseumDatabase extends _$MuseumDatabase {
   Future<bool> _listToServer(List<Object> lst) async {
     String token = await accessToken();
     if (!await GraphQLConfiguration.isConnected(token))
-      token =await refreshAccess();
-    if (token == "")
-      return Future.value(false);
+      token = await refreshAccess();
+    if (token == "") return Future.value(false);
 
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
     var tourId;
@@ -917,7 +1008,10 @@ class MuseumDatabase extends _$MuseumDatabase {
                 cor.toString(), o.answerOpt.length, labels, o.textInfo);
             break;
           case ExtraType.IMAGE:
-            String img = await (select(stops)..where((s) => s.id.equals(o.id_stop))).map((s) => s.images[0]).getSingle();
+            String img = await (select(stops)
+                  ..where((s) => s.id.equals(o.id_stop)))
+                .map((s) => s.images[0])
+                .getSingle();
             mutation = MutationBackend.createImageExtra(token, tourId, img);
             break;
           case ExtraType.TEXT:
@@ -985,9 +1079,8 @@ class MuseumDatabase extends _$MuseumDatabase {
   Future<bool> joinAndDownloadTour(String id, {bool searchId = true}) async {
     String token = await accessToken();
 
-    if (!await GraphQLConfiguration.isConnected(token))
-      if (await refreshAccess() == "")
-        return Future.value(false);
+    if (!await GraphQLConfiguration.isConnected(
+        token)) if (await refreshAccess() == "") return Future.value(false);
 
     GraphQLClient _client = GraphQLConfiguration().clientToQuery();
 

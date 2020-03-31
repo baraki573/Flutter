@@ -74,6 +74,9 @@ class QueryBackend {
         ... on PictureCheckpoint{
           index
           id
+          picture {
+            id
+          }
         }
         ... on Question{
           index
@@ -199,6 +202,18 @@ class QueryBackend {
   static String availProfile(String token) {
     return """query{
       availableProfilePictures(token: "$token")
+    }""";
+  }
+
+  static String questionId(String token, String tourId, int index) {
+    return """query { 
+      questionId(token: "$token", tourId: "$tourId", index: $index) 
+    }""";
+  }
+
+  static String exportResult(String token, String tourId, String username) {
+    return """query{
+      exportAnswers(token: "$token", tourId: "$tourId", username: "$username")
     }""";
   }
 
