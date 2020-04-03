@@ -14,7 +14,6 @@ The Project is accompanied with backend and web admin portal to support this app
 
 ## Screenshots
 
-
 <img src="/Screenshots/Onboarding.jpeg" width="300">
 <img src="Screenshots/Home_Page.jpeg" width="300">
 <img src="Screenshots/Museum_page.jpeg" width="300">
@@ -22,6 +21,9 @@ The Project is accompanied with backend and web admin portal to support this app
 <img src="Screenshots/Dioramen_Tour.jpeg" width="300">
 <img src="Screenshots/Profile_Page_Gamification.jpeg" width="300">
 
+| Onboarding Page                                       | Home Page                                          |
+| ----------------------------------------------------- | -------------------------------------------------- |
+| <img src="/Screenshots/Onboarding.jpeg" height="400"> | <img src="Screenshots/Home_Page.jpeg" width="400"> |
 
 ## Acknowledgment
 
