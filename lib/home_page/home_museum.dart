@@ -1,19 +1,20 @@
 import 'dart:io';
+import 'dart:math';
 
+import 'package:carousel_pro/carousel_pro.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:museum_app/SizeConfig.dart';
-import 'dart:math';
 import 'package:museum_app/museum_tabs.dart';
-import '../constants.dart';
-import 'package:open_file/open_file.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:carousel_pro/carousel_pro.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../constants.dart';
 
 class HomeMuseum extends StatefulWidget {
   final void Function() goBack;
+
   HomeMuseum({this.goBack, Key key}) : super(key: key);
 
   @override
@@ -21,6 +22,7 @@ class HomeMuseum extends StatefulWidget {
 }
 
 enum PageType { HOME_MUSEUM, HISTORY, OPENING_PRICE, EVENTS, DIRECTION }
+
 var funcSizeHeightPortrait = 29;
 var funcSizeWidthPortrait = 42;
 var funcSizeHeightLandscape = 30;
@@ -150,17 +152,18 @@ class _HomeMuseumState extends State<HomeMuseum> {
                         Container(
                             alignment: Alignment.center,
                             margin: EdgeInsets.only(
-                                bottom: 10.0, top: 15.0, left: 5, right: 5),
+                              //bottom: 10.0,
+                              top: 13.0,
+                              left: 5,
+                              right: 5,
+                            ),
                             child: SafeArea(
                                 bottom: false,
                                 child: Text(
                                   "Geschichte des Museums",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      fontSize: SizeConfig.orientationDevice ==
-                                              Orientation.portrait
-                                          ? SizeConfig.safeBlockHorizontal * 5
-                                          : SizeConfig.safeBlockHorizontal * 2,
+                                      fontSize: horSize(4.5, 2),
                                       fontFamily: "Nunito",
                                       fontWeight: FontWeight.w700,
                                       color: Color(0xFF1A1A1A)),
@@ -215,17 +218,18 @@ class _HomeMuseumState extends State<HomeMuseum> {
                         Container(
                             alignment: Alignment.center,
                             margin: EdgeInsets.only(
-                                bottom: 10.0, top: 15.0, left: 5, right: 5),
+                              //bottom: 10.0,
+                              top: 13.0,
+                              left: 5,
+                              right: 5,
+                            ),
                             child: SafeArea(
                                 bottom: false,
                                 child: Text(
                                   "Öffnungszeiten und Preise",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      fontSize: SizeConfig.orientationDevice ==
-                                              Orientation.portrait
-                                          ? SizeConfig.safeBlockHorizontal * 5
-                                          : SizeConfig.safeBlockHorizontal * 2,
+                                      fontSize: horSize(4.5, 2),
                                       fontFamily: "Nunito",
                                       fontWeight: FontWeight.w700,
                                       color: Color(0xFF1A1A1A)),
@@ -287,17 +291,18 @@ class _HomeMuseumState extends State<HomeMuseum> {
                         Container(
                             alignment: Alignment.center,
                             margin: EdgeInsets.only(
-                                bottom: 10.0, top: 15.0, left: 5, right: 5),
+                              bottom: 10.0,
+                              top: 15.0,
+                              left: 5,
+                              right: 5,
+                            ),
                             child: SafeArea(
                                 bottom: false,
                                 child: Text(
                                   "Veranstaltungen und Führungen",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      fontSize: SizeConfig.orientationDevice ==
-                                              Orientation.portrait
-                                          ? SizeConfig.safeBlockHorizontal * 5
-                                          : SizeConfig.safeBlockHorizontal * 2,
+                                      fontSize: horSize(4.5, 2),
                                       fontFamily: "Nunito",
                                       fontWeight: FontWeight.w700,
                                       color: Color(0xFF1A1A1A)),
@@ -358,10 +363,7 @@ class _HomeMuseumState extends State<HomeMuseum> {
                                   "Anfahrt, ÖPNV und Lageplan",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      fontSize: SizeConfig.orientationDevice ==
-                                              Orientation.portrait
-                                          ? SizeConfig.safeBlockHorizontal * 5
-                                          : SizeConfig.safeBlockHorizontal * 2,
+                                      fontSize: horSize(4.5, 2),
                                       fontFamily: "Nunito",
                                       fontWeight: FontWeight.w700,
                                       color: Color(0xFF1A1A1A)),

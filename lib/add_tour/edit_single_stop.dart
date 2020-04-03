@@ -74,15 +74,14 @@ class _EditSingleStopState extends State<EditSingleStop> {
   }
 
   Widget _selecter() {
-
     return Container(
         color: Colors.white,
         child: StreamBuilder(
-          stream: MuseumDatabase.get().getCustomStop(),
+          stream: MuseumDatabase().watchCustomStop(),
           builder: (context, snap) {
             Stop stop = snap.data?.stop;
             return DropdownButton(
-              hint: Text("  "+widget.stop.stop?.name),
+              hint: Text("  " + widget.stop.stop?.name),
               isExpanded: true,
               items: [
                 DropdownMenuItem(
@@ -106,10 +105,14 @@ class _EditSingleStopState extends State<EditSingleStop> {
                   ),
                 ),
               ],
-              onChanged: (value) {
-                switch(value) {
-                  case 0: _action(); break;
-                  case 1: _setStop(stop); break;
+              onChanged: (value) async {
+                switch (value) {
+                  case 0:
+                    _action();
+                    break;
+                  case 1:
+                    _setStop((await MuseumDatabase().getCustomStop()));
+                    break;
                   default:
                 }
               },
@@ -124,6 +127,7 @@ class _EditSingleStopState extends State<EditSingleStop> {
       builder: (context) => AlertDialog(
         contentPadding: EdgeInsets.only(left: 15, right: 15, top: 15),
         content: Container(
+          width: horSize(100, 100),
           height: verSize(53, 50),
           child: MuseumSearch(_setStop, _ctrlSearch),
         ),
@@ -138,12 +142,13 @@ class _EditSingleStopState extends State<EditSingleStop> {
   }
 
   void _setStop(Stop s) {
+    print(s);
     setState(() {
       widget.stop.stop = s;
       widget.stop.features = StopFeature(
         id: null,
         id_tour: null,
-        id_stop: s.id,
+        id_stop: s?.id ?? customName,
         showImages: !widget.stop.isCustom(),
         showText: true,
         showDetails: !widget.stop.isCustom(),
@@ -204,8 +209,8 @@ class _EditSingleStopState extends State<EditSingleStop> {
           _withLabel(
             Icons.text_fields,
             "Textfeld",
-            funct: () => setState(() => widget.stop.extras.add(
-                ActualExtra(ExtraType.TEXT, text: "ICH füge hier Sachen ein"))),
+            funct: () => setState(() => widget.stop.extras
+                .add(ActualExtra(ExtraType.TEXT, text: "Textfreifeld"))),
           ),
           _withLabel(
             Icons.playlist_add,
@@ -213,10 +218,11 @@ class _EditSingleStopState extends State<EditSingleStop> {
             funct: _onTapTask,
             key: _keyTask,
           ),
+          // TODO MC speichere "nichts ist richtig" ab
           _withLabel(
-            FontAwesomeIcons.fileImage, "Bild",
-            //TODO block for individuell
-            funct: widget.stop.isCustom()
+            FontAwesomeIcons.fileImage,
+            "Bild",
+            funct: widget.stop.stop.images.isEmpty
                 ? null
                 : () => setState(() => widget.stop.extras.add(ActualExtra(
                     ExtraType.IMAGE,
@@ -259,23 +265,32 @@ class _EditSingleStopState extends State<EditSingleStop> {
     switch (prov.menuTitle) {
       case "Text":
         setState(() => widget.stop.extras.add(
-              ActualExtra(ExtraType.TASK_TEXT,
-                  text: "HALLO " + DateTime.now().toIso8601String(),
-                  sel: ["Antwort"]),
+              ActualExtra(
+                ExtraType.TASK_TEXT,
+                text: "Aufgabentext",
+                sel: ["Antwort"],
+                correct: <int>{},
+              ),
             ));
         break;
       case "Multi":
         setState(() => widget.stop.extras.add(
-              ActualExtra(ExtraType.TASK_MULTI,
-                  text: "HALLO " + DateTime.now().toIso8601String(),
-                  sel: ["Antwort"]),
+              ActualExtra(
+                ExtraType.TASK_MULTI,
+                text: "Aufgabentext",
+                sel: ["Antwort"],
+                correct: <int>{},
+              ),
             ));
         break;
       case "Single":
         setState(() => widget.stop.extras.add(
-              ActualExtra(ExtraType.TASK_SINGLE,
-                  text: "HALLO " + DateTime.now().toIso8601String(),
-                  sel: ["Antwort"]),
+              ActualExtra(
+                ExtraType.TASK_SINGLE,
+                text: "Aufgabentext",
+                sel: ["Antwort"],
+                correct: <int>{},
+              ),
             ));
         break;
     }

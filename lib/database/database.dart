@@ -1,11 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 
-import 'package:flutter/material.dart' as m;
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:moor/moor.dart';
 import 'package:moor_ffi/moor_ffi.dart';
 import 'package:museum_app/constants.dart';
+import 'package:museum_app/graphql/graphqlConf.dart';
+import 'package:museum_app/graphql/mutations.dart';
+import 'package:museum_app/graphql/query.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
@@ -17,12 +22,31 @@ part 'database.g.dart';
 String customName = "Individuell";
 
 class Users extends Table {
+  BoolColumn get producer => boolean()();
+
+  TextColumn get accessToken =>
+      text().withDefault(const Constant("")).named("accessToken")();
+
+  TextColumn get refreshToken =>
+      text().withDefault(const Constant("")).named("refreshToken")();
+
   TextColumn get username =>
       text().withLength(min: MIN_USERNAME, max: MAX_USERNAME)();
 
   TextColumn get imgPath => text().named("imgPath")();
 
-  BoolColumn get onboardEnd => boolean().withDefault(const Constant(false)).named("onboardEnd")();
+  TextColumn get favStops => text()
+      .withDefault(const Constant(""))
+      .map(StringListConverter())
+      .named("favStops")();
+
+  TextColumn get favTours => text()
+      .withDefault(const Constant(""))
+      .map(StringListConverter())
+      .named("favTours")();
+
+  BoolColumn get onboardEnd =>
+      boolean().withDefault(const Constant(false)).named("onboardEnd")();
 
   @override
   Set<Column> get primaryKey => {username};
@@ -47,13 +71,14 @@ class Badges extends Table {
 class Tours extends Table {
   IntColumn get id => integer().autoIncrement()();
 
+  TextColumn get onlineId => text()();
+
   TextColumn get name =>
       text().withLength(min: MIN_TOURNAME, max: MAX_TOURNAME)();
 
   TextColumn get author =>
       text().withLength(min: MIN_USERNAME, max: MAX_USERNAME)();
 
-  //TODO convert to difficulty
   RealColumn get difficulty => real()();
 
   DateTimeColumn get creationTime => dateTime()();
@@ -65,22 +90,18 @@ class Tours extends Table {
 }
 
 class Stops extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  TextColumn get id => text()();
 
   //IMAGES
   TextColumn get images => text().map(StringListConverter())();
 
-  TextColumn get name => text().withLength(min: 3, max: 20)();
+  TextColumn get name => text()();
 
   TextColumn get descr => text()();
 
-  //TODO add Map<String, String>-Converter
+  TextColumn get time => text().nullable()();
 
-  TextColumn get invId => text().nullable()();
-
-  TextColumn get time => text().withLength(min: 1, max: 15).nullable()();
-
-  TextColumn get creator => text().withLength(min: 1, max: 15).nullable()();
+  TextColumn get creator => text().nullable()();
 
   TextColumn get division =>
       text().customConstraint("REFERENCES divisions(name)").nullable()();
@@ -104,10 +125,9 @@ class TourStops extends Table {
 
   IntColumn get id_tour => integer().customConstraint("REFERENCES tours(id)")();
 
-  IntColumn get id_stop => integer().customConstraint("REFERENCES stops(id)")();
+  TextColumn get id_stop => text().customConstraint("REFERENCES stops(id)")();
 }
 
-// TODO typo: change to "Divisions"
 class Divisions extends Table {
   TextColumn get name => text()();
 
@@ -127,7 +147,7 @@ class Extras extends Table {
 
   IntColumn get id_tour => integer().customConstraint("REFERENCES tours(id)")();
 
-  IntColumn get id_stop => integer().customConstraint("REFERENCES stops(id)")();
+  TextColumn get id_stop => text().customConstraint("REFERENCES stops(id)")();
 
   TextColumn get textInfo => text()();
 
@@ -146,7 +166,7 @@ class StopFeatures extends Table {
 
   IntColumn get id_tour => integer().customConstraint("REFERENCES tours(id)")();
 
-  IntColumn get id_stop => integer().customConstraint("REFERENCES stops(id)")();
+  TextColumn get id_stop => text().customConstraint("REFERENCES stops(id)")();
 
   BoolColumn get showImages => boolean().withDefault(const Constant(true))();
 
@@ -250,14 +270,14 @@ LazyDatabase _openConnection() {
 ])
 class MuseumDatabase extends _$MuseumDatabase {
   static MuseumDatabase _db;
-  static int customID = 0;
+  static String customID = "Custom";
 
-  static MuseumDatabase get() {
-    _db ??= MuseumDatabase();
+  factory MuseumDatabase() {
+    _db ??= MuseumDatabase._create();
     return _db;
   }
 
-  MuseumDatabase() : super(_openConnection());
+  MuseumDatabase._create() : super(_openConnection());
 
   @override
   int get schemaVersion => 5;
@@ -271,15 +291,106 @@ class MuseumDatabase extends _$MuseumDatabase {
     return into(users).insert(uc);
   }
 
-  Future updateUsername(String name) {
-    return update(users).write(UsersCompanion(username: Value(name)));
+  Future updateUsername(String name, String refresh) async {
+    await initUser();
+    String oldName = await select(users).map((u) => u.username).getSingle();
+    await batch((batch) {
+      batch.update(users,
+          UsersCompanion(username: Value(name), refreshToken: Value(refresh)));
+      batch.update(tours, ToursCompanion(author: Value(name)),
+          where: ($ToursTable t) => t.author.equals(oldName));
+    });
+    refreshAccess();
   }
 
-  Future updateImage(String imgPath) {
+  Future setProducer() {
+    return update(users).write(UsersCompanion(producer: Value(true)));
+  }
+
+  Future updateImage(String imgPath) async {
+    await initUser();
     return update(users).write(UsersCompanion(imgPath: Value(imgPath)));
   }
 
-  Future updateOnboard(bool b) {
+  Future<bool> downloadStops() async {
+    String accessToken = await this.accessToken();
+
+    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+    QueryResult result = await _client.query(QueryOptions(
+      documentNode: gql(QueryBackend.allObjects(accessToken)),
+    ));
+    if (result.hasException) {
+      print(result.exception.toString());
+      return Future.value(false);
+    }
+    if (result.loading) return Future.value(false);
+    var d = result.data;
+    if (d?.data == null) return Future.value(false);
+    if (d is LazyCacheMap) {
+      var listStops = <StopsCompanion>[];
+      List list = d.data["allObjects"];
+      for (var object in list) {
+        List<String> images = List<String>();
+        for (var e in object["picture"]) images.add(e["id"]);
+        var comp = Stop(
+          id: object['objectId'],
+          images: images,
+          name: object['title'],
+          descr: object['description'],
+          time: object['year'],
+          creator: object['creator'],
+          division: object['subCategory'],
+          artType: object['artType'],
+          material: object['material'],
+          size: object['size_'],
+          location: object['location'],
+          interContext: object['interdisciplinaryContext'], //.join("\n"),
+        ).createCompanion(true);
+        listStops.add(comp);
+      }
+      batch((batch) =>
+          batch.insertAll(stops, listStops, mode: InsertMode.insertOrReplace));
+    }
+
+    return Future.value(true);
+  }
+
+  Future<bool> downloadBadges() async {
+    String token = await accessToken();
+
+    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+    QueryResult result = await _client.query(QueryOptions(
+      documentNode: gql(QueryBackend.allBadges(token)),
+    ));
+    if (result.hasException) {
+      print(result.exception.toString());
+      return Future.value(false);
+    }
+    if (result.loading) return Future.value(false);
+    var d = result.data;
+    if (d?.data == null) return Future.value(false);
+    if (d is LazyCacheMap) {
+      var listBadges = <BadgesCompanion>[];
+      List list = d.data["availableBadges"];
+      for (var object in list) {
+        print(object);
+        var comp = Badge(
+          name: object["name"],
+          color: Color(0xFFFF0000),
+          toGet: object["cost"].toDouble(),
+          imgPath: object["id"],
+        ).createCompanion(true);
+        listBadges.add(comp);
+      }
+      batch((batch) => batch.insertAll(badges, listBadges,
+          mode: InsertMode.insertOrReplace));
+    }
+
+    return Future.value(true);
+  }
+
+  Future updateOnboard(bool b) async {
+    await initUser();
     return update(users).write(UsersCompanion(onboardEnd: Value(b)));
   }
 
@@ -287,12 +398,303 @@ class MuseumDatabase extends _$MuseumDatabase {
     return select(users).map((u) => u.onboardEnd).getSingle();
   }
 
-  Future initUser() {
-    customStatement("INSERT INTO users (username, imgPath, onboardEnd) SELECT 'Test', '', false WHERE NOT EXISTS (SELECT * FROM users)");
+  Future<String> accessToken() {
+    return select(users).map((u) => u.accessToken).getSingle();
   }
 
-  Future reset(UsersCompanion uc) {
-    return delete(users).delete(uc);
+  Future init() async {
+    await initUser();
+    await setDivisions();
+    User u = await select(users).getSingle();
+
+    if (await GraphQLConfiguration.isConnected(
+        u.accessToken)) if (await refreshAccess() != "") {
+      await downloadStops();
+      await downloadBadges();
+    }
+  }
+
+  Future initUser() async {
+    await customStatement(
+        "INSERT INTO users (username, imgPath, onboardEnd, producer) SELECT '', 'assets/images/profile_test.png', false, false WHERE NOT EXISTS (SELECT * FROM users)");
+  }
+
+  Future addFavStop(String id) async {
+    var stopIds = await select(users).map((u) => u.favStops).getSingle();
+    stopIds.add(id);
+
+    String accessToken = await this.accessToken();
+    if (!await GraphQLConfiguration.isConnected(accessToken))
+      accessToken = await refreshAccess();
+
+    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+    QueryResult result = await _client.mutate(MutationOptions(
+      documentNode: gql(MutationBackend.addFavStop(accessToken, id)),
+      onError: (e) => print("ERROR_addFavStop: " + e.toString()),
+    ));
+
+    if (result.data["addFavouriteObject"].data["ok"]["boolean"])
+      update(users).write(UsersCompanion(favStops: Value(stopIds)));
+  }
+
+  Future removeFavStop(String id) async {
+    var stopIds = await select(users).map((u) => u.favStops).getSingle();
+    stopIds.remove(id);
+
+    String accessToken = await this.accessToken();
+    if (!await GraphQLConfiguration.isConnected(accessToken))
+      accessToken = await refreshAccess();
+
+    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+    QueryResult result = await _client.mutate(MutationOptions(
+      documentNode: gql(MutationBackend.removeFavStop(accessToken, id)),
+      onError: (e) => print("ERROR_removeFavStop: " + e.toString()),
+    ));
+
+    if (result.data["removeFavouriteObject"].data["ok"]["boolean"])
+      update(users).write(UsersCompanion(favStops: Value(stopIds)));
+  }
+
+  Future<bool> isFavStop(String id) async {
+    var stopIds = await select(users).map((u) => u.favStops).getSingle();
+
+    return stopIds.where((fav) => fav == id).isNotEmpty;
+  }
+
+  Future<List<Stop>> getFavStops() async {
+    var stopIds = await select(users).map((u) => u.favStops).getSingle();
+
+    var query = select(stops)..where((s) => s.id.isIn(stopIds));
+    return query.get();
+  }
+
+  Future addFavTour(String id) async {
+    var tourIds = await select(users).map((u) => u.favTours).getSingle();
+    tourIds.add(id);
+
+    String accessToken = await this.accessToken();
+    if (!await GraphQLConfiguration.isConnected(accessToken))
+      accessToken = await refreshAccess();
+
+    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+    QueryResult result = await _client.mutate(MutationOptions(
+      documentNode: gql(MutationBackend.addFavTour(accessToken, id)),
+      onError: (e) => print("ERROR_addFavTour: " + e.toString()),
+    ));
+
+    if (result.data["addFavouriteTour"].data["ok"]["boolean"])
+      update(users).write(UsersCompanion(favTours: Value(tourIds)));
+  }
+
+  Future removeFavTour(String id) async {
+    var tourIds = await select(users).map((u) => u.favTours).getSingle();
+    tourIds.remove(id);
+
+    String accessToken = await this.accessToken();
+    if (!await GraphQLConfiguration.isConnected(accessToken))
+      accessToken = await refreshAccess();
+
+    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+    QueryResult result = await _client.mutate(MutationOptions(
+      documentNode: gql(MutationBackend.removeFavTour(accessToken, id)),
+      onError: (e) => print("ERROR_addFavTour: " + e.toString()),
+    ));
+
+    if (result.data["removeFavouriteTour"].data["ok"]["boolean"])
+      update(users).write(UsersCompanion(favTours: Value(tourIds)));
+  }
+
+  Future<bool> isFavTour(String id) async {
+    var tourIds = await select(users).map((u) => u.favTours).getSingle();
+
+    return tourIds.where((fav) => fav == id).isNotEmpty;
+  }
+
+  Stream<List<TourWithStops>> watchFavTours() {
+    var tourIds = select(users).map((u) => u.favTours).watchSingle();
+
+    //tourIds.forEach((list) => list.forEach((s) async => await joinAndDownloadTour(s, searchId: false)));
+
+    var tours = getTourStops();
+
+    return Rx.combineLatest2(
+        tourIds,
+        tours,
+        (List<String> ids, List<TourWithStops> tours) =>
+            tours.where((t) => ids.contains(t.onlineId)).toList());
+  }
+
+  Future<bool> logIn(String username, String password) async {
+    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+    QueryResult result = await _client.mutate(MutationOptions(
+      documentNode: gql(MutationBackend.auth(password, username)),
+      onError: (e) => print("ERROR_auth: " + e.clientException.toString()),
+    ));
+
+    var map = (result?.data ?? {})['auth'] ?? {};
+    if (map['ok'] == true) {
+      print("LOGIN");
+      String access = map['accessToken'];
+      String refresh = map['refreshToken'];
+
+      result = await _client.query(QueryOptions(
+        documentNode: gql(QueryBackend.userInfo(access)),
+      ));
+      // badge, profile picture, producer
+      //print("ME "+result.data.data.toString());
+      var me = result.data["me"][0];
+      var process = json.decode(me["badgeProgress"]);
+      print(process);
+      if (process is Map) {
+        for (var e in process.entries) {
+          (update(badges)..where((b) => b.name.equals(e.key)))
+              .write(BadgesCompanion(current: Value(e.value.toDouble())));
+        }
+      }
+      String profilePic = (me["profilePicture"] ?? {"id": ""})["id"].toString();
+      bool producer = me["producer"] as bool;
+
+      // Favourite Stops
+      result = await _client.query(QueryOptions(
+        documentNode: gql(QueryBackend.favStops(access)),
+      ));
+      List<String> favStops = List<String>();
+      for (var m in result.data["favouriteObjects"] ?? [])
+        favStops.add(m.data["objectId"].toString());
+      print("FAVSTOPS" + favStops.toString());
+
+      // Favourite Tours
+      result = await _client.query(QueryOptions(
+        documentNode: gql(QueryBackend.favTours(access)),
+      ));
+      List<String> favTours = List<String>();
+      for (var m in result.data["favouriteTours"] ?? [])
+        favTours.add(m.data["id"].toString());
+      print("FAVTOURS" + favTours.toString());
+
+      var u = UsersCompanion(
+        accessToken: Value(access),
+        refreshToken: Value(refresh),
+        username: Value(username),
+        favStops: Value(favStops),
+        favTours: Value(favTours),
+        imgPath: Value(profilePic),
+        producer: Value(producer),
+      );
+      await update(users).write(u);
+
+      //await downloadStops();
+      return Future.value(true);
+    }
+    return Future.value(false);
+  }
+
+  Future logOut() {
+    delete(tourStops);
+    //customStatement("DELETE FROM tourStops");
+    customStatement("DELETE FROM tours");
+    update(badges).write(BadgesCompanion(current: Value(0)));
+
+    return update(users).write(User(
+        producer: false,
+        refreshToken: "",
+        accessToken: "",
+        username: "",
+        imgPath: "",
+        onboardEnd: null,
+        favStops: <String>[],
+        favTours: <String>[]));
+  }
+
+  Future uploadAnswers(TourWithStops tour) async {
+    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+    String token = await accessToken();
+    if (!await GraphQLConfiguration.isConnected(token))
+      token = await refreshAccess();
+    if (token == "") {
+      print("EXIT AAA");
+      return;
+    }
+
+    //print(result.data.data);
+    int totalId = 0;
+    for (int stopInd = 0; stopInd < tour.stops.length; stopInd++) {
+      ActualStop stop = tour.stops[stopInd];
+      totalId++;
+      for (int extrInd = 0; extrInd < stop.extras.length; extrInd++) {
+        totalId++;
+        ActualExtra extra = stop.extras[extrInd];
+        switch (extra.type) {
+          case ExtraType.TASK_TEXT:
+            QueryResult result = await _client.query(QueryOptions(
+              documentNode:
+                  gql(QueryBackend.questionId(token, tour.onlineId, totalId)),
+            ));
+            String questionId;
+            try {
+              questionId =
+                  result.data["questionId"][0]; // GET_ID(tour_id, totalId)
+            } catch (e) {
+              continue;
+            }
+            String answer =
+                extra.task.entries.map((e) => e.valA.text + ": " + e.valB.text).join("; ");
+
+            result = await _client.mutate(MutationOptions(
+              documentNode:
+                  gql(MutationBackend.uploadAnswer(token, answer, questionId)),
+              onError: (e) =>
+                  print("ERROR_uplAnsw: " + e.clientException.toString()),
+            ));
+            print("UPL_ANSW: [$answer] " +
+                result.data["createAnswer"]["ok"]["boolean"].toString());
+            break;
+          case ExtraType.TASK_SINGLE:
+          case ExtraType.TASK_MULTI:
+            QueryResult result = await _client.query(QueryOptions(
+              documentNode:
+                  gql(QueryBackend.questionId(token, tour.onlineId, totalId)),
+            ));
+            String questionId;
+            try {
+              questionId =
+                  result.data["questionId"][0]; // GET_ID(tour_id, totalId)
+            } catch (e) {
+              print("$totalId:   $stopInd, $extrInd");
+              print(result.data.data);
+              continue;
+            }
+
+            List<int> answer = List<int>();
+            if (extra.type == ExtraType.TASK_MULTI) {
+              for (int i = 0; i < extra.task.entries.length; i++) {
+                if (extra.task.entries[i].valB == true) {
+                  answer.add(i);
+                }
+              }
+            }
+            else if (extra.task.selected != null) answer.add(extra.task.selected);
+            print(answer.toString());
+
+            result = await _client.mutate(MutationOptions(
+              documentNode: gql(
+                  MutationBackend.uploadMCAnswer(token, answer, questionId)),
+              onError: (e) =>
+                  print("ERROR_uplAnsw_MC: " + e.clientException.toString()),
+            ));
+            if (result.hasException)
+              continue;
+            print(questionId);
+            print(result.data.data);
+
+            print("UPL_ANSW_MC: " +
+                answer.toString() +
+                result.data["createMcAnswer"]["ok"]["boolean"].toString());
+            break;
+          default:
+        }
+      }
+    }
   }
 
   void clear() {
@@ -304,15 +706,7 @@ class MuseumDatabase extends _$MuseumDatabase {
     customStatement("DELETE FROM divisions");
   }
 
-  Stream<StopFeature> getStopFeature(int num, int stop_id, int tour_id) {
-    //TODO PART1
-    /*if (stop_id == customID)
-      return Stream.value(StopFeature(
-          id_tour: tour_id,
-          id_stop: stop_id,
-          showImages: false,
-          showText: true,
-          showDetails: false));*/
+  Stream<StopFeature> getStopFeature(int num, String stop_id, int tour_id) {
     final query = select(stopFeatures)
       ..where((f) => f.id.equals(num))
       ..where((f) => f.id_stop.equals(stop_id))
@@ -321,7 +715,7 @@ class MuseumDatabase extends _$MuseumDatabase {
     return query.watchSingle();
   }
 
-  Future<void> updateStopFeatures(int stop_id, int tour_id,
+  Future<void> updateStopFeatures(String stop_id, int tour_id,
       {images, text, details}) {
     if (stop_id != customID)
       update(stopFeatures).replace(
@@ -336,15 +730,10 @@ class MuseumDatabase extends _$MuseumDatabase {
       );
   }
 
-  Future addExtra(ActualExtra e, int pos_stop, int pos_extra, int tour_id, int stop_id) {
+  Future addExtra(
+      ActualExtra e, int pos_stop, int pos_extra, int tour_id, String stop_id) {
     if (e.task != null) {
-      var list = List<int>();
-
-      if (e.type == ExtraType.TASK_MULTI)
-        for (int i = 0; i < e.task.entries.length; i++)
-          if (e.task.entries[i].valB == true) list.add(i);
-
-      if (e.type == ExtraType.TASK_SINGLE) list.add(e.task.selected);
+      var list = e.task.correct.toList();
 
       return into(extras).insert(
           ExtrasCompanion.insert(
@@ -370,9 +759,8 @@ class MuseumDatabase extends _$MuseumDatabase {
         mode: InsertMode.insertOrReplace);
   }
 
-  Stream<ActualStop> getActualStop(int pos_stop, int tour_id, int stop_id) {
-    final stop = select(stops)
-      ..where((s) => s.id.equals(stop_id));
+  Stream<ActualStop> getActualStop(int pos_stop, int tour_id, String stop_id) {
+    final stop = select(stops)..where((s) => s.id.equals(stop_id));
 
     final feature = getStopFeature(pos_stop, stop_id, tour_id);
 
@@ -383,7 +771,8 @@ class MuseumDatabase extends _$MuseumDatabase {
         (Stop s, StopFeature f, List<ActualExtra> l) => ActualStop(s, f, l));
   }
 
-  Stream<List<ActualExtra>> getExtras(int pos_stop, int tour_id, int stop_id) {
+  Stream<List<ActualExtra>> getExtras(
+      int pos_stop, int tour_id, String stop_id) {
     final query = select(extras)
       ..where((t) => t.pos_stop.equals(pos_stop))
       //..where((t) => t.pos_extra.equals(pos_extra))
@@ -469,42 +858,38 @@ class MuseumDatabase extends _$MuseumDatabase {
       // search for division
       if (part.startsWith(RegExp("div:?"))) {
         part = part.replaceAll(RegExp("div:?"), "").trim();
-        query.where((s) => s.division.like(part + "%"));
+        query.where((s) => s.division.like("%" + part + "%"));
       }
       // search for object's creator
       else if (part.startsWith(RegExp("cre:?"))) {
         part = part.replaceAll(RegExp("cre:?"), "").trim();
-        query.where((s) => s.creator.like(part + "%"));
+        query.where((s) => s.creator.like("%" + part + "%"));
       }
       // search for object's art type
       else if (part.startsWith(RegExp("art:?"))) {
         part = part.replaceAll(RegExp("art:?"), "").trim();
-        query.where((s) => s.artType.like(part + "%"));
+        query.where((s) => s.artType.like("%" + part + "%"));
       }
       // search for object's material
       else if (part.startsWith(RegExp("mat:?"))) {
         part = part.replaceAll(RegExp("mat:?"), "").trim();
-        query.where((s) => s.material.like(part + "%"));
+        query.where((s) => s.material.like("%" + part + "%"));
       }
       // search for object's inv number
       else if (part.startsWith(RegExp("inv:?"))) {
         part = part.replaceAll(RegExp("inv:?"), "").trim();
-        query.where((s) => s.invId.like(part + "%"));
+        query.where((s) => s.id.like(part + "%"));
       }
       // search in the object's name and division
       else
-        query.where((s) => s.name.like("%" + part + "%") | s.division.like("%" + part + "%"));
+        query.where((s) =>
+            s.name.like("%" + part + "%") | s.division.like("%" + part + "%"));
     }
 
     return query.watch();
-    /*if (text.isEmpty)
-      return Stream.value(List<Stop>());
-    return query.map((list) => list
-        .where((s) => s.name.toLowerCase().startsWith(text.toLowerCase()))
-        .toList());*/
   }
 
-  Stream<List<Extra>> getExtrasId(int id_tour, int id_stop) {
+  Stream<List<Extra>> getExtrasId(int id_tour, String id_stop) {
     final contentQuery = select(extras)
       //.join([innerJoin(stops, stops.id.equalsExp(tourStops.id_stop))])
       ..where((e) => e.id_tour.equals(id_tour))
@@ -518,7 +903,6 @@ class MuseumDatabase extends _$MuseumDatabase {
         .join([innerJoin(stops, stops.id.equalsExp(tourStops.id_stop))])
           ..where(tourStops.id_tour.equals(id));
 
-    //final tourStream = tourQuery.watchSingle();
     final contentStream = contentQuery
         .watch()
         .map((rows) => rows.map((row) => row.readTable(stops)).toList());
@@ -526,7 +910,7 @@ class MuseumDatabase extends _$MuseumDatabase {
     return contentStream;
   }
 
-  Stream<ActualStop> getCustomStop() {
+  Stream<ActualStop> watchCustomStop() {
     final query = select(stops)..where((stop) => stop.name.equals(customName));
     return query.watchSingle().map((stop) => ActualStop(
         stop,
@@ -540,7 +924,301 @@ class MuseumDatabase extends _$MuseumDatabase {
         <ActualExtra>[]));
   }
 
-  Future<void> writeTourStops(TourWithStops entry) {
+  Future<Stop> getCustomStop() {
+    final query = select(stops)..where((stop) => stop.name.equals(customName));
+    return query.getSingle();
+  }
+
+  Future<bool> tourToServer(int tourId) async {
+    final t =
+        await (select(tours)..where((t) => t.id.equals(tourId))).getSingle();
+
+    final contentQuery = select(tourStops)
+        .join([innerJoin(stops, stops.id.equalsExp(tourStops.id_stop))])
+          ..where(tourStops.id_tour.equals(tourId));
+    final tS = await contentQuery.map((row) => row.readTable(stops)).get();
+
+    final f = await (select(stopFeatures)
+          ..where((f) => f.id_tour.equals(tourId)))
+        .get();
+    final e =
+        await (select(extras)..where((e) => e.id_tour.equals(tourId))).get();
+
+    List<Object> lst = <Object>[t];
+    for (var s in tS) {
+      lst.add([s, f.where((fe) => fe.id_stop == s.id).toList()[0]]);
+      lst.addAll(e.where((ex) => ex.id_stop == s.id).toList());
+    }
+
+    String s = lst.fold("", (prev, e) {
+      if (e is Tour) return prev + e.toString();
+      if (e is List)
+        return prev + "[" + e[0].name + ", " + e[1].toString() + "]";
+      if (e is Extra) return prev + e.textInfo;
+      return prev;
+    });
+    print(s);
+
+    return _listToServer(lst);
+  }
+
+  Future<bool> _listToServer(List<Object> lst) async {
+    String token = await accessToken();
+    if (!await GraphQLConfiguration.isConnected(token))
+      token = await refreshAccess();
+    if (token == "") return Future.value(false);
+
+    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+    var tourId;
+    for (var o in lst) {
+      String mutation;
+      if (o is Tour) {
+        var id = o.author.substring(0, min(3, o.author.length)) +
+            o.name.substring(0, min(4, o.name.length)) +
+            (o.name.length + o.difficulty).toString() +
+            o.id.toString();
+        mutation = MutationBackend.createTour(
+            token, o.name, o.desc, o.difficulty.toInt(), id);
+      } else if (tourId == null) {
+        continue;
+      } else if (o is List &&
+          o.length == 2 &&
+          o[0] is Stop &&
+          o[1] is StopFeature) {
+        mutation = MutationBackend.createObjectCheckpoint(token, o[0].id,
+            tourId, o[1].showDetails, o[1].showImages, o[1].showText);
+      } else if (o is Extra) {
+        switch (o.type) {
+          case ExtraType.TASK_TEXT:
+            mutation = MutationBackend.createTextTask(
+                token, o.id_stop, tourId, o.textInfo, o.answerOpt.join(";"));
+            break;
+          case ExtraType.TASK_SINGLE:
+            String labels = "[\"" + o.answerOpt.join("\", \"") + "\"]";
+            var cor = o.answerCor;
+            if (cor.isEmpty) cor.add(-1);
+            mutation = MutationBackend.createMCTask(token, o.id_stop, tourId,
+                cor.toString(), 1, labels, o.textInfo);
+            break;
+          case ExtraType.TASK_MULTI:
+            String labels = "[\"" + o.answerOpt.join("\", \"") + "\"]";
+            var cor = o.answerCor;
+            if (cor.isEmpty) cor.add(-1);
+            mutation = MutationBackend.createMCTask(token, o.id_stop, tourId,
+                cor.toString(), o.answerOpt.length, labels, o.textInfo);
+            break;
+          case ExtraType.IMAGE:
+            String img = await (select(stops)
+                  ..where((s) => s.id.equals(o.id_stop)))
+                .map((s) => s.images[0])
+                .getSingle();
+            mutation = MutationBackend.createImageExtra(token, tourId, img);
+            break;
+          case ExtraType.TEXT:
+            mutation =
+                MutationBackend.createTextExtra(token, o.textInfo, tourId);
+            break;
+        }
+      } else
+        continue;
+
+      QueryResult result = await _client.mutate(MutationOptions(
+        documentNode: gql(mutation),
+        onError: (e) {
+          print("ERROR: " + e.toString());
+          print("MUT: " + mutation);
+        },
+      ));
+
+      if (result.hasException) {
+        print("EXC: " + result.exception.toString());
+        return Future.value(false);
+      } else if (result.loading)
+        print("Loading");
+      else if (o is Tour) {
+        var d = result.data['createTour'];
+        if (d is LazyCacheMap) {
+          print("DATA: " + d.data.toString());
+          tourId = result.data['createTour'].data["tour"]["id"];
+          (update(tours)..where((t) => t.id.equals(o.id)))
+              .write(ToursCompanion(onlineId: Value(tourId)));
+        }
+      }
+    }
+
+    await _client.mutate(MutationOptions(
+      documentNode: gql(MutationBackend.joinTour(token, tourId)),
+      onError: (e) => print("ERROR: " + e.toString()),
+    ));
+
+    return Future.value(true);
+  }
+
+  Future<String> refreshAccess() async {
+    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+    String refresh = await select(users).map((u) => u.refreshToken).getSingle();
+
+    QueryResult result = await _client.mutate(MutationOptions(
+      documentNode: gql(MutationBackend.refresh(refresh)),
+    ));
+
+    if (result.hasException)
+      print("EXC_refresh: " + result.exception.toString());
+    else if (result.loading)
+      print("LOADING");
+    else {
+      String newToken = result.data['refresh'].data["newToken"];
+      update(users).write(UsersCompanion(accessToken: Value(newToken)));
+      print("NEW TOKEN");
+      downloadStops();
+      return Future.value(newToken);
+    }
+    return Future.value("");
+  }
+
+  Future<bool> joinAndDownloadTour(String id, {bool searchId = true}) async {
+    String token = await accessToken();
+
+    if (!await GraphQLConfiguration.isConnected(token)) if (await refreshAccess() == "") return Future.value(false);
+
+    GraphQLClient _client = GraphQLConfiguration().clientToQuery();
+
+    String tourId = id;
+    if (searchId) {
+      QueryResult result = await _client.query(QueryOptions(
+        documentNode: gql(QueryBackend.tourSearchId(token, id)),
+      ));
+      if (result.data["tourSearchId"] is List &&
+          result.data["tourSearchId"].length > 0)
+        tourId = result.data["tourSearchId"][0];
+      else {
+        return Future.value(false);
+      }
+      print("TOUR FOUND: $tourId");
+    }
+    print(tourId);
+    var l =
+        await (select(tours)..where((t) => t.onlineId.equals(tourId))).get();
+    if (l.isNotEmpty) return Future.value(true);
+
+    // Join the tour
+    await _client.mutate(MutationOptions(
+      documentNode: gql(MutationBackend.joinTour(token, tourId)),
+      onError: (e) => print("ERROR: " + e.toString()),
+    ));
+
+    // get the tour infos
+    QueryResult tourRes = await _client.query(QueryOptions(
+      documentNode: gql(QueryBackend.getTour(token, tourId)),
+    ));
+
+    //print(result.data['tour'][0].data);
+    List<Map> list = <Map>[tourRes.data['tour'][0].data];
+
+    QueryResult checkRes = await _client.query(QueryOptions(
+      documentNode: gql(QueryBackend.checkpointTour(token, tourId)),
+    ));
+
+    List<Object> checkList = checkRes.data.data['checkpointsTour'];
+    checkList
+        .sort((m1, m2) => (m1 as Map)["index"].compareTo((m2 as Map)["index"]));
+    //print("CHECKS: "+checkList.toString());
+    checkList.forEach((o) {
+      if (o is Map) list.add(o);
+    });
+
+    return _listToLocal(list);
+  }
+
+  Future<bool> _listToLocal(List<Map> list) async {
+    TourWithStops tour;
+
+    for (var m in list) {
+      if (m.containsKey("searchId")) {
+        // TOUR
+        String author = "";
+        var own = m["owner"];
+        if (own is Map && own.containsKey("username")) author = own["username"];
+        Tour t = Tour(
+            id: -1,
+            onlineId: m["id"],
+            name: m["name"],
+            author: author,
+            difficulty: m["difficulty"].toDouble(),
+            creationTime: DateTime.parse(m["creation"]),
+            desc: m["description"]);
+        tour = TourWithStops(t, <ActualStop>[]);
+      } else if (m.containsKey("index") && tour != null) {
+        print(m);
+        if (m.containsKey("museumObject")) {
+          // STOP
+          String id = "";
+          var obj = m["museumObject"];
+          if (obj is Map && obj.containsKey("objectId")) id = obj["objectId"];
+          var feat = StopFeature(
+              id_stop: id,
+              showImages: m["showPicture"],
+              showText: m["showText"],
+              showDetails: m["showDetails"]);
+          Stop s = await (select(stops)..where((st) => st.id.equals(id)))
+              .getSingle();
+          tour.stops.add(ActualStop(s, feat, <ActualExtra>[]));
+        } else if (tour.stops.isEmpty)
+          continue;
+        else if (m.containsKey("question") && !m.containsKey("maxChoices")) {
+          // TEXT TASK
+          List<String> strngs = <String>[];
+          if (m["text"] is String) strngs = m["text"].toString().split(",");
+          tour.stops.last.extras.add(ActualExtra(ExtraType.TASK_TEXT,
+              text: m["question"], sel: strngs));
+        } else if (m.containsKey("maxChoices")) {
+          // MC TASK
+          List<String> strngs = <String>[];
+          for (var s in m["possibleAnswers"]) strngs.add(s.toString());
+
+          var type = m["maxChoices"] == 1
+              ? ExtraType.TASK_SINGLE
+              : ExtraType.TASK_MULTI;
+
+          Set<int> correct = <int>{};
+          for (var i in m["correctAnswers"]) correct.add(i as int);
+
+          print("STRNGS: " + strngs.toString());
+          print("CORRECT: " + correct.toString());
+
+          tour.stops.last.extras.add(ActualExtra(type,
+              text: m["question"], sel: strngs, correct: correct));
+        } else if (m.containsKey("picture")) {
+          // IMG EXTRA
+          tour.stops.last.extras.add(ActualExtra(ExtraType.IMAGE));
+        } else if (m.containsKey("text")) {
+          // TEXT EXTRA
+          print(m["text"]);
+          tour.stops.last.extras
+              .add(ActualExtra(ExtraType.TEXT, text: m["text"]));
+        }
+      }
+    }
+
+    print("AAA");
+    if (tour == null || tour.stops.isEmpty) return Future.value(false);
+
+    print(tour.id.toString() + tour.name.text + tour.author + tour.descr.text);
+    for (var s in tour.stops) {
+      print(s.stop.name);
+      print("EXTRA[" +
+          s.extras.fold("", (prev, e) {
+            String t = e.task != null ? e.task.correct.toString() : "";
+            return prev + e.type.toString() + " " + e.textInfo.text + "$t, ";
+          }) +
+          "]");
+    }
+
+    return writeTourStops(tour);
+  }
+
+  Future<bool> writeTourStops(TourWithStops entry,
+      {bool upload = false, bool review = false}) {
     return transaction(() async {
       final tour = entry.createToursCompanion(true);
 
@@ -570,136 +1248,107 @@ class MuseumDatabase extends _$MuseumDatabase {
             mode: InsertMode.insertOrReplace);
       });
 
-      for (var stop in entry.stops)
-        for (var extra in stop.extras)
-          addExtra(extra, entry.stops.indexOf(stop), stop.extras.indexOf(extra), id, stop.stop.id);
+      for (var stop in entry.stops) {
+        for (var extra in stop.extras) {
+          addExtra(extra, entry.stops.indexOf(stop), stop.extras.indexOf(extra),
+              id, stop.stop.id);
+        }
+      }
+
+      if (upload) return tourToServer(id);
+      return Future.value(true);
     });
   }
 
-  Future demoUser() {
-    customStatement("DELETE FROM users");
-    return into(users).insert(UsersCompanion.insert(
-        username: "Maria123_XD", imgPath: "assets/images/profile_test.png"));
-  }
-
-  Future<void> demoDivisions() async {
+  Future<void> setDivisions() async {
     await batch((batch) {
       batch.insertAll(
           divisions,
           [
             DivisionsCompanion.insert(
-                name: "Zoologisch", color: Value(Color(0xFFFF0000))),
+              name: "Archäologie/Vor- und Frühgeschichte",
+              color: Value(Color(0xFFD4642B)),
+            ),
             DivisionsCompanion.insert(
-                name: "Skulpturen", color: Value(Color(0xFF0000FF))),
+              name: "Archäologie/Ägyptische Sammlung",
+              color: Value(Color(0xFFAF3A27)),
+            ),
             DivisionsCompanion.insert(
-                name: "Bilder", color: Value(Color(0xFFFFEB3B))),
+              name: "Archäologie/Griechische Antike",
+              color: Value(Color(0xFFAF3A27)),
+            ),
             DivisionsCompanion.insert(
-                name: "Bonus", color: Value(Color(0xFF673AB7))),
+              name: "Archäologie/Römische Antike",
+              color: Value(Color(0xFFAF3A27)),
+            ),
+            DivisionsCompanion.insert(
+              name: "Archäologie/Vor- und Frühgeschichte",
+              color: Value(Color(0xFFD4642B)),
+            ),
+            DivisionsCompanion.insert(
+              name: "Erd- und Lebensgeschichte",
+              color: Value(Color(0xFF72A6A0)),
+            ),
+            DivisionsCompanion.insert(
+              name: "Gemäldegalerie/Kunst 13. bis 16. Jahrhundert",
+              color: Value(Color(0xFF824328)),
+            ),
+            DivisionsCompanion.insert(
+              name: "Gemäldegalerie/Kunst 16. bis 18. Jahrhundert",
+              color: Value(Color(0xFF824328)),
+            ),
+            DivisionsCompanion.insert(
+              name: "Gemäldegalerie/Kunst 19. bis Mitte 20. Jahrhundert",
+              color: Value(Color(0xFF824328)),
+            ),
+            DivisionsCompanion.insert(
+              name: "Graphische Sammlung",
+              color: Value(Color(0xFF632655)),
+            ),
+            DivisionsCompanion.insert(
+              name: "Kunst des Mittelalters/Kirchliche Schatzkammer",
+              color: Value(Color(0xFF954A77)),
+            ),
+            DivisionsCompanion.insert(
+              name: "Kunst des Mittelalters/Romanischer Gang",
+              color: Value(Color(0xFF954A77)),
+            ),
+            DivisionsCompanion.insert(
+              name: "Kunst des Mittelalters/Waffensaal",
+              color: Value(Color(0xFF632655)),
+            ),
+            DivisionsCompanion.insert(
+              name:
+                  "Kunsthandwerk (16. bis frühes 20. Jahrhundert)/Fürstliche Schatzkammer",
+              color: Value(Color(0xFF632655)),
+            ),
+            DivisionsCompanion.insert(
+              name:
+                  "Kunsthandwerk (16. bis frühes 20. Jahrhundert)/Kunst des Jugendstils",
+              color: Value(Color(0xFF632655)),
+            ),
+            DivisionsCompanion.insert(
+              name: "Kunsthandwerk/Fürstliche Schatzkammer",
+              color: Value(Color(0xFF632655)),
+            ),
+            DivisionsCompanion.insert(
+              name: "Kunsthandwerk/Jugendstilschmuck",
+              color: Value(Color(0xFF632655)),
+            ),
+            DivisionsCompanion.insert(
+              name: "Kunsthandwerk/Kostümsammlung Hüpsch",
+              color: Value(Color(0xFF632655)),
+            ),
+            DivisionsCompanion.insert(
+              name: "Kunsthandwerk/Kunst des Jugendstils",
+              color: Value(Color(0xFF632655)),
+            ),
+            DivisionsCompanion.insert(
+              name: "Zoologie",
+              color: Value(Color(0xFF869731)),
+            ),
           ],
           mode: InsertMode.insertOrReplace);
     });
   }
-
-  Future<void> demoStops() async {
-    //customStatement("DELETE FROM stops");
-    customID = await into(stops).insert(
-        StopsCompanion.insert(images: <String>[], name: customName, descr: ""));
-    await batch((batch) {
-      batch.insertAll(
-          stops,
-          List.generate(4, (i) {
-                String s = (i % 3 == 0 ? "" : "2");
-                return StopsCompanion.insert(
-                  name: "Zoologisch $i",
-                  division: Value("Zoologisch"),
-                  descr: "Description foo",
-                  images: [
-                    'assets/images/profile_test' + s + '.png',
-                    'assets/images/profile_test.png'
-                  ],
-                  creator: Value("Me"),
-                  material: Value("Holz"),
-                  size: Value("32m x 45m"),
-                  interContext: Value("Wurde von Napoleon besucht"),
-                  location: Value("Zuhause"),
-                );
-              }) +
-              List.generate(2, (i) {
-                String s = (i % 2 == 0 ? "" : "2");
-                return StopsCompanion.insert(
-                  name: "Skulpturen $i",
-                  descr: "More descr",
-                  images: ['assets/images/profile_test' + s + '.png'],
-                  division: Value("Skulpturen"),
-                  creator: Value("DaVinci"),
-                );
-              }) +
-              List.generate(10, (i) {
-                String s = (i % 3 == 0 ? "" : "2");
-                return StopsCompanion.insert(
-                  name: "Bilder $i",
-                  division: Value("Bilder"),
-                  descr: "Interessante Details",
-                  images: [
-                    'assets/images/profile_test' + s + '.png',
-                    'assets/images/profile_test' + s + '.png',
-                    'assets/images/profile_test2.png'
-                  ],
-                  creator: Value("Artist"),
-                );
-              }) +
-              List.generate(1, (i) {
-                return StopsCompanion.insert(
-                    name: "Bonus $i",
-                    descr:
-                        "Mit dieser Tour werden Sie interessante neue Fakten kennenlernen. Sie werden das Museum so erkunden, wie es bis heute noch kein Mensch getan hat. Nebenbei werden Sie spannende Aufgaben lösen.",
-                    images: ['assets/images/haupthalle_hlm_blue.png'],
-                    division: Value("Bonus"),
-                    creator: Value("VanGogh"));
-              }),
-          mode: InsertMode.insertOrReplace);
-    });
-  }
-
-  Future<void> demoBadges() async {
-    //customStatement("DELETE FROM badges");
-    await batch((batch) {
-      batch.insertAll(
-        badges,
-        List.generate(
-          16,
-          (i) => BadgesCompanion.insert(
-            name: "Badge $i",
-            toGet: 16.0,
-            color: Value(m.Colors.primaries[i]),
-            imgPath: "assets/images/profile_test.png",
-            current: Value(i.roundToDouble()),
-          ),
-        ),
-        mode: InsertMode.insertOrReplace,
-      );
-    });
-  }
-}
-
-void demo() {
-  var db = MuseumDatabase.get();
-  //db.clear();
-  db.demoUser();
-  db.demoDivisions().catchError((_) => print("divisionError"));
-  db.demoStops().catchError((_) => print("stopError"));
-  db.demoBadges().catchError((_) => print("badgeError"));
-  //db.demoTours().catchError((_) => print("tourError"));
-  //db.demoTourStops().catchError((_) => print("tourStopsError"));
-}
-
-void init() {
-  var u = UsersCompanion(
-      username: Value("ABC"), imgPath: Value("assets/images/profile_test.png"));
-  MuseumDatabase.get().setUser(u);
-}
-
-void reset() {
-  MuseumDatabase.get().clear();
-  //MuseumDatabase.get().reset(UsersCompanion(username: Value("TEST"), imgPath: Value("testPath")));
 }

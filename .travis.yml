@@ -85,7 +85,8 @@ deploy:
   provider: releases
   skip_cleanup: true
   api_key:
-    secure: $GITHUB_OAUTH_TOKEN
+    secure: Gpz9o+renc+NM1AwkzAd+YP/jnPrS6K90uQK5aX3odao9UwgLS9XJT8JGuWoe7aYSFA/zMNojsZ5mzFe1Zwegut9zy1btc0MU8iaIZBF1t9HXk5JUWSJllqIf4JcCVibpcNdeASTHU9jOmEMnHVLdBmTtpUlVz96//5zYRLALId+NsH6qM7EgoSZYVd5El2PIHvaJvJB/LB4jxHAYeju0u4Wacnv1naoaz6gGXwK2die05Cn/QPE1L69QNxVGSPp7yXM+jQB7mx2LR7iOY58XieO72oVWQ3Lq35WzCR5ohSALfb1nZzWmEK868GVoBXAIo9ho7PFT/Jtsu2yHZ+x9A2C6secWqa0nBnUboKpYcXE3rrXSDWuffA3xmOIPWTW5uimS0O1mCG+2HxqBnR6sxj8FJeqJFgABD8O1012WlxRusHj5c1nQb8FaU7BBh8/2RDmg2+ZIPeLiBnjg4p1WDr5DmACfhX2OPmnZ13pkfX6wgAMhV+yTT6DR8ac4sNRTfKGIq8V2uwxOjn29g2v2K9OcyQOEKEMshT7uTmd1ffmcPFk/2xTZs+em9vzs/gydI+B2TpqXZTdKHyv7kOJ/pLxVMrOIYkBNLDxChH7rGtsTtFys9lt2LAv0G4HUkDW74LUYijW7LVwM0SZmCaNuv4QFUyXVb0KvpwoPWUFupA=
   file: build/app/outputs/apk/app.apk
   on:
+    repo: BPG9/Flutter
     tags: true

@@ -22,12 +22,6 @@ class TourExtra extends StatefulWidget {
 }
 
 class _TourExtraState extends State<TourExtra> {
-  /*@override
-  void initState() {
-    super.initState();
-    KeyboardVisibilityNotification().addNewListener(
-        onHide: () => FocusScope.of(context).requestFocus(FocusNode()));
-  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -67,8 +61,7 @@ class _TourExtraState extends State<TourExtra> {
                         style: TextStyle(fontSize: 20.0),
                       )
                     : SelectableText(
-                        widget.extra.textInfo.text +
-                            (widget.extra.task?.correct)?.toString(),
+                        widget.extra.textInfo.text,
                         style: TextStyle(fontSize: 20.0),
                       ),
               ],
@@ -134,9 +127,6 @@ class _TourExtraState extends State<TourExtra> {
                         child: text(t.entries[0]),
                       )
                     : Table(
-                        //width: horSize(80, 100),
-                        //padding: EdgeInsets.only(left: 7, right: 4),
-                        //decoration: BoxDecoration(border: Border.all(color: Colors.black)),
                         defaultVerticalAlignment:
                             TableCellVerticalAlignment.middle,
                         columnWidths: {0: FixedColumnWidth(horSize(30, 20))},
@@ -174,7 +164,15 @@ class _TourExtraState extends State<TourExtra> {
                   value: e.valB,
                   onChanged: widget.result
                       ? null
-                      : (newVal) => setState(() => e.valB = newVal),
+                      : (newVal) => setState(() {
+                            if (widget.edit) {
+                              if (newVal)
+                                t.correct.add(id);
+                              else
+                                t.correct.remove(id);
+                            }
+                            e.valB = newVal;
+                          }),
                   title: label(e),
                   secondary: widget.result
                       ? Padding(
@@ -195,7 +193,13 @@ class _TourExtraState extends State<TourExtra> {
                     value: id,
                     onChanged: widget.result
                         ? null
-                        : (newVal) => setState(() => t.selected = id),
+                        : (newVal) => setState(() {
+                              if (widget.edit) {
+                                t.correct.clear();
+                                t.correct.add(id);
+                              }
+                              t.selected = id;
+                            }),
                     title: label(e),
                     groupValue: t.selected,
                     secondary: widget.result

@@ -1,18 +1,20 @@
-import 'dart:io';
 import 'dart:async';
+import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:museum_app/SizeConfig.dart';
-import 'dart:math';
-import 'package:museum_app/museum_tabs.dart';
-import '../constants.dart';
-import 'package:open_file/open_file.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:museum_app/home_page/home_museum.dart';
+import 'package:museum_app/museum_tabs.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../constants.dart';
 
 class Home extends StatefulWidget {
   Home({Key key}) : super(key: key);
@@ -186,10 +188,7 @@ class _HomeState extends State<Home> {
                                   "Einführung zur App-Nutzung",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      fontSize: SizeConfig.orientationDevice ==
-                                              Orientation.portrait
-                                          ? SizeConfig.safeBlockHorizontal * 5
-                                          : SizeConfig.safeBlockHorizontal * 2,
+                                      fontSize: horSize(4.5, 2),
                                       fontFamily: "Nunito",
                                       fontWeight: FontWeight.w700,
                                       color: Color(0xFF1A1A1A)),
@@ -250,10 +249,7 @@ class _HomeState extends State<Home> {
                                   "Methoden und Tutorials",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      fontSize: SizeConfig.orientationDevice ==
-                                              Orientation.portrait
-                                          ? SizeConfig.safeBlockHorizontal * 5
-                                          : SizeConfig.safeBlockHorizontal * 2,
+                                      fontSize: horSize(4.5, 2),
                                       fontFamily: "Nunito",
                                       fontWeight: FontWeight.w700,
                                       color: Color(0xFF1A1A1A)),
@@ -307,17 +303,14 @@ class _HomeState extends State<Home> {
                             )),
                         Container(
                             alignment: Alignment.center,
-                            margin: EdgeInsets.only(bottom: 10.0, top: 15.0),
+                            margin: EdgeInsets.only(bottom: 10.0, top: 12.0),
                             child: SafeArea(
                                 bottom: false,
                                 child: Text(
                                   "Über das Landesmuseum",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      fontSize: SizeConfig.orientationDevice ==
-                                              Orientation.portrait
-                                          ? SizeConfig.safeBlockHorizontal * 5
-                                          : SizeConfig.safeBlockHorizontal * 2,
+                                      fontSize: horSize(4.5, 2),
                                       fontFamily: "Nunito",
                                       fontWeight: FontWeight.w700,
                                       color: Color(0xFF1A1A1A)),
@@ -371,7 +364,7 @@ class _HomeState extends State<Home> {
                         Container(
                             alignment: Alignment.center,
                             margin: EdgeInsets.only(
-                              bottom: 10.0,
+                              //bottom: 10.0,
                               top: 5.0,
                               right: 5.0,
                               left: 5.0,
@@ -382,10 +375,7 @@ class _HomeState extends State<Home> {
                                   "Über das Projekt geschichte vernetzt",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      fontSize: SizeConfig.orientationDevice ==
-                                              Orientation.portrait
-                                          ? SizeConfig.safeBlockHorizontal * 5
-                                          : SizeConfig.safeBlockHorizontal * 2,
+                                      fontSize: horSize(4.5, 2),
                                       fontFamily: "Nunito",
                                       fontWeight: FontWeight.w700,
                                       color: Color(0xFF1A1A1A)),
@@ -1185,7 +1175,22 @@ class _HomeState extends State<Home> {
                   ),
                 ),
                 margin: EdgeInsets.only(left: 16.0, right: 16),
-                padding: EdgeInsets.all(15))
+                padding: EdgeInsets.all(15)),
+            Container(
+              width: horSize(100, 60),
+              margin: EdgeInsets.only(left: 16, right: 16, top: 15, bottom: 15),
+              child: Text(
+                "Used Flutter Packages in this Project:\ncupertino_icons, gradient_text, flutter_circular_chart, flutter_rating_bar, photo_view, carousel_slider, graphql_flutter, expandable, intl, expandable_bottom_bar, keyboard_visibility, moor, moor_ffi, path_provider, path, provider, reorderables, rxdart, md2_tab_indicator, font_awesome_flutter, popup_menu, open_file, url_launcher, carousel_pro, flutter_keyboard_visibility",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: SizeConfig.orientationDevice == Orientation.portrait
+                      ? SizeConfig.safeBlockHorizontal * 4
+                      : SizeConfig.safeBlockHorizontal * 2,
+                  fontFamily: "Nunito",
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
           ],
         ),
         showSetting: false);

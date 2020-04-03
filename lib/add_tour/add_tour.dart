@@ -28,56 +28,62 @@ class _AddTourState extends State<AddTour> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-    switch (_type) {
-      case AddType.CREATE:
-        return StreamBuilder(
-          stream: MuseumDatabase.get().watchUser(),
-          builder: (context, snap) {
-            var name = snap.data?.username ?? "";
-            return StreamBuilder(
-              stream: MuseumDatabase.get().getCustomStop(),
-              builder: (context, snap) {
-                var stop = snap.data ?? ActualStop.custom();
-                if (_tour == null || _tour.author != name) {
-                  _tour = TourWithStops.empty(name);
-                  _tour.stops.add(stop);
-                }
-                return CreateTour(goBack, _tour);
-              },
-            );
-          },
-        );
-      case AddType.EDIT:
-        return StreamBuilder(
-          stream: MuseumDatabase.get().watchUser(),
-          builder: (context, snap) {
-            var name = snap.data?.username ?? "";
-            return StreamBuilder(
-              stream: MuseumDatabase.get().getTourStops(),
-              builder: (context, snap) {
-                var tours = snap.data ?? List<TourWithStops>();
-                tours.where((t) => t.author == name);
-                return _editList(tours);
-              },
-            );
-          },
-        );
-      default:
-        return MuseumTabs.single(
-          Center(
-            child: Container(
-              height: verSize(25, 40),
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(
-                      "assets/images/undraw_detailed_analysis_flipped.png"),
+    return StreamBuilder(
+        stream: MuseumDatabase().watchUser(),
+        builder: (context, snap) {
+          User u = snap.data;
+          if (u == null) return Container();
+          String name = u.username;
+
+          switch (_type) {
+            case AddType.CREATE:
+              return StreamBuilder(
+                stream: MuseumDatabase().watchCustomStop(),
+                builder: (context, snap) {
+                  var stop = snap.data ?? ActualStop.custom();
+                  if (_tour == null || _tour.author != name) {
+                    _tour = TourWithStops.empty(name);
+                    _tour.stops.add(stop);
+                  }
+                  return CreateTour(goBack, _tour);
+                },
+              );
+            case AddType.EDIT:
+              return StreamBuilder(
+                stream: MuseumDatabase().getTourStops(),
+                builder: (context, snap) {
+                  var tours = snap.data ?? List<TourWithStops>();
+                  tours = tours.where((t) => t.author == name).toList();
+                  return _editList(tours);
+                },
+              );
+            default:
+              return MuseumTabs.single(
+                Center(
+                  child: Container(
+                    height: verSize(25, 40),
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage(
+                            "assets/images/undraw_detailed_analysis_flipped.png"),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-          _chooseState(),
-        );
-    }
+                u.producer
+                    ? _chooseState()
+                    : Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 80),
+                        child: Text(
+                          "Sie müssen einen Erstellercode über die Einstellungen eingeben, damit Sie eine Tour erstellen können.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 17),
+                        ),
+                      ),
+              );
+          }
+        });
   }
 
   Widget _chooseState() {
@@ -98,7 +104,7 @@ class _AddTourState extends State<AddTour> {
               _content(
                   "assets/images/authentication.png",
                   "Tour bearbeiten",
-                  "Bearbeite eine Deiner Touren oder ergänze sie um Stationen.",
+                  "Bearbeite eine Deiner lokalen Touren oder ergänze sie um Stationen.",
                   "Touren bearbeiten",
                   () => setState(() => _type = AddType.EDIT)),
               margin: margin),

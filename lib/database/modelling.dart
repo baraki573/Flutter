@@ -15,9 +15,11 @@ class TourWithStops {
   double difficulty;
   DateTime creationTime;
   final int id;
+  final String onlineId;
+  final String searchId;
   final List<ActualStop> stops;
 
-  TourWithStops(Tour t, this.stops) : id = t.id, author = t.author {
+  TourWithStops(Tour t, this.stops, {this.searchId}) : id = t.id, author = t.author, onlineId = t.onlineId {
     this.name.text = t.name;
     this.descr.text = t.desc;
     difficulty = t.difficulty;
@@ -29,6 +31,7 @@ class TourWithStops {
       Tour(
           id: null,
           name: "Neue Tour",
+          onlineId: null,
           author: author,
           difficulty: 0,
           creationTime: null,
@@ -40,6 +43,7 @@ class TourWithStops {
         author: author,
         difficulty: difficulty,
         creationTime: creationTime,
+        onlineId: onlineId ?? "",
         desc: descr.text, id: null).createCompanion(nullToAbsent);
   }
 
@@ -112,7 +116,7 @@ class ActualExtra {
   final ActualTask task;
   final ExtraType type;
 
-  ActualExtra(this.type, {text = "", sel = const [""], correct = const <int>{}}) : task = ActualTask(type, answerNames: sel, correct: correct) {
+  ActualExtra(this.type, {text = "", sel = const [""], correct}) : task = ActualTask(type, answerNames: sel, correct: correct) {
     textInfo.text = text;
   }
 }
@@ -130,7 +134,7 @@ class ActualTask {
   int selected;
 
   factory ActualTask(type, {answerNames = const [""], correct}) {
-    var w;
+    correct ??= <int>{};
     switch (type) {
       case ExtraType.TASK_TEXT: return ActualTask.text(answerNames, correct: correct);
       case ExtraType.TASK_MULTI:

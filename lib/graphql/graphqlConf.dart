@@ -1,20 +1,35 @@
 import "package:flutter/material.dart";
 import "package:graphql_flutter/graphql_flutter.dart";
+import 'package:museum_app/constants.dart';
+import 'package:museum_app/database/database.dart';
+import 'package:museum_app/graphql/query.dart';
 
 class GraphQLConfiguration {
+  static GraphQLConfiguration _gc;
+
+  factory GraphQLConfiguration() {
+    _gc ??= GraphQLConfiguration._internal();
+    return _gc;
+  }
+
+  GraphQLConfiguration._internal();
+
   static HttpLink httpLink =
-      HttpLink(uri: 'https://countries.trevorblades.com/');
-  //HttpLink(uri: 'http://http://247-244.gugw.tu-darmstadt.de/app');
+      //HttpLink(uri: 'https://countries.trevorblades.com/');
+  HttpLink(uri: DB_ADDRESS);
 
-  // static AuthLink _authLink = AuthLink(
-  //   getToken: () async => 'Bearer $YOUR_PERSONAL_ACCESS_TOKEN',
-  // );
+  static AuthLink _authLink = AuthLink(
+     getToken: () async {
+       String token = await MuseumDatabase().accessToken();
+       return 'Bearer $token';
+       },
+   );
 
-  // static Link _link = _authLink.concat(httpLink);
+  static Link _link = _authLink.concat(httpLink);
 
   ValueNotifier<GraphQLClient> client = ValueNotifier(
     GraphQLClient(
-      link: httpLink,
+      link: _link,
       cache: OptimisticCache(dataIdFromObject: typenameDataIdFromObject),
     ),
   );
@@ -24,5 +39,14 @@ class GraphQLConfiguration {
       cache: OptimisticCache(dataIdFromObject: typenameDataIdFromObject),
       link: httpLink,
     );
+  }
+
+  static Future<bool> isConnected(String token) async {
+    var r = await GraphQLConfiguration().clientToQuery().query(QueryOptions(
+        documentNode: gql(QueryBackend.userInfo(token))
+    ));
+    if (token != "" && (r.hasException || r.data == null))
+      return Future.value(false);
+    return Future.value(true);
   }
 }

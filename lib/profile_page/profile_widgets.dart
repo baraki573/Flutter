@@ -1,9 +1,14 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_circular_chart/flutter_circular_chart.dart';
 import 'package:museum_app/SizeConfig.dart';
+import 'package:museum_app/constants.dart';
 import 'package:museum_app/database/database.dart';
+import 'package:museum_app/graphql/query.dart';
+import 'package:museum_app/tours_page/tours_widgets.dart';
+import 'package:museum_app/tours_page/walk_tour/walk_tour_content.dart';
 
 class FavWidget extends StatefulWidget {
   FavWidget({Key key}) : super(key: key);
@@ -13,61 +18,97 @@ class FavWidget extends StatefulWidget {
 }
 
 class _FavWidgetState extends State<FavWidget> {
-  Widget _buildAbteilung(Division d, List<Stop> list) {
-    if (list.isEmpty) return Container();
+  /// Creates a widget showing [stops] of a certain [division].
+  ///
+  /// Whether the stops really are part of the division is not checked.
+  Widget _buildDivision(Division division, List<Stop> stops) {
+    if (stops.isEmpty) return Container();
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          // Headline
-          Container(
-              padding: EdgeInsets.only(left: 20),
-              child: Text(d.name,
-                  style: TextStyle(
-                    color: d.color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17,
-                  ))),
-          // Horizontal Scrollable
-          Container(
-              padding: EdgeInsets.only(bottom: 20.0, top: 2.0),
-              height: verSize(21, 40),
-              child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: list.length,
-                  itemBuilder: (context, index) {
-                    // One "bubble"
-                    return Container(
-                        margin: EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 5.0),
-                        height: horSize(27, 16),
-                        width: horSize(27, 16),
-                        decoration: BoxDecoration(
-                            border: Border.all(color: d.color, width: 3),
-                            shape: BoxShape.circle,
-                            image: DecorationImage(
-                              image: AssetImage(list[index].images[0]),
-                              fit: BoxFit.fill,
-                            )),
-                        child: FlatButton(
-                          splashColor: d.color.withOpacity(.1),
-                          highlightColor: d.color.withOpacity(.05),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(80.0),
-                          ),
-                          onPressed: () => dialog(list[index]),
-                          child: null,
-                        ));
-                  }))
-        ]);
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Headline
+        Container(
+          padding: EdgeInsets.only(left: 20),
+          child: Text(
+            division.name,
+            style: TextStyle(
+              color: division.color,
+              fontWeight: FontWeight.bold,
+              fontSize: 17,
+            ),
+          ),
+        ),
+        // Horizontal Scrollable
+        Container(
+          padding: EdgeInsets.only(bottom: 20.0, top: 2.0),
+          height: verSize(21, 40),
+          child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: stops.length,
+              // One "bubble"
+              itemBuilder: (context, index) {
+                ImageProvider image;
+                try {
+                  image = Image.network(QueryBackend.imageURLPicture(
+                          stops[index].images.first))
+                      .image;
+                } catch (e) {
+                  image = Image.asset("assets/images/empty_profile.png").image;
+                }
+                return Container(
+                  margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  height: horSize(27, 16),
+                  width: horSize(25.5, 16),
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: division.color, width: 3),
+                      shape: BoxShape.circle,
+                      //image: DecorationImage(
+                      //image: AssetImage(image),
+                      //fit: BoxFit.cover,
+                      //),
+                      image: DecorationImage(image: image, fit: BoxFit.cover)),
+                  child: ClipOval(
+                    child: FlatButton(
+                      onPressed: () => _showStop(stops[index]),
+                      splashColor: division.color.withOpacity(.4),
+                      highlightColor: division.color.withOpacity(.2),
+                      /*child: QueryBackend.netWorkImage(
+                        QueryBackend.imageURLPicture(image),
+                        height: bubbleWidth,
+                        width: bubbleWidth,
+                      fit: BoxFit.cover,
+                      ),*/
+                      child: Container(),
+                    ),
+                  ),
+                );
+              }),
+        ),
+      ],
+    );
   }
 
-  void dialog(Stop s) {
+  /// Shows a dialog for a certain [stop].
+  ///
+  /// Displays the stop's tour-independent information.
+  void _showStop(Stop s) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        contentPadding: const EdgeInsets.fromLTRB(16, 5, 16, 10),
-        title: Text(s.name),
+        contentPadding: EdgeInsets.only(bottom: 2),
         content: Container(
+          height: verSize(90, 90),
+          width: horSize(100, 100),
+          child: SingleChildScrollView(child: TourWalkerContent.fromStop(s)),
+        ),
+        actions: [
+          FlatButton(
+            child: Text("Schließen", style: TextStyle(color: COLOR_PROFILE)),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+        /*Container(
           width: SizeConfig.safeBlockHorizontal * 70,
           height: SizeConfig.safeBlockHorizontal * 70,
           decoration: BoxDecoration(
@@ -76,33 +117,63 @@ class _FavWidgetState extends State<FavWidget> {
               fit: BoxFit.fill,
             ),
           ),
-        ),
+        ),*/
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     return StreamBuilder(
-        stream: MuseumDatabase.get().getDivisions(),
-        builder: (context, snapDev) {
-          var divisions = snapDev.data ?? List<Division>();
-          //print(divisions);
-          return StreamBuilder(
-              stream: MuseumDatabase.get().watchStops(),
-              builder: (context, snapStop) {
-                var stops = snapStop.data ?? List<Stop>();
-                return Column(
-                  children: List.generate(divisions.length, (index) {
-                    return _buildAbteilung(
-                        divisions[index],
-                        stops
-                            .where((e) => e.division == divisions[index].name)
-                            .toList());
-                  }),
-                );
-              });
-        });
+      stream: MuseumDatabase().getDivisions(),
+      builder: (context, snapDev) {
+        var divisions = snapDev.data ?? List<Division>();
+        return FutureBuilder(
+          future: MuseumDatabase().getFavStops(),
+          builder: (context, snapStop) {
+            var stops = snapStop.data ?? List<Stop>();
+            // show every division with it's stops
+
+            var favStops = List.generate(
+              divisions.length,
+              (index) => _buildDivision(
+                  divisions[index],
+                  stops
+                      .where((e) => e.division == divisions[index].name)
+                      .toList()),
+            );
+            if (!snapStop.hasData)
+              favStops.add(CircularProgressIndicator());
+            else if (stops.isEmpty)
+              favStops.add(Text("Keine Objekte favorisiert!\n",
+                  style: TextStyle(fontSize: 16)));
+
+            return Column(
+              children: <Widget>[
+                    Text(
+                      "Lieblingsobjekte\n",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    )
+                  ] +
+                  favStops +
+                  [
+                    Text(
+                      "Lieblingstouren\n",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    ),
+                    DownloadColumn(
+                      QueryBackend.favTours,
+                      notFoundText: "Keine Touren favorisiert.",
+                    ),
+                  ],
+            );
+          },
+        );
+      },
+    );
   }
 }
 
@@ -184,21 +255,21 @@ class _BadgeWidgetState extends State<BadgeWidget> {
         Container(
           width: horSize(63, 50) * (popUp ? 1.3 : 1) / _perLine,
           height: horSize(63, 50) * (popUp ? 1.3 : 1) / _perLine,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            image: DecorationImage(
-              image: AssetImage(b.imgPath),
-              fit: BoxFit.fill,
-            ),
-          ),
+          decoration: BoxDecoration(shape: BoxShape.circle),
           child: FlatButton(
+            padding: EdgeInsets.zero,
             splashColor: b.color.withOpacity(.1),
             highlightColor: b.color.withOpacity(.05),
             onPressed: () => _badgePopUp(b),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(80.0),
             ),
-            child: null,
+            child: QueryBackend.netWorkImage(
+              QueryBackend.imageURLBadge(b.imgPath),
+              fit: BoxFit.fill,
+              width: horSize(63, 50) * (popUp ? 1.3 : 1) / _perLine,
+              height: horSize(63, 50) * (popUp ? 1.3 : 1) / _perLine,
+            ),
           ),
         ),
       ],
@@ -207,9 +278,8 @@ class _BadgeWidgetState extends State<BadgeWidget> {
 
   @override
   Widget build(BuildContext context) {
-    //UserClass u = getUser();
     return StreamBuilder(
-        stream: MuseumDatabase.get().getBadges(),
+        stream: MuseumDatabase().getBadges(),
         builder: (context, snapBad) {
           List<Badge> badges = snapBad.data ?? List<Badge>();
           return Container(

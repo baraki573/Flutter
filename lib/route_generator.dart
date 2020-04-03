@@ -14,8 +14,17 @@ class RouteGenerator {
       case '/login':
         return MaterialPageRoute(builder: (_) => LogIn());
       case '/':
-        return MaterialPageRoute(
-            builder: (_) => BottomBarNavigationPatternExample());
+        return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample());
+      case '/home':
+        return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample.fromIndex(0));
+      case '/tours':
+        return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample.fromIndex(1));
+      case '/add':
+        return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample.fromIndex(2));
+      case '/profile':
+        return MaterialPageRoute(builder: (_) => BottomBarNavigationPatternExample.fromIndex(3));
+      case '/loading':
+        return MaterialPageRoute(builder: (_) => Center(child: CircularProgressIndicator()));
       // case '/second':
       //   // Validation of correct data type
       //   if (args is String) {

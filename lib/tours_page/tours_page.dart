@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:museum_app/add_tour/add_tour.dart';
 import 'package:museum_app/constants.dart';
+import 'package:museum_app/database/database.dart';
+import 'package:museum_app/graphql/query.dart';
 import 'package:museum_app/map/map_page.dart';
 import 'package:museum_app/museum_tabs.dart';
 import 'package:museum_app/tours_page/tours_widgets.dart';
@@ -54,30 +56,33 @@ class _ToursState extends State<Tours> {
     );
   }
 
-
-
   Widget _allTours() {
-    return Column(
-      children: [
-        Container(
-          margin: EdgeInsets.only(left: 16, right: 16),
-          padding: EdgeInsets.symmetric(horizontal: 15),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.black),
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: TextField(
-            controller: _ctrlSearch,
-            decoration: InputDecoration(
-              icon: Icon(Icons.search),
-              border: InputBorder.none,
-              labelText: "Tour suchen...",
-            ),
+    return Column(children: <Widget>[
+      Container(
+        margin: EdgeInsets.only(left: 16, right: 16),
+        padding: EdgeInsets.symmetric(horizontal: 15),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.black),
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: TextField(
+          controller: _ctrlSearch,
+          onSubmitted: (s) {
+            setState(() {});
+          },
+          decoration: InputDecoration(
+            icon: Icon(Icons.search),
+            border: InputBorder.none,
+            labelText: "Tour suchen...",
           ),
         ),
-        // TODO Builder connected to the server
-      ],
-    );
+      ),
+      DownloadColumn(
+        QueryBackend.featured,
+        search: _ctrlSearch.text,
+        color: COLOR_TOUR,
+      ),
+    ]);
   }
 
   Widget _code() {
@@ -92,6 +97,13 @@ class _ToursState extends State<Tours> {
         border(
           TextField(
             controller: _ctrlCode,
+            onSubmitted: (s) async {
+              bool ok = await MuseumDatabase().joinAndDownloadTour(s);
+              String cont = ok
+                  ? "Tour heruntergeladen!"
+                  : "Tour konnte nicht gefunden werden...";
+              Scaffold.of(context).showSnackBar(SnackBar(content: Text(cont)));
+            },
             decoration: InputDecoration(
                 icon: Icon(Icons.keyboard), border: InputBorder.none),
           ),
@@ -119,17 +131,35 @@ class _ToursState extends State<Tours> {
 
   @override
   Widget build(BuildContext context) {
-    return MuseumTabs(
-      _topInfo(),
-      {
-        // All (online) tours
-        "Alle": _allTours(), //_bottomInfo((_) => (tour) => true),
-        // Only the local/downloaded ones
-        "Downloads": TourList.downloaded(),
-        // Add a tour via a code
-        "Code": _code(),
+    return FutureBuilder(
+      future: MuseumDatabase().accessToken(),
+      builder: (context, snap) {
+        String token = snap.data ?? "";
+        if (!snap.hasData || token == "")
+          return MuseumTabs.single(
+            _topInfo(),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 80),
+              child: Text(
+                "Sie müssen sich anmelden, um auf die angebotenen Touren zugreifen zu können.",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 17),
+              ),
+            ),
+          );
+        return MuseumTabs(
+          _topInfo(),
+          {
+            // All (online) tours
+            "Alle": _allTours(), //_bottomInfo((_) => (tour) => true),
+            // Only the local/downloaded ones
+            "Downloads": TourList.downloaded(),
+            // Add a tour via a code
+            "Code": _code(),
+          },
+          color: COLOR_TOUR,
+        );
       },
-      color: COLOR_TOUR,
     );
   }
 }

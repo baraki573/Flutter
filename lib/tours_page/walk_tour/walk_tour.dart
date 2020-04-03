@@ -1,14 +1,23 @@
+import 'dart:io';
+
 import 'package:expandable_bottom_bar/expandable_bottom_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:museum_app/SizeConfig.dart';
 import 'package:museum_app/constants.dart';
+import 'package:museum_app/database/database.dart';
 import 'package:museum_app/database/modelling.dart';
+import 'package:museum_app/graphql/graphqlConf.dart';
+import 'package:museum_app/graphql/query.dart';
 import 'package:museum_app/map/map_page.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_content.dart';
 import 'package:museum_app/tours_page/walk_tour/walk_tour_extras.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 
 class TourWalker extends StatefulWidget {
   final TourWithStops tour;
@@ -51,7 +60,6 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
               //color: Colors.orange,
               alignment: Alignment.centerLeft,
               width: horSize(17, 10),
-              //TODO info-icon for non "Stops"
               child: _currentItem < length
                   ? Text(
                       "Station\n" +
@@ -123,7 +131,7 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
         child: ClipRRect(
           borderRadius: BorderRadius.all(Radius.circular(15)),
           child: FlatButton(
-            onPressed: index == _currentItem
+            onPressed: index == _currentItem || _currentItem == length
                 ? null
                 : () => setState(() {
                       _currentItem = index;
@@ -137,13 +145,17 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                   width: horSize(35, 30),
                   height: verSize(17, 20),
                   decoration: BoxDecoration(
-                    image: DecorationImage(
+                    /*image: DecorationImage(
                         image: AssetImage(stops[index].stop.images.isNotEmpty
                             ? stops[index].stop.images[0]
                             : "assets/images/profile_test.png"),
-                        fit: BoxFit.cover),
+                        fit: BoxFit.cover),*/
                     border: Border(right: BorderSide(color: Colors.black)),
                   ),
+                  child: QueryBackend.netWorkImage(QueryBackend.imageURLPicture(
+                      stops[index].stop.images.isNotEmpty
+                          ? stops[index].stop.images[0]
+                          : "")),
                 ),
                 Container(
                   //color: Colors.yellow,
@@ -191,6 +203,31 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
           FlatButton(
             onPressed: () => Navigator.pop(context),
             child: Text("Tour fortsetzen", style: TextStyle(color: COLOR_TOUR)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _toResults() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Achtung"),
+        content: Text(
+            "Nachdem Sie sich die Ergebnisse angeschaut haben, können Sie ihre Antworten nicht mehr verändern.\nFortfahren?"),
+        actions: [
+          FlatButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Schließen", style: TextStyle(color: COLOR_TOUR)),
+          ),
+          FlatButton(
+            onPressed: () {
+              setState(() => _currentItem++);
+              Navigator.pop(context);
+            },
+            child:
+                Text("Zu den Ergebnissen", style: TextStyle(color: COLOR_TOUR)),
           ),
         ],
       ),
@@ -278,15 +315,28 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                   ),
                   Spacer(flex: 2),
                   FlatButton(
-                    onPressed: _currentItem == length
-                        ? null
-                        : () => setState(() {
-                              _currentItem++;
-                              //_currentImage = 0;
-                            }),
+                    onPressed: () async {
+                      if (_currentItem == length - 1)
+                        _toResults();
+                      else if (_currentItem == length) {
+                        // UPLOAD ANSWERS
+                        await MuseumDatabase().uploadAnswers(widget.tour);
+
+                        finishTour();
+                      } else
+                        setState(() => _currentItem++);
+                    },
                     child: Row(children: [
-                      Text("Weiter", style: TextStyle(color: Colors.white)),
-                      Icon(Icons.arrow_forward, color: Colors.white)
+                      Text(
+                          _currentItem == length - 1
+                              ? "Ergebnis"
+                              : (_currentItem == length ? "" : "Weiter"),
+                          style: TextStyle(color: Colors.white)),
+                      Icon(
+                          _currentItem == length
+                              ? Icons.check
+                              : Icons.arrow_forward,
+                          color: Colors.white)
                     ]),
                   ),
                 ],
@@ -311,7 +361,7 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                       /*TourWalkerTasks(widget
                         .tour.tasks[widget.tour.stops[_currentItem].name]),*/
                       Container(
-                          height: bottomOff == 0 ? verSize(11, 21) : bottomOff),
+                          height: bottomOff == 0 ? verSize(15, 21) : bottomOff),
                       //_content(),
                     ],
                   ),
@@ -324,6 +374,82 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
     );
   }
 
+  void finishTour() {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text("Tour Antworten speichern"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Möchtest Du Deine Antworten als TXT-Datei speichern?",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: horSize(4, 2),
+                        fontFamily: "Nunito",
+                        fontWeight: FontWeight.w300,
+                        fontStyle: FontStyle.italic,
+                        color: Color(0xFF1A1A1A)),
+                  ),
+                ],
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 16),
+              actions: [
+                FlatButton(
+                  child: Text("Ja", style: TextStyle(color: COLOR_TOUR)),
+                  onPressed: () async {
+                    GraphQLClient _client =
+                        GraphQLConfiguration().clientToQuery();
+                    User user = await MuseumDatabase().getUser();
+
+                    QueryResult result = await _client.query(QueryOptions(
+                      documentNode: gql(QueryBackend.exportResult(
+                          user.accessToken,
+                          widget.tour.onlineId,
+                          user.username)),
+                    ));
+
+                    var s = result.data["exportAnswers"];
+                    print(s);
+
+                    // reset
+                    for (var stop in widget.tour.stops)
+                      for (var extra in stop.extras)
+                        if (extra.task != null) extra.task.reset();
+                    saveAndReturnTxt(s)
+                        .then((file) => OpenFile.open(file.path));
+                    //Navigator.pop(context);
+                    //Navigator.pop(context);
+                  },
+                ),
+                FlatButton(
+                  child: Text("Nein", style: TextStyle(color: COLOR_TOUR)),
+                  onPressed: () {
+                    // reset
+                    for (var stop in widget.tour.stops)
+                      for (var extra in stop.extras)
+                        if (extra.task != null) extra.task.reset();
+                    Navigator.pop(context);
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ));
+  }
+
+  //save String to txt file and return file
+  Future<File> saveAndReturnTxt(String text) async {
+    final Directory directory = await getApplicationDocumentsDirectory();
+    final File file = File('${directory.path}/results.txt');
+    await file.writeAsString(text);
+    //Directory tempDir = await getTemporaryDirectory();
+    //File tempFile = File('${tempDir.path}/results_temp.txt');
+    //ByteData bd = await rootBundle.load('${directory.path}/results.txt');
+    //await tempFile.writeAsBytes(bd.buffer.asUint8List(), flush: true);
+    return file;
+  }
+
   Widget _results() {
     // only use stops having at least one task
     List<ActualStop> stops = widget.tour.stops
@@ -331,15 +457,36 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
         .toList();
     return Column(
       children: <Widget>[
-            Padding(
-                padding: EdgeInsets.only(bottom: 6, top: 5),
-                child: Text(
-                  "Aufgabenergebnisse",
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
+            StreamBuilder(
+              stream: MuseumDatabase().watchUser(),
+              builder: (context, snap) {
+                String username = snap.data?.username ?? "Anon. User";
+                return RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: TextStyle(color: Colors.black),
+                    children: [
+                      TextSpan(
+                        text: "Aufgabenergebnisse\n",
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextSpan(
+                        text: username +
+                            ", " +
+                            DateFormat("dd.MM.yyyy").format(DateTime.now()),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
                   ),
-                ))
+                );
+              },
+            ),
           ] +
           stops.map((s) {
             int id = stops.indexOf(s);
@@ -356,7 +503,7 @@ class _TourWalkerState extends State<TourWalker> with TickerProviderStateMixin {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                       Text(
-                        "Station: " + s.stop.name,
+                        "Station " + (id + 1).toString() + ": " + s.stop.name,
                         style: TextStyle(
                             fontSize: 20, decoration: TextDecoration.underline),
                       )
