@@ -12,6 +12,10 @@ The App is eqipped with gamification so there is always a challenge in the backg
 
 The Project is accompanied with backend and web admin portal to support this application.
 
+## Screenshots
+
+![Onboarding Page](Screenshots/photo_2020-04-03 14.13.07.jpeg?raw=true "Onboarding")
+
 ## Acknowledgment
 
 Thanks to everyone who has helped us in this project.
