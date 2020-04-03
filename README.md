@@ -22,9 +22,13 @@ The Project is accompanied with backend and web admin portal to support this app
 <img src="Screenshots/Dioramen_Tour.jpeg" width="300">
 <img src="Screenshots/Profile_Page_Gamification.jpeg" width="300">
 
-| Onboarding Page                                       | Home Page                                          |
-| ----------------------------------------------------- | -------------------------------------------------- |
-| <img src="/Screenshots/Onboarding.jpeg" height="400"> | <img src="Screenshots/Home_Page.jpeg" width="400"> |
+| Onboarding Page                                       | Home Page                                           |
+| ----------------------------------------------------- | --------------------------------------------------- |
+| <img src="/Screenshots/Onboarding.jpeg" height="500"> | <img src="Screenshots/Home_Page.jpeg" height="500"> |
+
+| Museum Page                                           | Tour Page                                            |
+| ----------------------------------------------------- | ---------------------------------------------------- |
+| <img src="Screenshots/Museum_page.jpeg" height="300"> | <img src="Screenshots/Tours_Page.jpeg" height="300"> |
 
 ## Acknowledgment
 
