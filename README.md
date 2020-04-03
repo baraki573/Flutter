@@ -14,8 +14,23 @@ The Project is accompanied with backend and web admin portal to support this app
 
 ## Screenshots
 
-![Onboarding Page](/Screenshots/photo_2020-04-03_14.13.07.jpeg)
-<img src="/Screenshots/photo_2020-04-03_14.13.07.jpeg" width="300">
+Onboarding Page:
+<img src="/Screenshots/Onboarding.jpeg" width="300">
+
+Home Page:
+<img src="Screenshots/Home_Page.jpeg" width="300">
+
+Museum Page:
+<img src="Screenshots/Museum_page.jpeg" width="300">
+
+Tours Page:
+<img src="Screenshots/Tours_Page.jpeg" width="300">
+
+Example Tour:
+<img src="Screenshots/Dioramen_Tour.jpeg" width="300">
+
+Profile Page with Gamification:
+<img src="Screenshots/Profile_Page_Gamification.jpeg" width="300">
 
 ## Acknowledgment
 
