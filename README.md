@@ -16,6 +16,8 @@ The Project is accompanied with backend and web admin portal to support this app
 
 Onboarding Page:
 <img src="/Screenshots/Onboarding.jpeg" width="300">
+<img src="Screenshots/Home_Page.jpeg" width="300">
+<img src="Screenshots/Home_Page.jpeg" width="300">
 
 Home Page:
 <img src="Screenshots/Home_Page.jpeg" width="300">
