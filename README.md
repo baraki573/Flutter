@@ -15,7 +15,7 @@ The Project is accompanied with backend and web admin portal to support this app
 ## Screenshots
 
 ![Onboarding Page](/Screenshots/photo_2020-04-03_14.13.07.jpeg)
-<img src=" /Screenshots/photo_2020-04-03_14.13.07.jpeg" width="300">
+<img src="/Screenshots/photo_2020-04-03_14.13.07.jpeg" width="300">
 
 ## Acknowledgment
 
