@@ -1,4 +1,4 @@
-# Geschichte Vernetzt (History Connects)
+# Geschichte Vernetzt (History Connected)
 
 A Flutter project for the museum lovers.
 
